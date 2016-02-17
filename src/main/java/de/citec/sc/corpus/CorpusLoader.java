@@ -5,20 +5,25 @@
  */
 package de.citec.sc.corpus;
 
-import de.citec.sc.corpus.AnnotatedDocument;
+
+import corpus.Corpus;
+import corpus.LabeledInstance;
 import de.citec.sc.corpus.Annotation;
-import de.citec.sc.corpus.Corpus;
+
 import de.citec.sc.corpus.Document;
+import de.citec.sc.variables.State;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import utility.VariableID;
 
 /**
  *
@@ -42,9 +47,8 @@ public class CorpusLoader {
         CoNLL, SmallCorpus, MicroTagging;
     }
 
-    public Corpus loadCorpus(CorpusName corpusName) {
-        Corpus c = new Corpus();
-        c.setCorpusName(corpusName.name());
+    public DefaultCorpus loadCorpus(CorpusName corpusName) {
+        DefaultCorpus c = new DefaultCorpus();
 
         List<Document> documents = new ArrayList<>();
 
@@ -60,7 +64,7 @@ public class CorpusLoader {
                 break;
         }
 
-        c.setDocuments(documents);
+        c.addDocuments(documents);
 
         return c;
     }
@@ -103,7 +107,7 @@ public class CorpusLoader {
                 if (!s.equals("")) {
                     //write out
 
-                    Document d1 = new AnnotatedDocument(s, docName);
+                    Document d1 = new Document(s, docName);
                     List<Annotation> annotations = new ArrayList<>();
                     for (Annotation ann : goldSet) {
                         annotations.add(ann.clone());
@@ -127,9 +131,9 @@ public class CorpusLoader {
                     //European	B	European Commission	European_Commission
                     if (content[1].equals("B")) {
 
-                        Annotation a1 = new Annotation(content[2], content[4]);
-                        a1.setStartIndex(s.length());
-                        a1.setEndIndex(s.length() + content[2].length());
+                        int startIndex = s.length();
+                        int endIndex = s.length() + content[2].length();
+                        Annotation a1 = new Annotation(content[2], content[4],startIndex, endIndex, new VariableID("A"+goldSet.size()));
                         goldSet.add(a1);
                         s += content[0] + " ";
                     } else {
@@ -153,7 +157,8 @@ public class CorpusLoader {
         if (goldSet.size() > 0 && !s.equals("")) {
 
             //last doc
-            Document d1 = new AnnotatedDocument(s, docName);
+            Document d1 =  new Document(s, docName);
+            
             List<Annotation> annotations = new ArrayList<>();
             for (Annotation ann : goldSet) {
                 annotations.add(ann.clone());
@@ -182,7 +187,7 @@ public class CorpusLoader {
             String content = s.replace(docId, "");
             content = content.trim();
 
-            Document d1 = new AnnotatedDocument(content, docId);
+            Document d1 = new Document(content, docId);
 
             tweetsHashMap.put(docId, d1);
         }
@@ -198,7 +203,7 @@ public class CorpusLoader {
                 List<Annotation> goldSet = new ArrayList<>();
 
                 for (int i = 0; i < arrayOfAnnotations.length; i = i + 2) {
-                    Annotation a1 = new Annotation(arrayOfAnnotations[i], arrayOfAnnotations[i + 1]);
+                    Annotation a1 = new Annotation(arrayOfAnnotations[i], arrayOfAnnotations[i + 1], 0, 0, new VariableID("S"+goldSet.size()));
                     goldSet.add(a1);
                 }
 

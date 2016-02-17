@@ -3,37 +3,38 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.citec.sc.corpus;
 
+import de.citec.sc.variables.State;
 import java.util.Objects;
+import utility.VariableID;
+import variables.AbstractVariable;
 
 /**
  *
  * @author sherzod
  */
-public class Annotation {
+public class Annotation extends AbstractVariable<State> {
+
     private String word;
     private String link;
     private int startIndex, endIndex;
 
-    /**
-     * @param word
-     * @param link
-     * @param startPosition 
-     */
-    public Annotation(String word, String link, int startIndex, int endIndex) {
+
+    
+    public Annotation(String word, String link, int startIndex, int endIndex, VariableID vID) {
+        super(vID);
         this.word = word;
         this.link = link;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
     }
 
-    public Annotation(String word, String link) {
-        this.word = word;
-        this.link = link;
-    }
-
+    /**
+     * @param word
+     * @param link
+     * @param startPosition
+     */
     public int getStartIndex() {
         return startIndex;
     }
@@ -49,8 +50,6 @@ public class Annotation {
     public void setEndIndex(int endIndex) {
         this.endIndex = endIndex;
     }
-    
-    
 
     public void setWord(String word) {
         this.word = word;
@@ -59,8 +58,6 @@ public class Annotation {
     public void setLink(String link) {
         this.link = link;
     }
-
-
 
     public String getWord() {
         return word;
@@ -108,14 +105,9 @@ public class Annotation {
     public String toString() {
         return "word=" + word + ", link=" + link + ", startIndex=" + startIndex + ", endIndex=" + endIndex;
     }
-    
 
-
-    public Annotation clone(){
-        return new Annotation(word, link, startIndex, endIndex);
+    public Annotation clone() {
+        return new Annotation(word, link, startIndex, endIndex, id);
     }
 
-    
-    
-    
 }

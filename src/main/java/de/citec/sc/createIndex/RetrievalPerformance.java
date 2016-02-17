@@ -5,9 +5,9 @@
  */
 package de.citec.sc.createIndex;
 
-import de.citec.sc.corpus.AnnotatedDocument;
+
 import de.citec.sc.corpus.Annotation;
-import de.citec.sc.corpus.Corpus;
+import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.evaluator.Evaluator;
@@ -100,7 +100,7 @@ public class RetrievalPerformance {
                             System.out.println((end - start) + " ms loading the index ");
 
                             
-                            Corpus c = new Corpus();
+                            DefaultCorpus c = new DefaultCorpus();
 
                             //set the dataset
                             if (dataset.equals("tweets")) {
@@ -146,7 +146,7 @@ public class RetrievalPerformance {
                                 //if the retrieved list contains the link
                                     //the index contains the annotation
                                     if (matches.contains(link)) {
-                                        Annotation newOne = new Annotation(a.getWord(), a.getLink(), a.getStartIndex(), a.getEndIndex());
+                                        Annotation newOne = new Annotation(a.getWord(), a.getLink(), a.getStartIndex(), a.getEndIndex(), a.getID());
 
                                         d.addAnnotation(newOne.clone());
                                     } else {
