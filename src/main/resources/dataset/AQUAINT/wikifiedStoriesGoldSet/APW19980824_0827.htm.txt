@@ -1,0 +1,17 @@
+security	Security
+international airport	International_airport
+Islamic militants	Islamist_terrorism
+U.S.	United_States
+David Bar-Illan	David_Bar-Illan
+terrorism	Terrorism
+pre-emptive strikes	Preemptive_war
+air strikes	Airstrike
+Saudi	Saudi_Arabia
+embassies	Diplomatic_mission
+East Africa	East_Africa
+Muslim	Muslim
+activist	Activism
+strategic	Strategy
+security guards	Security_guard
+administration	Academic_administration
+tour operator	Tour_operator

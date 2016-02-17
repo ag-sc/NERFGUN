@@ -1,0 +1,15 @@
+brain tumours	Brain_tumor
+haemorrhage	Bleeding
+Bangkok	Bangkok
+Radio Surgery	Radiosurgery
+Thailand	Thailand
+cancerous	Cancer
+tissues	Tissue_(biology)
+three dimensional	Three-dimensional_space
+Stereotaxic Surgery	Stereotactic_surgery
+radiation	Radiation
+Linear Accelerator	Linear_particle_accelerator
+conscious	Consciousness
+Malformation	Congenital_disorder
+clotting	Coagulation
+capillaries	Capillary

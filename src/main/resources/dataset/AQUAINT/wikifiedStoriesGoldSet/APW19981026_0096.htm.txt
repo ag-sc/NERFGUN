@@ -1,0 +1,10 @@
+South Africa	South_Africa
+apartheid	History_of_South_Africa_in_the_Apartheid_era
+torture	Torture
+bomb	Bomb
+broadcaster	Broadcasting
+white rule	Dominant_minority
+Truth and Reconciliation Commission	Truth_and_Reconciliation_Commission_(South_Africa)
+South African Broadcasting Corp.	South_African_Broadcasting_Corporation
+commissioners	Commissioner
+land mines	Land_mine

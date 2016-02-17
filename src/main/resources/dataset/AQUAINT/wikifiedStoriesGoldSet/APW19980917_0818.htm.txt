@@ -1,0 +1,9 @@
+guru	Guru
+cult	Cult
+nerve gas	Nerve_agent
+Aum Shinri Kyo	Aum_Shinrikyo
+sarin attack	Sarin_gas_attack_on_the_Tokyo_subway
+gassing	Gas_chamber
+defense	Defense_(legal)
+Tokyo District Court	Tokyo_District_Court
+prosecution	Prosecutor

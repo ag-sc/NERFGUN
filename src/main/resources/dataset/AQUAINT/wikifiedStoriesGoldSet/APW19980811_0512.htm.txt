@@ -1,0 +1,15 @@
+tea	Tea
+toxic	Toxicity
+sodium compound	Sodium
+police	Law_enforcement_in_Japan
+wood preservative	Lumber
+Niigata	Niigata_Prefecture
+numbness	Paresthesia
+curry	Curry
+copycat	Copycat_crimes
+air-bag	Airbag
+liver disorders	Hepato-biliary_diseases
+Niigata City	Niigata,_Niigata
+March 1995	1995
+nerve gas	Nerve_agent
+Aum Shinri Kyo	Aum_Shinrikyo

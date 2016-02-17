@@ -1,0 +1,10 @@
+Beanie Babies	Beanie_Baby
+Sotheby	Sotheby's
+New York	New_York_City
+auction house	Auction
+antiques	Antique
+sports memorabilia	Sports_memorabilia
+collectibles	Collectible
+online auction	Online_auction_business_model
+baseball	Baseball
+Christie	Christie's

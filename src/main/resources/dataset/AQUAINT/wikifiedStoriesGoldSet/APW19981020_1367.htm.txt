@@ -1,0 +1,8 @@
+Edward White	Edward_Higgins_White
+Roger Chaffee	Roger_B._Chaffee
+launch pad	Launch_pad
+moon	Moon
+Columbia	Space_Shuttle_Columbia
+Challenger	Space_Shuttle_Challenger
+Atlantis	Space_Shuttle_Atlantis
+Discovery	Space_Shuttle_Discovery

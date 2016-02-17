@@ -1,0 +1,13 @@
+Astronomers	Astronomer
+cyclone	Cyclone
+Texas	Texas
+space telescope	Space_observatory
+Martian	Martian
+ice	Ice
+hurricanes	Tropical_cyclone
+evaporated	Evaporation
+carbon dioxide	Carbon_dioxide
+Martian north pole	Planum_Boreum
+Viking Orbiter	Viking_program
+wide field planetary camera	Wide_Field_and_Planetary_Camera
+phenomenon	Phenomenon

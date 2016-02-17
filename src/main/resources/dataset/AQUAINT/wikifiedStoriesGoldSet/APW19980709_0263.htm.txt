@@ -1,0 +1,11 @@
+monopoly	Monopoly
+Prime Minister	Prime_Minister_of_Vietnam
+Phan Van Khai	Phan_Văn_Khải
+electricity	Electricity
+bureaucracy	Bureaucracy
+self-criticisms	Self-criticism
+tender	Tenders
+rotating power cuts	Power_outage
+drought	Drought
+reservoir	Reservoir
+hydroelectric	Hydroelectricity

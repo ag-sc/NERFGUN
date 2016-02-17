@@ -1,0 +1,5 @@
+strategy	Strategy
+crime syndicates	Syndicate
+money laundering	Money_laundering
+evidence	Evidence
+strategic development plan	Strategic_planning

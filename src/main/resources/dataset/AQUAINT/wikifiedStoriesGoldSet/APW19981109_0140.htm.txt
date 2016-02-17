@@ -1,0 +1,14 @@
+Kamal Kharrazi	Kamal_Kharazi
+ICJ	International_Court_of_Justice
+the Netherlands	Netherlands
+ambassador	Ambassador
+Czech	Czech_Republic
+economic	Economy
+political	Politics
+Farsi	Persian_language
+Munich, Germany	Munich
+censored	Censorship
+Soviet	Soviet_Union
+West	Western_world
+Communist	Communism
+East	Eastern_world

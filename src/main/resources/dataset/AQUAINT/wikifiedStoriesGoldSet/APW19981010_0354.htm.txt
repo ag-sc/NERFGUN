@@ -1,0 +1,6 @@
+Gulf	Persian_Gulf
+U.S.	United_States
+ballistic missile defense system	Missile_defense
+United Arab Emirates	United_Arab_Emirates
+U.N.	United_Nations
+sanctions	International_sanctions

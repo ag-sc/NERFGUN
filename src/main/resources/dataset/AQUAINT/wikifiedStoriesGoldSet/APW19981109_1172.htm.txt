@@ -1,0 +1,14 @@
+Courtney Walsh	Courtney_Walsh
+West Indies	West_Indies_cricket_team
+Caribbean News Agency	Caribbean_News_Agency
+Lara	Brian_Lara
+Hooper	Carl_Hooper
+West Indies Cricket Board	West_Indies_Cricket_Board
+batsman	Batsman
+treasurer	Treasurer
+negotiated	Negotiation
+South African cricket	Cricket_South_Africa
+sponsorship	Sponsor
+wicketkeeper	Wicket-keeper
+David Richardson	David_John_Richardson
+marketing	Marketing

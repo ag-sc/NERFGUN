@@ -1,0 +1,15 @@
+Russian	Russians
+organized crime	Organized_crime
+Sibneft	Gazprom_Neft
+mogul	Business_magnate
+oil products	Oil
+coal	Coal
+coal-mining	Coal_mining
+contract murder	Contract_killing
+mobsters	Mobsters
+mayor	Mayor
+tax fraud	Tax_avoidance_and_tax_evasion
+embezzlement	Embezzlement
+Gennady Konyakhin	Gennady_Konyakhin
+mob	Russian_Mafia
+trial	Trial_(law)

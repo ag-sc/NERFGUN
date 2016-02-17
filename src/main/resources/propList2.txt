@@ -1,0 +1,10 @@
+http://dbpedia.org/ontology/abbreviation
+http://dbpedia.org/ontology/alias
+http://dbpedia.org/ontology/demonym
+http://dbpedia.org/ontology/longName
+http://dbpedia.org/ontology/synonym
+http://dbpedia.org/ontology/title
+http://www.w3.org/2000/01/rdf-schema#label
+http://xmlns.com/foaf/0.1/givenName
+http://xmlns.com/foaf/0.1/name
+http://xmlns.com/foaf/0.1/surname

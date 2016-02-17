@@ -1,0 +1,11 @@
+Palestinian	Palestinian_people
+airport	Airport
+independence	Independence
+Civil Aviation	Civil_aviation
+Israeli	Israel
+Israeli-Palestinian peace agreement	Peace_process_in_the_Israeli-Palestinian_conflict
+Cabinet	Cabinet_of_Israel
+ratification	Ratification
+Civil Aviation Authority	Civil_Aviation_Authority
+passport	Passport
+customs	Customs

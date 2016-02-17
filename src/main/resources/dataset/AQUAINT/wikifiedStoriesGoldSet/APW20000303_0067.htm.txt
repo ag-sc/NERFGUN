@@ -1,0 +1,32 @@
+Severe thunderstorms	Thunderstorm
+Gulf Coast	Gulf_Coast_of_the_United_States
+Louisiana	Louisiana
+Georgia	Georgia_(U.S._state)
+Tennessee	Tennessee
+Rain	Rain
+Lightning	Lightning
+hail	Hail
+wind	Wind
+Ohio Valley	Ohio_River
+Oklahoma	Oklahoma
+Dallas-Fort Worth International Airport	Dallas-Fort_Worth_International_Airport
+Northeast	Northeastern_United_States
+Adirondack	Adirondack_Mountains
+Pennsylvania	Pennsylvania
+Maine	Maine
+wind-chill	Wind_Chill
+freezing	Freezing
+the West	Western_United_States
+Rockies	Rocky_Mountains
+Southeast	Southeastern_United_States
+Plains	Great_Plains
+Califorainia	California
+Washington	Washington
+Oregon	Oregon
+Midwest	Midwestern_United_States
+Northwest	Pacific_Northwest
+mid-Atlantic states	Mid-Atlantic_States
+temperature	Temperature
+Cotulla	Cotulla,_Texas
+Alice	Alice,_Texas
+Grand Marais, Minn	Grand_Marais,_Minnesota

@@ -1,0 +1,11 @@
+Zoo	Zoo
+Environment Minister Juergen Trittin's	Jürgen_Trittin
+elephants	Elephant
+Africa	Africa
+Erfurt	Erfurt
+Germany	Germany
+South African	South_Africa
+National Society for the Prevention of Cruelty to Animals	Humane_Society
+parliament	Bundestag
+put to sleep	Animal_euthanasia
+Saxony	Saxony

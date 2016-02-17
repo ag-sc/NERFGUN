@@ -1,0 +1,14 @@
+MALAYSIA	Malaysia
+Federal	Federal_Government
+State	State
+Government agencies	Government_agency
+economic	Economy
+implementation	Implementation
+Rural	Rural
+allocation	Resource_allocation
+ministry	Ministry_(government_department)
+poor	Poverty
+minister	Minister_(government)
+mussel	Mussel
+Negri Sembilan	Negeri_Sembilan
+studies	Research

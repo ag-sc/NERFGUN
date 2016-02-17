@@ -1,0 +1,8 @@
+Palestinian	Palestinian_people
+airport	Airport
+Civil Aviation	Civil_aviation
+Israeli	Israel
+Israeli-Palestinian peace agreement	Israeli-Palestinian_conflict
+Civil Aviation Authority	Civil_Aviation_Authority
+security	Airport_security
+bus	Bus

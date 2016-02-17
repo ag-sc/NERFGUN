@@ -1,0 +1,6 @@
+Norsk Hydro ASA	Norsk_Hydro
+power plant	Power_station
+emissions	Air_pollution
+state-owned company	Government-owned_corporation
+Norwegian Water Resources and Energy Directorate	Norwegian_Water_Resources_and_Energy_Directorate
+hydroelectric plants	Hydroelectricity

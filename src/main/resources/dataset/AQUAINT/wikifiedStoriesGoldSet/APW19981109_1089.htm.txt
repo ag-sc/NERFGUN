@@ -1,0 +1,7 @@
+West Indies	Caribbean
+South Africa	South_Africa
+South African cricket	South_Africa_national_cricket_team
+sponsorship	Sponsor
+wicketkeeper	Wicket-keeper
+David Richardson	David_John_Richardson
+sports marketing	Sports_marketing

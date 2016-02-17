@@ -1,0 +1,7 @@
+auction	Auction
+financial firms	Financial_institution
+baht	Thai_baht
+liquidate	Liquidation
+Thai economy	Economy_of_Thailand
+Christies	Christie's
+Queen Sirikit Natoinal Convention Center	Queen_Sirikit_National_Convention_Center

@@ -1,0 +1,9 @@
+Bear	Bear
+ANCHORAGE	Anchorage,_Alaska
+Alaska State Troopers	Alaska_State_Troopers
+Soldotna	Soldotna,_Alaska
+rifle	Rifle
+Audelio Luis Cortes	List_of_fatal_bear_attacks_in_North_America_by_decade
+seismic	Seismology
+oil field	Oil_field
+Kenai	Kenai,_Alaska

@@ -1,0 +1,8 @@
+German railway	Rail_transport_in_Germany
+planes	Fixed-wing_aircraft
+trains	Train
+main hub	Airline_hub
+landing slots	Landing_slots
+Wuerzburg	Würzburg
+United	United_Airlines
+SAS	Scandinavian_Airlines_System

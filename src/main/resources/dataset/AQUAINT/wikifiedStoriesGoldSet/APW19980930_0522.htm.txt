@@ -1,0 +1,10 @@
+trade fair	Trade_fair
+Iranian	Iran
+delegation	Delegation
+Mohammad Shariat-Madari	Mohammad_Kazem_Shariatmadari
+commercial	Commerce
+eight-year war	Iran-Iraq_War
+U.N.	United_Nations
+prisoners of war	Prisoner_of_war
+acts of sabotage	Sabotage
+1991 Gulf War	Gulf_War

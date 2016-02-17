@@ -1,0 +1,17 @@
+LOS ANGELES	Los_Angeles,_California
+The J. Paul Getty Museum	Getty_Center
+works of art	Work_of_art
+sculpture	Sculpture
+collection	Collection_(museum)
+antiquities	Antiquities
+B.C.	Anno_Domini
+excavated	Excavation
+archaeological site	Archaeological_site
+torso	Torso
+Mithras	Mithraic_Mysteries
+2nd century	2nd_century
+Roman	Ancient_Rome
+Greek	Ancient_Greece
+thefts	Art_theft
+looting	Looting
+Brentwood	Brentwood,_Los_Angeles,_California

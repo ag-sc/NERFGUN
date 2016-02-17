@@ -1,0 +1,8 @@
+libel	Defamation
+damages	Damages
+drug	Drug
+The Mail on Sunday	Daily_Mail
+Nice Airport	Côte_d'Azur_International_Airport
+French police	French_National_Police
+retraction	Retraction
+substance abuse	Substance_abuse

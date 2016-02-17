@@ -1,0 +1,10 @@
+illegal art traffic	Art_theft
+illegal traffic	Smuggling
+East European	Eastern_Europe
+France	France
+Hungarian	Hungarian_people
+forints	Hungarian_forint
+data base	Database
+network	Entrepreneurial_network
+art dealers	Art_dealer
+auctioneers	Auction

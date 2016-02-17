@@ -1,0 +1,6 @@
+stolen art	Looted_art
+Secretary of State	Secretary_of_State
+Holocaust	The_Holocaust
+Nazis	Nazism
+United States	United_States
+Wolfgang Schuessel	Wolfgang_Schüssel

@@ -1,0 +1,7 @@
+curator	Curator
+Impressionist	Impressionism
+heist	Robbery
+Monet	Claude_Monet
+Nice	Nice
+Riviera	French_Riviera
+Saint Laurent du Var	Saint-Laurent-du-Var

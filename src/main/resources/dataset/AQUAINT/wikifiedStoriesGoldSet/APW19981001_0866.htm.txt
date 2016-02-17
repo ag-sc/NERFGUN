@@ -1,0 +1,8 @@
+Hungarian	Hungary
+Hungarian Jewish	History_of_the_Jews_in_Hungary
+communist	Communism
+MTI	Magyar_Távirati_Iroda
+nationalization	Nationalization
+forints	Hungarian_forint
+social welfare	Social_welfare_provision
+Vatican	Holy_See

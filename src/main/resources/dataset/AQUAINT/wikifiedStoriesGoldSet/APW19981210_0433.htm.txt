@@ -1,0 +1,11 @@
+United States	United_States
+Britain	United_Kingdom
+Iraqi	Iraq
+Abdul-Halim Khaddam	Abdul_Halim_Khaddam
+Arab	Arab
+Islamic	Islam
+Damascus airport	Damascus_International_Airport
+London	London
+Palestinian	Palestinian_people
+Iranian Foreign Minister Kamal Kharrazi	Kamal_Kharazi
+Hafez Assad	Hafez_al-Assad

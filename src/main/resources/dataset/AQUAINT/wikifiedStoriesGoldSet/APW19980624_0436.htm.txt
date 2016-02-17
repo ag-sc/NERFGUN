@@ -1,0 +1,6 @@
+prisoners of war	Prisoner_of_war
+delegation	Delegation
+Iraqi News Agency	National_Iraqi_News_Agency
+Tehran	Tehran
+detainees	Detainee
+repatriation	Repatriation

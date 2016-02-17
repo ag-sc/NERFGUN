@@ -1,0 +1,11 @@
+Viravaidya	Mechai_Viravaidya
+SET	SET_Index
+corporate ethics	Business_ethics
+lifestyle	Lifestyle
+executives	Chief_executive_officer
+banks	Bank
+finance	Finance
+Bank of Thailand	Bank_of_Thailand
+justice system	Legal_systems_of_the_world
+newspapers	Newspaper
+TV stations	Television_channel

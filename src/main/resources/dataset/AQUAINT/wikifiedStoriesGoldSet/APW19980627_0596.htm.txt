@@ -1,0 +1,8 @@
+journalist	Journalist
+brain cancer	Brain_tumor
+Politics	Politics
+Indian newspapers	List_of_newspapers_in_India
+corporation	Corporation
+Calcutta University	University_of_Calcutta
+Oxford University's Merton College	Merton_College,_Oxford
+journalism	Journalism

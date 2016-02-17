@@ -1,0 +1,9 @@
+United States	United_States
+U.N.	United_Nations
+allies	Allies
+Iranian government	Politics_of_Iran
+Ayatollah Ruhollah Khomeini	Ruhollah_Khomeini
+embargo	Embargo
+sanctions	Sanction
+artillery	Artillery
+patriotic	Patriotism

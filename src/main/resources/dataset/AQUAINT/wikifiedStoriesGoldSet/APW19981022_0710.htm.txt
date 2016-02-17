@@ -1,0 +1,11 @@
+Swiss	Switzerland
+hydroelectric plants	Hydroelectricity
+environmental campaigners	Environmentalism
+four nuclear power plants	Nuclear_power_in_Switzerland
+power industry	Electrical_power_industry
+nuclear waste	Radioactive_waste
+power stations	Power_station
+cabinet	Cabinet
+infrastructure	Infrastructure
+liberalization	Liberalization
+tax breaks	Tax_exemption

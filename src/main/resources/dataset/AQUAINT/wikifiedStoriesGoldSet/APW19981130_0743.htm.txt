@@ -1,0 +1,9 @@
+water resources	Water_resources
+Prime Minister	Prime_minister
+Antonio Guterres	António_Guterres
+volume	Volume
+Jose Maria Aznar	José_María_Aznar
+Water supply	Water_supply
+hydroelectric	Hydroelectricity
+illegal immigration	Illegal_immigration
+drug trafficking	Illegal_drug_trade

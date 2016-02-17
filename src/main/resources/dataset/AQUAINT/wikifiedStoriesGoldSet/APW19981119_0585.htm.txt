@@ -1,0 +1,15 @@
+cattle	Cattle
+bear	Bear
+peasants	Peasant
+sheep	Domestic_sheep
+livestock	Livestock
+reserves	Game_reserve
+Transylvania	Transylvania
+kilograms	Kilogram
+hibernate	Hibernation
+omnivorous	Omnivore
+weaned	Breastfeeding
+Nicolae Ceausescu	Nicolae_Ceauşescu
+communist	Communism
+dictator	Dictator
+rangers	Park_ranger
