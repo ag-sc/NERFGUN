@@ -6,122 +6,125 @@
 
 package de.citec.sc.corpus;
 
-import corpus.LabeledInstance;
-import de.citec.sc.variables.State;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import corpus.LabeledInstance;
 
 /**
  *
  * @author sherzod
  */
-public class Document implements LabeledInstance<List<Annotation>>{
-    
-    private String documentContent;
-    
-    private List<Annotation> goldStandard;
-    private List<Annotation> annotations;
-    
-    private String documentName;
+public class Document implements LabeledInstance<List<Annotation>> {
 
-    public Document(String documentContent, String docName) {
-        this.documentContent = documentContent;
-        this.documentName = docName;
-    }
-    
+	private String documentContent;
 
+	private List<Annotation> goldStandard;
+	private List<Annotation> annotations;
 
-    public String getDocumentContent() {
-        return documentContent;
-    }
+	private String documentName;
 
-    public void setDocumentContent(String documentContent) {
-        this.documentContent = documentContent;
-    }
+	public Document(String documentContent, String docName) {
+		this.documentContent = documentContent;
+		this.documentName = docName;
+	}
 
-    public List<Annotation> getGoldStandard() {
-        return goldStandard;
-    }
+	public String getDocumentContent() {
+		return documentContent;
+	}
 
-    public void setGoldStandard(List<Annotation> goldStandard) {
-        this.goldStandard = goldStandard;
-    }
+	public void setDocumentContent(String documentContent) {
+		this.documentContent = documentContent;
+	}
 
-    public String getDocumentName() {
-        return documentName;
-    }
+	public List<Annotation> getGoldStandard() {
+		return goldStandard;
+	}
 
-    public void setDocumentName(String documentName) {
-        this.documentName = documentName;
-    }
+	public void setGoldStandard(List<Annotation> goldStandard) {
+		this.goldStandard = goldStandard;
+	}
 
-    public List<Annotation> getAnnotations() {
-        return annotations;
-    }
+	public String getDocumentName() {
+		return documentName;
+	}
 
-    public void setAnnotations(List<Annotation> annotations) {
-        this.annotations = annotations;
-    }
+	public void setDocumentName(String documentName) {
+		this.documentName = documentName;
+	}
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + Objects.hashCode(this.documentContent);
-        hash = 53 * hash + Objects.hashCode(this.goldStandard);
-        hash = 53 * hash + Objects.hashCode(this.documentName);
-        return hash;
-    }
+	public List<Annotation> getAnnotations() {
+		return annotations;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Document other = (Document) obj;
-        if (!Objects.equals(this.documentContent, other.documentContent)) {
-            return false;
-        }
-        if (!Objects.equals(this.goldStandard, other.goldStandard)) {
-            return false;
-        }
-        if (!Objects.equals(this.documentName, other.documentName)) {
-            return false;
-        }
-        return true;
-    }
+	public void setAnnotations(List<Annotation> annotations) {
+		this.annotations = annotations;
+	}
 
+	@Override
+	public int hashCode() {
+		int hash = 7;
+		hash = 53 * hash + Objects.hashCode(this.documentContent);
+		hash = 53 * hash + Objects.hashCode(this.goldStandard);
+		hash = 53 * hash + Objects.hashCode(this.documentName);
+		return hash;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Document other = (Document) obj;
+		if (!Objects.equals(this.documentContent, other.documentContent)) {
+			return false;
+		}
+		if (!Objects.equals(this.goldStandard, other.goldStandard)) {
+			return false;
+		}
+		if (!Objects.equals(this.documentName, other.documentName)) {
+			return false;
+		}
+		return true;
+	}
 
-    @Override
-    public String toString() {
-        String a = "Doc name: "+documentName+"\nContent: \n"+documentContent+"\n\nAnnotations:\n";
+	@Override
+	public String toString() {
+		String a = "Doc name: " + documentName + "\nContent:\n" + documentContent;
 
-        a+= "\n\nGoldSet:\n";
-        for(Annotation a1 : goldStandard){
-            a+=a1.toString()+"\n";
-        }
-        return a;
-    }
+		a += "\n\nAnnotations:\n";
+		for (Annotation a1 : annotations) {
+			a += a1.toString() + "\n";
+		}
 
+		a += "\n\nGoldSet:\n";
+		for (Annotation a1 : goldStandard) {
+			a += a1.toString() + "\n";
+		}
+		return a;
+	}
 
+	// @Override
+	// public String toString() {
+	// return "Document [documentContent=" + documentContent + ", goldStandard="
+	// + goldStandard + ", annotations="
+	// + annotations + ", documentName=" + documentName + "]";
+	// }
 
-    @Override
-    public List<Annotation> getGoldResult() {
-        return goldStandard;
-    }
+	@Override
+	public List<Annotation> getGoldResult() {
+		return goldStandard;
+	}
 
-    public void addAnnotation(Annotation a) {
-        if(this.annotations == null){
-            this.annotations = new ArrayList<>();
-        }
-        this.annotations.add(a);
-    }
+	public void addAnnotation(Annotation a) {
+		if (this.annotations == null) {
+			this.annotations = new ArrayList<>();
+		}
+		this.annotations.add(a);
+	}
 
-
-    
-    
 }
