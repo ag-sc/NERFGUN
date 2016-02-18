@@ -5,7 +5,6 @@
  */
 package de.citec.sc.createIndex;
 
-
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.CorpusLoader;
@@ -48,8 +47,8 @@ public class RetrievalPerformance {
     static long time;
     static String index;
     private static int topK;
-    
-    public static void main(String[] args) throws UnsupportedEncodingException{
+
+    public static void main(String[] args) throws UnsupportedEncodingException {
         run();
     }
 
@@ -61,13 +60,13 @@ public class RetrievalPerformance {
 //        topKs.add(2000);
 
         List<String> datasets = new ArrayList<>();
-        datasets.add("tweets");
+//        datasets.add("tweets");
         datasets.add("news");
 //        datasets.add("small");
 
         List<String> indexType = new ArrayList<>();
-        indexType.add("dbpedia");
-        indexType.add("anchors");
+//        indexType.add("dbpedia");
+//        indexType.add("anchors");
         indexType.add("all");
 
         List<String> dbindexPaths = new ArrayList<>();
@@ -78,9 +77,9 @@ public class RetrievalPerformance {
         List<Boolean> useMemory = new ArrayList<>();
         useMemory.add(Boolean.FALSE);
 //        useMemory.add(Boolean.TRUE);
-        
+
         CorpusLoader loader = new CorpusLoader(false);
-        
+
         String overallResult = "";
 
         for (Boolean m : useMemory) {
@@ -99,7 +98,6 @@ public class RetrievalPerformance {
 
                             System.out.println((end - start) + " ms loading the index ");
 
-                            
                             DefaultCorpus c = new DefaultCorpus();
 
                             //set the dataset
@@ -132,7 +130,7 @@ public class RetrievalPerformance {
                                     //retrieve resources from index
                                     Set<String> matches = getMatches(a.getWord());
 
-                                //if the link in annoation is redirect page
+                                    //if the link in annoation is redirect page
                                     //replace it with the original one
                                     //decoder the URI with UTF-8 encoding
                                     String link = a.getLink();
@@ -143,13 +141,22 @@ public class RetrievalPerformance {
 
                                     a.setLink(link);
 
-                                //if the retrieved list contains the link
+                                    //if the retrieved list contains the link
                                     //the index contains the annotation
-                                    if (matches.contains(link)) {
-                                        Annotation newOne = new Annotation(a.getWord(), a.getLink(), a.getStartIndex(), a.getEndIndex(), a.getID());
+                                    if (!matches.isEmpty()) {
+                                        if (link.equals(matches.toArray()[0])) {
+                                            Annotation newOne = new Annotation(a.getWord(), a.getLink(), a.getStartIndex(), a.getEndIndex(), a.getID());
 
-                                        d.addAnnotation(newOne.clone());
-                                    } else {
+                                            d.addAnnotation(newOne.clone());
+                                        }
+                                    }
+
+//                                    if (matches.contains(link)) {
+//                                        Annotation newOne = new Annotation(a.getWord(), a.getLink(), a.getStartIndex(), a.getEndIndex(), a.getID());
+//
+//                                        d.addAnnotation(newOne.clone());
+//                                    } 
+                                    else {
 
                                         if (notFound.containsKey(a.getWord())) {
                                             Set<String> list = notFound.get(a.getWord());
@@ -198,18 +205,17 @@ public class RetrievalPerformance {
 
                             String stamp = dateFormat.format(date).replace(" ", "_");
 
-                            writeListToFile("retrieval/notFound_memory_" + m + "_top_" + topK + "_" + dataset + "_index_" + index + "_property_"+dbpediaIndexPath+".txt", n);
-                            writeListToFile("retrieval/results_memory_" + m + "_top_" + topK + "_" + dataset + "_index_" + index + "_property_"+dbpediaIndexPath+".txt", s1);
-                            
-                            overallResult += "memory_" + m + "_top_" + topK + "_" + dataset + "_index_" + index + "_property_"+dbpediaIndexPath+""+"\n\n"+s1+"\n\n\n";
+                            writeListToFile("retrieval/notFound_memory_" + m + "_top_" + topK + "_" + dataset + "_index_" + index + "_property_" + dbpediaIndexPath + ".txt", n);
+                            writeListToFile("retrieval/results_memory_" + m + "_top_" + topK + "_" + dataset + "_index_" + index + "_property_" + dbpediaIndexPath + ".txt", s1);
+
+                            overallResult += "memory_" + m + "_top_" + topK + "_" + dataset + "_index_" + index + "_property_" + dbpediaIndexPath + "" + "\n\n" + s1 + "\n\n\n";
                         }
                     }
                 }
             }
         }
-        
-        
-        writeListToFile("overallResult.txt", overallResult);
+
+        writeListToFile("overallResultFirstElement.txt", overallResult);
     }
 
     public static void writeListToFile(String fileName, String content) {
