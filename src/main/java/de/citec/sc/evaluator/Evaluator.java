@@ -5,12 +5,13 @@
  */
 package de.citec.sc.evaluator;
 
-import de.citec.sc.corpus.Annotation;
-import de.citec.sc.corpus.Document;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.Document;
 
 /**
  *

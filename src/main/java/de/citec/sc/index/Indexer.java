@@ -6,10 +6,6 @@
 
 package de.citec.sc.index;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import org.apache.lucene.index.IndexWriter;
-
 /**
  *
  * @author sherzod

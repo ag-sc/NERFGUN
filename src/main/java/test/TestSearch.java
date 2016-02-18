@@ -12,7 +12,6 @@ import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.query.Search;
-import javax.xml.ws.Action;
 
 /**
  *

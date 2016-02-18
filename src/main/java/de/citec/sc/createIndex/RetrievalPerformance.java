@@ -6,21 +6,10 @@
 package de.citec.sc.createIndex;
 
 
-import de.citec.sc.corpus.Annotation;
-import de.citec.sc.corpus.DefaultCorpus;
-import de.citec.sc.corpus.CorpusLoader;
-import de.citec.sc.corpus.Document;
-import de.citec.sc.evaluator.Evaluator;
-import de.citec.sc.query.Search;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.DateFormat;
@@ -32,10 +21,14 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.CorpusLoader;
+import de.citec.sc.corpus.DefaultCorpus;
+import de.citec.sc.corpus.Document;
+import de.citec.sc.evaluator.Evaluator;
+import de.citec.sc.query.Search;
 
 /**
  *

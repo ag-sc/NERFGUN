@@ -6,11 +6,11 @@
 
 package de.citec.sc.corpus;
 
-import corpus.LabeledInstance;
-import de.citec.sc.variables.State;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import corpus.LabeledInstance;
 
 /**
  *

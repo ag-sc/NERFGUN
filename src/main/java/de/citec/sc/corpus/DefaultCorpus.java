@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import corpus.LabeledDocument;
 import corpus.Corpus;
 
 public class DefaultCorpus implements Corpus<Document> {
