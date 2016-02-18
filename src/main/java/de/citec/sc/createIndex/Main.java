@@ -16,6 +16,6 @@ public class Main {
     public static void main(String[] args) throws UnsupportedEncodingException{
 //        CreateIndexes.run();
         
-//        RetrievalPerformance.run();
+        RetrievalPerformance.run();
     }
 }
