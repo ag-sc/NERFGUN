@@ -5,8 +5,9 @@
  */
 package de.citec.sc.corpus;
 
-import de.citec.sc.variables.State;
 import java.util.Objects;
+
+import de.citec.sc.variables.State;
 import utility.VariableID;
 import variables.AbstractVariable;
 

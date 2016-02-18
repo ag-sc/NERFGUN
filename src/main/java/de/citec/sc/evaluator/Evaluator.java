@@ -13,6 +13,9 @@ import java.util.Map;
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.Document;
 
+import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.Document;
+
 /**
  *
  * @author sherzod

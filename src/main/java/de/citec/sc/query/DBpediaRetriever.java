@@ -5,12 +5,10 @@
  */
 package de.citec.sc.query;
 
-import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;

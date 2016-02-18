@@ -12,6 +12,8 @@ import java.util.Objects;
 
 import corpus.LabeledInstance;
 
+import corpus.LabeledInstance;
+
 /**
  *
  * @author sherzod

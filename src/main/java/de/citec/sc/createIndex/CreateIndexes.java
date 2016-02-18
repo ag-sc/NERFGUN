@@ -7,14 +7,6 @@ package de.citec.sc.createIndex;
 
 import de.citec.sc.index.AnchorTextLoader;
 import de.citec.sc.index.DBpediaLoader;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  *

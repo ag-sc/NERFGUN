@@ -1,19 +1,13 @@
 package de.citec.sc.index;
 
-import de.citec.sc.index.DBpediaLabelIndexer;
-import de.citec.sc.index.Indexer;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -26,8 +20,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.queryparser.classic.ParseException;
 import test.TestSearch;
 
 public class DBpediaLoader implements Loader {
