@@ -79,10 +79,10 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 			try {
 				Map<String, Double> candidateVector = lineToVector(FileDB.query("<" + entity.getLink() + ">"));
 
-				final String document = state.getDocument().getContent();
+				final String document = state.getDocument().getDocumentContent();
 
 				Map<String, Double> currentDocumentVector = convertDocumentToVector(document,
-						state.getDocument().getName());
+						state.getDocument().getDocumentContent());
 
 				Vector featureVector = new Vector();
 
