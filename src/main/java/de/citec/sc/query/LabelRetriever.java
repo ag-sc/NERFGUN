@@ -26,20 +26,6 @@ import org.apache.lucene.store.RAMDirectory;
 
 public abstract class LabelRetriever {
 
-    protected final Comparator<Instance> pageRankComparator = new Comparator<Instance>() {
-
-        @Override
-        public int compare(Instance s1, Instance s2) {
-
-            if (s1.getPageRank() > s2.getPageRank()) {
-                return -1;
-            } else if (s1.getPageRank() < s2.getPageRank()) {
-                return 1;
-            }
-            return 0;
-        }
-    };
-
     protected final Comparator<Instance> frequencyComparator = new Comparator<Instance>() {
 
         @Override
@@ -94,6 +80,7 @@ public abstract class LabelRetriever {
                 int docId = hits[i].doc;
                 Document d = searcher.doc(docId);
                 float score = hits[i].score;
+                System.out.println(d + "\n"+score);
 
                 String p = d.get(returnField);
                 double freq = 0;

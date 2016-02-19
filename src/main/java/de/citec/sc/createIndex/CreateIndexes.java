@@ -7,6 +7,7 @@ package de.citec.sc.createIndex;
 
 import de.citec.sc.index.AnchorTextLoader;
 import de.citec.sc.index.DBpediaLoader;
+import de.citec.sc.index.SurfaceFormsDBpedia;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -34,16 +35,17 @@ public class CreateIndexes {
 //        System.out.println("dbpediaIndexOnlyLabels ...");
 //        dbpediaLoader.load(true, "dbpediaIndexOnlyLabels", "dbpediaFiles/");
 //
-//        dbpediaLoader = new DBpediaLoader("propList2.txt");
-//        System.out.println("dbpediaIndexOnlyOntology ...");
-//        dbpediaLoader.load(true, "dbpediaIndexOnlyOntology", "dbpediaFiles/");
-//
         dbpediaLoader = new DBpediaLoader("propList3.txt");
-        System.out.println("dbpediaIndexAll ...");
-        dbpediaLoader.load(true, "dbpediaIndexAll", "dbpediaFiles/");
+        System.out.println("dbpediaIndex ...");
+        dbpediaLoader.load(true, "dbpediaIndex", "testFiles/");
+//
+        
+//        SurfaceFormsDBpedia dbpediaLoader = new SurfaceFormsDBpedia("propList3.txt");
+//        System.out.println("dbpediaIndexAll ...");
+//        dbpediaLoader.load("dbpediaFiles/");
 
-        AnchorTextLoader anchorLoader = new AnchorTextLoader();
-        anchorLoader.load(true, "anchorIndex", "anchorFiles/");
+//        AnchorTextLoader anchorLoader = new AnchorTextLoader();
+//        anchorLoader.load(true, "anchorIndex", "anchorFiles/");
 
         System.out.println("DONE.");
     }

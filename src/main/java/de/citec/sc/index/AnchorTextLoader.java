@@ -15,10 +15,13 @@ import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -28,7 +31,7 @@ public class AnchorTextLoader implements Loader {
     //docDirectory => dbpedia *.nt files
     //luceneIndex => lucene creates indexes 
    
-    HashMap<String, String> redirects;
+    private Set<String> redirects = new LinkedHashSet<String>();
 
     @Override
     public void load(boolean deleteIndexFiles, String indexDirectory, String anchorFilesDirectory) {
@@ -52,8 +55,11 @@ public class AnchorTextLoader implements Loader {
             }
 
             //processor = new DBpediaRedirectQueryProcessor(true);
+            long start = System.currentTimeMillis();
             System.out.println("Adding 'dbpediaFiles/redirects_en.nt' to memory for indexing");
             redirects = getRedirects(new File("dbpediaFiles/redirects_en.nt"));
+            long end = System.currentTimeMillis() - start;
+            System.out.println("DONE " + (end) + " ms.");
 
             //load files
             File folder = new File(anchorFilesDirectory);
@@ -89,61 +95,7 @@ public class AnchorTextLoader implements Loader {
 
     }
 
-    public static HashMap<String, String> getRedirects(File file) {
-        HashMap<String, String> content = new HashMap<>();
-
-        try {
-            FileInputStream fstream = new FileInputStream(file);
-            DataInputStream in = new DataInputStream(fstream);
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            String line;
-
-            while ((line = br.readLine()) != null) {
-
-                if (!line.startsWith("#")) {
-                    //System.out.println(line);
-                    String[] a = line.split(" ");
-
-                    String s = a[0];
-
-                    String p = a[1];
-
-                    String o = a[2];
-
-                    s = s.replace("<", "");
-                    s = s.replace(">", "");
-                    p = p.replace("<", "");
-                    p = p.replace(">", "");
-                    o = o.replace("<", "");
-                    o = o.replace(">", "");
-
-                    Properties p1 = new Properties();
-                    try {
-                        p1.load(new StringReader("key=" + s));
-                    } catch (IOException ex) {
-
-                    }
-                    s = p1.getProperty("key");
-
-                    p1 = new Properties();
-                    try {
-                        p1.load(new StringReader("key=" + o));
-                    } catch (IOException ex) {
-
-                    }
-                    o = p1.getProperty("key");
-
-                    content.put(s, o);
-
-                }
-            }
-            in.close();
-        } catch (Exception e) {
-            System.err.println("Error reading the file: " + file.getPath() + "\n" + e.getMessage());
-        }
-
-        return content;
-    }
+ 
 
     private static void deleteFolder(File folder) {
         File[] files = folder.listFiles();
@@ -194,7 +146,8 @@ public class AnchorTextLoader implements Loader {
                             uri = p1.getProperty("key");
                             uri = URLDecoder.decode(uri, "UTF-8");
                             
-                            if(!redirects.containsKey(uri)){
+                            if(!redirects.contains(uri)){
+                                uri = uri.replace("http://dbpedia.org/resource/", "");
                                 anchorIndexer.addEntity(label, uri, freq);
                             }
 
@@ -227,6 +180,58 @@ public class AnchorTextLoader implements Loader {
             //System.err.println(e.printStackTrace());
 
         }
+    }
+    
+    public Set<String> getRedirects(File file) {
+        //HashMap<String, Set<String>> content = new HashMap<>();
+
+        Set<String> content = new LinkedHashSet<>();
+
+        try {
+            FileInputStream fstream = new FileInputStream(file);
+            DataInputStream in = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String line;
+            String patternString = "^(?!(#))<http://dbpedia.org/resource/(.*?)>.*<http://dbpedia.org/resource/(.*?)>";
+            Pattern pattern = Pattern.compile(patternString);
+            while ((line = br.readLine()) != null) {
+
+                Matcher m = pattern.matcher(line);
+                while (m.find()) {
+                    String s = m.group(2);
+
+                    //String o = m.group(3);
+                    content.add(s);
+                }
+
+//                if (!line.startsWith("#")) {
+//
+//                    //System.out.println(line);
+//                    String[] a = line.split(" ");
+//
+//                    String s = a[0];
+//
+//                    String p = a[1];
+//
+//                    String o = a[2];
+//
+//                    s = s.replace("<", "");
+//                    s = s.replace(">", "");
+//                    p = p.replace("<", "");
+//                    p = p.replace(">", "");
+//                    o = o.replace("<", "");
+//                    o = o.replace(">", "");
+//
+//                    content.add(s);
+//
+//                }
+            }
+            in.close();
+        } catch (Exception e) {
+            System.err.println("Error reading the file: " + file.getPath() + "\n" + e.getMessage());
+        }
+
+        return content;
     }
 
 }

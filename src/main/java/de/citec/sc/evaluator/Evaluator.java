@@ -145,7 +145,7 @@ public class Evaluator {
     private double getRecall(int TP, int FN) {
         double r = TP / (double) (FN + TP);
         if (TP == 0 && FN == 0) {
-            r = 1;
+            r = 0;
         }
         return r;
     }
@@ -153,7 +153,7 @@ public class Evaluator {
     private double getPrecision(int TP, int FP) {
         double p = TP / (double) (TP + FP);
         if (TP == 0 && FP == 0) {
-            p = 1;
+            p = 0;
         }
         return p;
     }

@@ -70,7 +70,7 @@ public class DBpediaRetriever extends LabelRetriever {
      */
     public Set<String> getResources(String searchTerm, int k, boolean mergePartialMatches) {
 
-        super.comparator = super.pageRankComparator;
+        super.comparator = super.frequencyComparator;
 
         Set<Instance> resultDirectMatch = getDirectMatches(searchTerm, "label", "URI", k, instanceIndexDirectory);
         

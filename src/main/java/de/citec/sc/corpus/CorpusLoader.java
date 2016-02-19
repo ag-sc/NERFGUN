@@ -133,7 +133,7 @@ public class CorpusLoader {
 
                         int startIndex = s.length();
                         int endIndex = s.length() + content[2].length();
-                        Annotation a1 = new Annotation(content[2], content[4],startIndex, endIndex, new VariableID("A"+goldSet.size()));
+                        Annotation a1 = new Annotation(content[2], content[4].replace("http://en.wikipedia.org/wiki/", ""),startIndex, endIndex, new VariableID("A"+goldSet.size()));
                         goldSet.add(a1);
                         s += content[0] + " ";
                     } else {
