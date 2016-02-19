@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public class CandidateRetrieverOnLucene implements CandidateRetriever {
 
-    private DBpediaRetriever dbpediaRetriever;
+    private AnchorRetriever dbpediaRetriever;
     private AnchorRetriever anchorRetriever;
 
     private boolean loadToMemory;
@@ -24,14 +24,14 @@ public class CandidateRetrieverOnLucene implements CandidateRetriever {
     public CandidateRetrieverOnLucene(boolean loadToMemory, String dbpediaIndexPath, String anchorIndexPath) {
         this.loadToMemory = loadToMemory;
 
-        this.dbpediaRetriever = new DBpediaRetriever(dbpediaIndexPath, loadToMemory);
+        this.dbpediaRetriever = new AnchorRetriever(dbpediaIndexPath, loadToMemory);
         this.anchorRetriever = new AnchorRetriever(anchorIndexPath, loadToMemory);
 
     }
 
     @Override
     public List<Instance> getResourcesFromDBpedia(String searchTerm, int topK) {
-        return dbpediaRetriever.getResources(searchTerm, topK, false);
+        return dbpediaRetriever.getResources(searchTerm, topK);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class CandidateRetrieverOnLucene implements CandidateRetriever {
         List<Instance> result = new ArrayList<>();
 
         List<Instance> anchor = anchorRetriever.getResources(searchTerm, topK);
-        List<Instance> dbpedia = dbpediaRetriever.getResources(searchTerm, topK, false);
+        List<Instance> dbpedia = dbpediaRetriever.getResources(searchTerm, topK);
 
         if (anchor.size() < dbpedia.size()) {
             int a = Math.min(topK / 2, anchor.size());
