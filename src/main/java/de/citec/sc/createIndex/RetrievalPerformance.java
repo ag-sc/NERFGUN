@@ -5,16 +5,6 @@
  */
 package de.citec.sc.createIndex;
 
-//github.com/ag-sc/NED.git
-import de.citec.sc.corpus.Annotation;
-import de.citec.sc.corpus.CorpusLoader;
-import de.citec.sc.corpus.DefaultCorpus;
-import de.citec.sc.corpus.Document;
-import de.citec.sc.evaluator.Evaluator;
-import de.citec.sc.query.CandidateRetriever;
-import de.citec.sc.query.CandidateRetrieverOnLucene;
-import de.citec.sc.query.CandidateRetrieverOnMemory;
-import de.citec.sc.query.Instance;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
