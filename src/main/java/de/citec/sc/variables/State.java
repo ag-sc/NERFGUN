@@ -61,7 +61,7 @@ public class State extends AbstractState implements Serializable {
 		this.document = state.document;
 		this.factorGraph = new FactorGraph(state.factorGraph);
 		for (Annotation e : state.entities.values()) {
-			this.entities.put(generateEntityID(), e.clone());
+			this.entities.put(e.getID(), e.clone());
 		}
 
 		this.modelScore = state.modelScore;
@@ -79,7 +79,7 @@ public class State extends AbstractState implements Serializable {
 
 	public void addEntity(Annotation entity) {
 		log.debug("State %s: ADD new annotation: %s", this.getID(), entity);
-		entities.put(generateEntityID(), entity);
+		entities.put(entity.getID(), entity);
 
 		// changedEntities.put(entity.getID(), StateChange.ADD_ANNOTATION);
 	}
@@ -125,7 +125,7 @@ public class State extends AbstractState implements Serializable {
 		return entities.get(id);
 	}
 
-	protected VariableID generateEntityID() {
+	public VariableID generateEntityID() {
 		int currentID = entityIDIndex.getAndIncrement();
 		String id = GENERATED_ENTITY_ID_PREFIX + currentID;
 		return new VariableID(id);

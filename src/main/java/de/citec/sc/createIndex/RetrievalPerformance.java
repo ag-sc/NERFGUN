@@ -72,7 +72,7 @@ public class RetrievalPerformance {
 		useMemory.add(Boolean.FALSE);
 		// useMemory.add(Boolean.TRUE);
 
-		CorpusLoader loader = new CorpusLoader(false);
+		CorpusLoader loader = new CorpusLoader();
 
 		String overallResult = "";
 

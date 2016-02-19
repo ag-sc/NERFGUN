@@ -6,8 +6,11 @@
 package de.citec.sc.query;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.Directory;
@@ -21,70 +24,73 @@ import org.apache.lucene.store.RAMDirectory;
  */
 public class DBpediaRetriever extends LabelRetriever {
 
-    
-    private String instancesTokenizedIndexPath = "resourceTokenizedIndex";
-    private String instancesIndexPath = "resourceIndex";
-    private String directory;
-    private StandardAnalyzer analyzer;
+	private String instancesTokenizedIndexPath = "resourceTokenizedIndex";
+	private String instancesIndexPath = "resourceIndex";
+	private String directory;
+	private StandardAnalyzer analyzer;
 
-    private Directory instanceTokenizedIndexDirectory;
-    private Directory instanceIndexDirectory;
+	private Directory instanceTokenizedIndexDirectory;
+	private Directory instanceIndexDirectory;
 
-    public DBpediaRetriever(String directory, boolean loadIntoMemory) {
-        this.directory = directory;
-        initIndexDirectory(loadIntoMemory);
+	public DBpediaRetriever(String directory, boolean loadIntoMemory) {
+		this.directory = directory;
+		initIndexDirectory(loadIntoMemory);
 
-    }
+	}
 
-    private void initIndexDirectory(boolean loadToMemory) {
-        try {
-            String instancesTokenizedPath = directory + "/" + this.instancesTokenizedIndexPath + "/";
-            String instancePath = directory + "/" + this.instancesIndexPath + "/";
+	private void initIndexDirectory(boolean loadToMemory) {
+		try {
+			String instancesTokenizedPath = directory + "/" + this.instancesTokenizedIndexPath + "/";
+			String instancePath = directory + "/" + this.instancesIndexPath + "/";
 
-            analyzer = new StandardAnalyzer();
-            if (loadToMemory) {
-                instanceTokenizedIndexDirectory = new RAMDirectory(FSDirectory.open(Paths.get(instancesTokenizedPath)), IOContext.DEFAULT);
-                instanceIndexDirectory = new RAMDirectory(FSDirectory.open(Paths.get(instancePath)), IOContext.DEFAULT);
-            } else {
-                instanceTokenizedIndexDirectory = FSDirectory.open(Paths.get(instancesTokenizedPath));
-                instanceIndexDirectory = FSDirectory.open(Paths.get(instancePath));
-            }
+			analyzer = new StandardAnalyzer();
+			if (loadToMemory) {
+				instanceTokenizedIndexDirectory = new RAMDirectory(FSDirectory.open(Paths.get(instancesTokenizedPath)),
+						IOContext.DEFAULT);
+				instanceIndexDirectory = new RAMDirectory(FSDirectory.open(Paths.get(instancePath)), IOContext.DEFAULT);
+			} else {
+				instanceTokenizedIndexDirectory = FSDirectory.open(Paths.get(instancesTokenizedPath));
+				instanceIndexDirectory = FSDirectory.open(Paths.get(instancePath));
+			}
 
-        } catch (Exception e) {
-            System.err.println("Problem with initializing InstanceQueryProcessor\n" + e.getMessage());
-        }
-    }
+		} catch (Exception e) {
+			System.err.println("Problem with initializing InstanceQueryProcessor\n" + e.getMessage());
+		}
+	}
 
-    /**
-     * return resources with namespace http://dbpedia.org/resource/
-     * if mergePartialMatches is set to true then results would be direct matches + partial matches
-     * else only direct matches from index
-     * 
-     * @param searchTerm
-     * @param k
-     * @param mergePartialMatches
-     * 
-     * 
-     */
-    public Set<String> getResources(String searchTerm, int k, boolean mergePartialMatches) {
+	/**
+	 * return resources with namespace http://dbpedia.org/resource/ if
+	 * mergePartialMatches is set to true then results would be direct matches +
+	 * partial matches else only direct matches from index
+	 * 
+	 * @param searchTerm
+	 * @param k
+	 * @param mergePartialMatches
+	 * 
+	 * 
+	 */
+	public List<String> getResources(String searchTerm, int k, boolean mergePartialMatches) {
 
-        super.comparator = super.pageRankComparator;
+		super.comparator = super.frequencyComparator;
 
-        Set<Instance> resultDirectMatch = getDirectMatches(searchTerm, "label", "URI", k, instanceIndexDirectory);
-        
+		List<Instance> allMatches = new ArrayList<>();
 
-        if (mergePartialMatches) {
-            Set<Instance> resultPartialMatch = getPartialMatches(searchTerm, "labelTokenized", "URI", k, instanceTokenizedIndexDirectory, analyzer);
-            //add partial matches to direct
-            resultDirectMatch.addAll(resultPartialMatch);
-        }
+		List<Instance> resultDirectMatch = getDirectMatches(searchTerm, "label", "URI", k, instanceIndexDirectory);
+		allMatches.addAll(resultDirectMatch);
+		if (mergePartialMatches) {
+			List<Instance> resultPartialMatch = getPartialMatches(searchTerm, "labelTokenized", "URI", k,
+					instanceTokenizedIndexDirectory, analyzer);
+			// add partial matches to direct matches
+			allMatches.addAll(resultPartialMatch);
+		}
 
-        Set<String> resources = new LinkedHashSet<>();
-        resultDirectMatch.forEach(i1 -> resources.add(i1.getUri()));
+		List<Instance> sortedResults = new ArrayList<>(allMatches);
+		sortedResults.sort(comparator);
+		List<String> resources = sortedResults.stream().map(instance -> instance.getUri()).collect(Collectors.toList());
 
-        //resources = sortBySimilarity(resources, searchTerm, k);
-        return resources;
+		// resources = sortBySimilarity(resources, searchTerm, k);
+		return resources;
 
-    }
+	}
 
 }
