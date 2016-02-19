@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -53,6 +54,7 @@ public class BIREMain {
 		String indexFile = "tfidf.bin";
 		String dfFile = "en_wiki_large_abstracts.docfrequency";
 		String tfidfFile = "en_wiki_large_abstracts.tfidf";
+		int topK = 10;
 		/*
 		 * Load the index API.
 		 */
@@ -82,7 +84,7 @@ public class BIREMain {
 		 */
 		Map<String, Double> avrgTrain = new LinkedHashMap<>();
 		Map<String, Double> avrgTest = new LinkedHashMap<>();
-		Collections.shuffle(documents);
+		Collections.shuffle(documents, new Random(0));
 		int N = documents.size();
 		int n = 2;
 		double step = ((float) N) / n;
@@ -146,7 +148,7 @@ public class BIREMain {
 			 * a successor state and, thus, perform the sampling procedure.
 			 */
 			List<Explorer<State>> explorers = new ArrayList<>();
-			explorers.add(new DisambiguationExplorer(index));
+			explorers.add(new DisambiguationExplorer(index, topK));
 			/*
 			 * Create a sampler that generates sampling chains with which it
 			 * will trigger weight updates during training.

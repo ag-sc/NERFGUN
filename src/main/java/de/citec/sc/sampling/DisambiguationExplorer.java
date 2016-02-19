@@ -3,6 +3,9 @@ package de.citec.sc.sampling;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.query.Search;
 import de.citec.sc.variables.State;
@@ -14,6 +17,7 @@ import sampling.Explorer;
  */
 public class DisambiguationExplorer implements Explorer<State> {
 
+	private static Logger log = LogManager.getFormatterLogger();
 	private int maxNumberOfCandidateURIs;
 	private Search index;
 
@@ -29,12 +33,15 @@ public class DisambiguationExplorer implements Explorer<State> {
 
 	@Override
 	public List<State> getNextStates(State currentState) {
+		log.debug("Generate successor states for state:\n%s", currentState);
 		List<State> generatedStates = new ArrayList<>();
 		for (Annotation a : currentState.getEntities()) {
+			log.debug("Generate successor states for annotation:\n%s", a);
 			String annotationText = a.getWord();
 			// String annotationText =
 			// currentState.getDocument().getDocumentContent().substring(a.getStartIndex(),a.getEndIndex());
 			List<String> candidateURIs = index.getAllResources(annotationText, maxNumberOfCandidateURIs);
+			log.debug("%s candidates retreived.", candidateURIs.size());
 			for (int i = 0; i < candidateURIs.size(); i++) {
 				String candidateURI = candidateURIs.get(i);// .replace("http://dbpedia.org/resource/",
 															// "");
@@ -45,6 +52,7 @@ public class DisambiguationExplorer implements Explorer<State> {
 				generatedStates.add(generatedState);
 			}
 		}
+		log.debug("Total number of %s states generated.", generatedStates.size());
 		return generatedStates;
 	}
 

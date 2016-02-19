@@ -42,9 +42,9 @@ public class TestSearch {
 		Search indexSearch = new Search(false, "dbpediaIndexAll");
 
 		List<String> terms = new ArrayList<>();
-		terms.add("U.S.");
-		terms.add("Gothic");
-		terms.add("Metal");
+//		terms.add("U.S.");
+		terms.add("Tartous");
+//		terms.add("Metal");
 
 		for (String term : terms) {
 			List<String> anchor = indexSearch.getResourcesFromAnchors(term, 100);

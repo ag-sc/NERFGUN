@@ -22,8 +22,8 @@ public class Document implements LabeledInstance<List<Annotation>> {
 
 	private String documentContent;
 
-	private List<Annotation> goldStandard;
-	private List<Annotation> annotations;
+	private List<Annotation> goldStandard = new ArrayList<>();
+	private List<Annotation> annotations = new ArrayList<>();
 
 	private String documentName;
 

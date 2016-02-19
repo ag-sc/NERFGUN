@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.exceptions.EmptyIndexException;
 import de.citec.sc.helper.StanfordLemmatizer;
@@ -37,11 +40,12 @@ import utility.VariableID;
  */
 public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State> {
 
+	private static Logger log = LogManager.getFormatterLogger();
 	private final StanfordLemmatizer lemmatizer;
 
 	private Map<String, Double> currentDocumentVector = null;
 
-	private String currentDocumentName;
+	private String currentDocumentName = null;
 
 	private String dfFile;
 	/**
@@ -67,47 +71,56 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 		for (VariableID entityID : state.getEntityIDs()) {
 			factors.add(new SingleVariableFactor(this, entityID));
 		}
+		log.info("Generate %s factors for state %s.", factors.size(), state.getID());
 		return factors;
 	}
 
 	@Override
 	protected void computeFactor(State state, AbstractFactor absFactor) {
 		if (absFactor instanceof SingleVariableFactor) {
-
 			SingleVariableFactor factor = (SingleVariableFactor) absFactor;
 			Annotation entity = state.getEntity(factor.entityID);
+			log.info("Compute DocumentSimilarity factor for state %s and variable %s", state.getID(), entity);
+			Vector featureVector = new Vector();
 
 			try {
-				Map<String, Double> candidateVector = lineToVector(FileDB.query("<" + entity.getLink() + ">"));
+				log.debug("Retrieve text for query link %s...", entity.getLink());
+				String queryResult = FileDB.query("<" + entity.getLink() + ">");
+				double cosineSimilarity = 0;
+				if (queryResult != null) {
+					log.debug("Convert retrieved abstract to vector...");
+					Map<String, Double> candidateVector = lineToVector(queryResult);
 
-				final String document = state.getDocument().getDocumentContent();
+					final String document = state.getDocument().getDocumentContent();
 
-				Map<String, Double> currentDocumentVector = convertDocumentToVector(document,
-						state.getDocument().getDocumentContent());
+					log.debug("Convert document to vector...");
+					Map<String, Double> currentDocumentVector = convertDocumentToVector(document,
+							state.getDocument().getDocumentContent());
 
-				Vector featureVector = new Vector();
+					log.debug("Compute cosine similarity...");
+					cosineSimilarity = SimilarityMeasures.cosineDistance(candidateVector, currentDocumentVector);
+					log.debug("Cosine similarity: %s", cosineSimilarity);
 
-				Double cosineSimilarity = SimilarityMeasures.cosineDistance(candidateVector, currentDocumentVector);
-
+				} else {
+					cosineSimilarity = 0;
+				}
 				featureVector.set("Document_Cosine_Similarity", cosineSimilarity);
-
-				factor.setFeatures(featureVector);
-
 			} catch (IOException | EmptyIndexException e) {
 				System.exit(1);
 				e.printStackTrace();
 			}
+			factor.setFeatures(featureVector);
 		}
 	}
 
 	private Map<String, Double> convertDocumentToVector(final String document, final String documentName)
 			throws IOException {
 
-		if (currentDocumentVector != null && currentDocumentName.equals(documentName))
+		if (currentDocumentName != null && currentDocumentName.equals(documentName))
 			return currentDocumentVector;
 
 		final List<String> preprocessedDocument = preprocessDocument(document);
-
+		currentDocumentName = documentName;
 		currentDocumentVector = TFIDF.getTFWikiIDF(preprocessedDocument, IDFProvider.getIDF(this.dfFile),
 				NUMBER_OF_WIKI_DOCUMENTS);
 
