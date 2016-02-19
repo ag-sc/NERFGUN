@@ -54,7 +54,7 @@ public abstract class LabelRetriever {
      * @param k
      */
     protected List<Instance> getDirectMatches(String searchTerm, String searchField, String returnField, int k, Directory indexDirectory) {
-        List<Instance> result = new ArrayList<>();
+        List<Instance> instances = new ArrayList<>();
 
         try {
 
@@ -80,7 +80,7 @@ public abstract class LabelRetriever {
                 int docId = hits[i].doc;
                 Document d = searcher.doc(docId);
                 //float score = hits[i].score;
-
+                
                 String p = d.get(returnField);
                 int freq = 0;
                 if (d.get("freq") != null) {
@@ -104,7 +104,7 @@ public abstract class LabelRetriever {
                 sum += i;
             }
 
-            List<Instance> instances = new ArrayList<>();
+            
             for (String r1 : resultMap.keySet()) {
                 double score = (double) resultMap.get(r1) / (double) sum;
                 Instance i = new Instance(r1, score);
@@ -117,17 +117,14 @@ public abstract class LabelRetriever {
             e.printStackTrace();
         }
 
-        List<Instance> sorted = new ArrayList<>(result);
-        Collections.sort(sorted, comparator);
+        
+        Collections.sort(instances, comparator);
 
-        if (sorted.size() > k) {
-            sorted = sorted.subList(0, k);
+        if (instances.size() > k) {
+            instances = instances.subList(0, k);
         }
 
-        result.clear();
-        result.addAll(sorted);
-
-        return result;
+        return instances;
     }
 
     /**
@@ -143,7 +140,7 @@ public abstract class LabelRetriever {
      * @param k
      */
     protected List<Instance> getPartialMatches(String searchTerm, String searchField, String returnField, int k, Directory indexDirectory, StandardAnalyzer analyzer) {
-        List<Instance> result = new ArrayList<>();
+        List<Instance> instances = new ArrayList<>();
 
         try {
 
@@ -191,7 +188,7 @@ public abstract class LabelRetriever {
                 sum += i;
             }
 
-            List<Instance> instances = new ArrayList<>();
+            
             for (String r1 : resultMap.keySet()) {
                 double score = (double) resultMap.get(r1) / (double) sum;
                 Instance i = new Instance(r1, score);
@@ -204,17 +201,13 @@ public abstract class LabelRetriever {
             //e.printStackTrace();
         }
 
-        List<Instance> sorted = new ArrayList<>(result);
-        Collections.sort(sorted, comparator);
+        Collections.sort(instances, comparator);
 
-        if (sorted.size() > k) {
-            sorted = sorted.subList(0, k);
+        if (instances.size() > k) {
+            instances = instances.subList(0, k);
         }
 
-        result.clear();
-        result.addAll(sorted);
-
-        return result;
+        return instances;
     }
 
     private int levenshteinDistance(String s, String t) {

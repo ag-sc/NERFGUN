@@ -45,7 +45,7 @@ public class TestSearch {
         CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
 
         List<String> terms = new ArrayList<>();
-        terms.add("U.S.");
+        terms.add("Lincoln");
         terms.add("Gothic");
         terms.add("Metal");
 

@@ -80,7 +80,7 @@ public class DBpediaLoader implements Loader {
             //processor = new DBpediaRedirectQueryProcessor(true);
             long start = System.currentTimeMillis();
             System.out.println("Adding 'dbpediaFiles/redirects_en.nt' to memory for indexing");
-            redirects = getRedirects(new File("dbpediaFiles/redirects_en.nt"));
+            //redirects = getRedirects(new File("dbpediaFiles/redirects_en.nt"));
             long end = System.currentTimeMillis() - start;
             System.out.println("DONE " + (end) + " ms.");
 

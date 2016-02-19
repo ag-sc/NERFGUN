@@ -36,13 +36,10 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
     public CandidateRetrieverOnMemory() {
         System.out.println("Loading dbpedia surface forms ...");
         dbpediSurfaceForms = new ConcurrentHashMap<>();
-        loadFiles("dbpediaSurfaceForms.txt", dbpediSurfaceForms);
+        loadFiles("dbpediaFiles/dbpediaSurfaceForms.ttl", dbpediSurfaceForms);
         System.out.println("Loading anchor surface forms ...");
         anchorSurfaceForms = new ConcurrentHashMap<>();
         loadFiles("anchorFiles/wikipedia_anchors.ttl", anchorSurfaceForms);
-
-        int z = 1;
-
     }
 
     @Override

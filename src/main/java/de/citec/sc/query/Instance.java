@@ -74,4 +74,11 @@ public class Instance implements Comparable<Instance> {
         return 0;
     }
 
+    @Override
+    public String toString() {
+        return uri + " " + score;
+    }
+    
+    
+
 }

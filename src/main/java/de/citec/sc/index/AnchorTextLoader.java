@@ -27,7 +27,6 @@ public class AnchorTextLoader implements Loader {
 
     //docDirectory => dbpedia *.nt files
     //luceneIndex => lucene creates indexes 
-   
     private Set<String> redirects = new LinkedHashSet<String>();
 
     @Override
@@ -54,7 +53,9 @@ public class AnchorTextLoader implements Loader {
             //processor = new DBpediaRedirectQueryProcessor(true);
             long start = System.currentTimeMillis();
             System.out.println("Adding 'dbpediaFiles/redirects_en.nt' to memory for indexing");
-            redirects = getRedirects(new File("dbpediaFiles/redirects_en.nt"));
+            if (redirects.isEmpty()) {
+                redirects = getRedirects(new File("dbpediaFiles/redirects_en.nt"));
+            }
             long end = System.currentTimeMillis() - start;
             System.out.println("DONE " + (end) + " ms.");
 
@@ -91,8 +92,6 @@ public class AnchorTextLoader implements Loader {
         }
 
     }
-
- 
 
     private static void deleteFolder(File folder) {
         File[] files = folder.listFiles();
@@ -142,8 +141,8 @@ public class AnchorTextLoader implements Loader {
                             }
                             uri = p1.getProperty("key");
                             uri = URLDecoder.decode(uri, "UTF-8");
-                            
-                            if(!redirects.contains(uri)){
+
+                            if (!redirects.contains(uri)) {
                                 uri = uri.replace("http://dbpedia.org/resource/", "");
                                 anchorIndexer.addEntity(label, uri, freq);
                             }
@@ -155,7 +154,6 @@ public class AnchorTextLoader implements Loader {
 //                            else{
 //                                int z=2;
 //                            }
-
                         } catch (Exception ex) {
                             //System.err.println(line);
                         }
@@ -178,7 +176,7 @@ public class AnchorTextLoader implements Loader {
 
         }
     }
-    
+
     public Set<String> getRedirects(File file) {
         //HashMap<String, Set<String>> content = new HashMap<>();
 

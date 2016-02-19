@@ -30,10 +30,10 @@ public class CreateIndexes {
     public static void run() {
         System.out.println("Creating index files ...");
 
-        DBpediaLoader dbpediaLoader = new DBpediaLoader("propList3.txt");
-
-        System.out.println("dbpediaIndex ...");
-        dbpediaLoader.load(true, "dbpediaIndex", "dbpediaFiles/");
+//        DBpediaLoader dbpediaLoader = new DBpediaLoader("propList3.txt");
+//
+//        System.out.println("dbpediaIndex ...");
+//        dbpediaLoader.load(true, "dbpediaIndex", "testFiles/");
 //
         
 //        SurfaceFormsDBpedia dbpediaLoader = new SurfaceFormsDBpedia("propList3.txt");
@@ -42,6 +42,8 @@ public class CreateIndexes {
 
         AnchorTextLoader anchorLoader = new AnchorTextLoader();
         anchorLoader.load(true, "anchorIndex", "anchorFiles/");
+        
+        anchorLoader.load(true, "dbpediaIndex", "dbpediaFiles/");
 
         System.out.println("DONE.");
     }
