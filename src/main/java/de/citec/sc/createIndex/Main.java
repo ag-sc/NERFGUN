@@ -21,8 +21,8 @@ public class Main {
         
 //        RetrievalPerformanceOnMemoryIndex.run();
         
-        CreateIndexes.run();
+        //CreateIndexes.run();
         
-//        RetrievalPerformance.run();
+        RetrievalPerformance.run();
     }
 }

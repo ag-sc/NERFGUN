@@ -13,6 +13,7 @@ import de.citec.sc.corpus.Document;
 import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
+import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.query.Instance;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -73,9 +74,16 @@ public class RetrievalPerformance {
         useMemory.add(Boolean.FALSE);
         // useMemory.add(Boolean.TRUE);
 
-        CorpusLoader loader = new CorpusLoader();
+        CorpusLoader loader = new CorpusLoader(false);
 
         String overallResult = "";
+        long start = System.currentTimeMillis();
+        indexSearch = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
+        //indexSearch = new CandidateRetrieverOnMemory();
+        long end = System.currentTimeMillis();
+        System.out.println((end - start) + " ms loading the index ");
+        
+        
 
         for (Boolean m : useMemory) {
             for (String indexT : indexType) {
@@ -86,12 +94,6 @@ public class RetrievalPerformance {
                             topK = t;
                             time = 0;
                             index = indexT;
-
-                            long start = System.currentTimeMillis();
-                            indexSearch = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
-                            long end = System.currentTimeMillis();
-
-                            System.out.println((end - start) + " ms loading the index ");
 
                             DefaultCorpus c = new DefaultCorpus();
 
@@ -148,8 +150,7 @@ public class RetrievalPerformance {
                                         Annotation newOne = a.clone();
 
                                         d.addAnnotation(newOne.clone());
-                                    }
-                                    else {
+                                    } else {
 
                                         if (notFound.containsKey(a.getWord())) {
                                             Set<String> list = notFound.get(a.getWord());
