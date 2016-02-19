@@ -12,6 +12,8 @@ import java.util.Objects;
 
 import corpus.LabeledInstance;
 
+import corpus.LabeledInstance;
+
 /**
  *
  * @author sherzod
@@ -94,14 +96,26 @@ public class Document implements LabeledInstance<List<Annotation>> {
 
 	@Override
 	public String toString() {
-		String a = "\nDoc name: " + documentName + "\nContent: \n" + documentContent + "\n\nAnnotations:\n";
+		String a = "Doc name: " + documentName + "\nContent:\n" + documentContent;
 
-		a += "\nGoldSet:\n";
+		a += "\n\nAnnotations:\n";
+		for (Annotation a1 : annotations) {
+			a += a1.toString() + "\n";
+		}
+
+		a += "\n\nGoldSet:\n";
 		for (Annotation a1 : goldStandard) {
 			a += a1.toString() + "\n";
 		}
 		return a;
 	}
+
+	// @Override
+	// public String toString() {
+	// return "Document [documentContent=" + documentContent + ", goldStandard="
+	// + goldStandard + ", annotations="
+	// + annotations + ", documentName=" + documentName + "]";
+	// }
 
 	@Override
 	public List<Annotation> getGoldResult() {
