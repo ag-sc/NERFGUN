@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -22,7 +21,10 @@ import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
-import de.citec.sc.query.Search;
+
+import de.citec.sc.query.CandidateRetriever;
+import de.citec.sc.query.CandidateRetrieverOnLucene;
+
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.GreedyDisambiguationInitializer;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
@@ -54,12 +56,12 @@ public class BIREMain {
 		String indexFile = "tfidf.bin";
 		String dfFile = "en_wiki_large_abstracts.docfrequency";
 		String tfidfFile = "en_wiki_large_abstracts.tfidf";
-		int topK = 10;
 		/*
 		 * Load the index API.
 		 */
 		log.info("Load Index...");
-		Search index = new Search(false, "dbpediaIndexAll");
+		CandidateRetriever index = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
+
 		// Search index = new SearchCache(false, "dbpediaIndexAll");
 		/*
 		 * Load training and test data.
@@ -84,7 +86,7 @@ public class BIREMain {
 		 */
 		Map<String, Double> avrgTrain = new LinkedHashMap<>();
 		Map<String, Double> avrgTest = new LinkedHashMap<>();
-		Collections.shuffle(documents, new Random(0));
+		Collections.shuffle(documents);
 		int N = documents.size();
 		int n = 2;
 		double step = ((float) N) / n;
@@ -148,7 +150,7 @@ public class BIREMain {
 			 * a successor state and, thus, perform the sampling procedure.
 			 */
 			List<Explorer<State>> explorers = new ArrayList<>();
-			explorers.add(new DisambiguationExplorer(index, topK));
+			explorers.add(new DisambiguationExplorer(index));
 			/*
 			 * Create a sampler that generates sampling chains with which it
 			 * will trigger weight updates during training.

@@ -121,6 +121,7 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 
 		final List<String> preprocessedDocument = preprocessDocument(document);
 		currentDocumentName = documentName;
+
 		currentDocumentVector = TFIDF.getTFWikiIDF(preprocessedDocument, IDFProvider.getIDF(this.dfFile),
 				NUMBER_OF_WIKI_DOCUMENTS);
 

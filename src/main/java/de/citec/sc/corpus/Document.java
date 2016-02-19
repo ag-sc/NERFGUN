@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.citec.sc.corpus;
 
 import java.util.ArrayList;
@@ -11,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 
 import corpus.LabeledInstance;
-
 import corpus.LabeledInstance;
 
 /**
@@ -97,12 +95,10 @@ public class Document implements LabeledInstance<List<Annotation>> {
 	@Override
 	public String toString() {
 		String a = "Doc name: " + documentName + "\nContent:\n" + documentContent;
-
 		a += "\n\nAnnotations:\n";
 		for (Annotation a1 : annotations) {
 			a += a1.toString() + "\n";
 		}
-
 		a += "\n\nGoldSet:\n";
 		for (Annotation a1 : goldStandard) {
 			a += a1.toString() + "\n";
@@ -116,7 +112,6 @@ public class Document implements LabeledInstance<List<Annotation>> {
 	// + goldStandard + ", annotations="
 	// + annotations + ", documentName=" + documentName + "]";
 	// }
-
 	@Override
 	public List<Annotation> getGoldResult() {
 		return goldStandard;

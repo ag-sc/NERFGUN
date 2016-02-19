@@ -45,6 +45,7 @@ public class IndexRankTemplate extends templates.AbstractTemplate<State> {
 			SingleVariableFactor factor = (SingleVariableFactor) absFactor;
 			Annotation entity = state.getEntity(factor.entityID);
 			log.info("Compute IndexRank factor for state %s and variable %s", state.getID(), entity);
+
 			// String uri =
 			// entity.getLink().replace("http://dbpedia.org/resource/", "");
 			Vector featureVector = new Vector();

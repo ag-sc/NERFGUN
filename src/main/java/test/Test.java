@@ -5,25 +5,18 @@
  */
 package test;
 
-import com.google.common.collect.Sets;
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
-import de.citec.sc.query.CandidateRetriever;
-import de.citec.sc.query.CandidateRetrieverOnLucene;
-import de.citec.sc.query.Instance;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -33,47 +26,20 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import com.google.common.collect.Sets;
-
-import de.citec.sc.corpus.Annotation;
-import de.citec.sc.corpus.CorpusLoader;
-import de.citec.sc.corpus.DefaultCorpus;
-import de.citec.sc.corpus.Document;
 
 /**
  *
  * @author sherzod
  */
+public class Test {
 
-
-public class TestSearch {
-
-    public static void main(String[] args) throws UnsupportedEncodingException {
-
-        CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
-
-        List<String> terms = new ArrayList<>();
-        terms.add("Lincoln");
-        terms.add("Gothic");
-        terms.add("Metal");
-
-        for (String term : terms) {
-            List<Instance> anchor = indexSearch.getResourcesFromAnchors(term, 100);
-            List<Instance> dbpedia = indexSearch.getResourcesFromDBpedia(term, 100);
-            List<Instance> all = indexSearch.getAllResources(term, 100);
-            System.out.println("---------------------------");
-            System.out.println(String.format("%s: #%s:\n%s\n", "anchor", anchor.size(), anchor));
-            System.out.println(String.format("%s: #%s:\n%s\n", "dbpedia", dbpedia.size(), dbpedia));
-            System.out.println(String.format("%s: #%s:\n%s\n", "all", all.size(), all));
-        }
-        System.out.println();
-        System.out.println();
+    public static void main(String[] args) {
         CorpusLoader loader = new CorpusLoader();
         DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
 
         String path = "dbpediaFiles/pageranks.ttl";
 
-        // read file into stream, try-with-resources
+        //read file into stream, try-with-resources
         ConcurrentHashMap<String, Double> map = new ConcurrentHashMap<>(19500000);
 
         String patternString = "<http://dbpedia.org/resource/(.*?)>.*\"(.*?)\"";
@@ -101,7 +67,7 @@ public class TestSearch {
 
                     if (!(uri.contains("Category:") || uri.contains("(disambiguation)"))) {
                         try {
-                            // counter.incrementAndGet();
+                            //counter.incrementAndGet();
                             uri = URLDecoder.decode(uri, "UTF-8");
                         } catch (UnsupportedEncodingException ex) {
                             Logger.getLogger(TestSearch.class.getName()).log(Level.SEVERE, null, ex);
@@ -134,8 +100,8 @@ public class TestSearch {
             if (map.containsKey(uri)) {
                 Double v1 = map.get(uri);
                 values.add(v1);
-                // int v = (int)
-                // ranges.put(v1, ranges.getOrDefault(v, 0) + 1);
+//                int v = (int)
+//                ranges.put(v1, ranges.getOrDefault(v, 0) + 1);
             }
         }
         System.out.println(values.size());
@@ -149,15 +115,6 @@ public class TestSearch {
 
             System.out.println(valuesAsList.get(k));
         }
-
-        ////
-        // int sum = 0;
-        // for(Integer k : ranges.keySet()){
-        // sum +=ranges.get(k);
-        // System.out.println(k + "\t" + ranges.get(k) + " \t" + sum);
-        // }
-        //
-        // ranges.entrySet().forEach(s -> System.out.println(s.getKey() + "\t" +
-        //// s.getValue()));
     }
+
 }

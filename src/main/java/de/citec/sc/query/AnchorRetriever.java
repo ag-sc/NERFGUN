@@ -6,10 +6,7 @@
 package de.citec.sc.query;
 
 import java.nio.file.Paths;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.Directory;
@@ -49,16 +46,12 @@ public class AnchorRetriever extends LabelRetriever {
 		}
 	}
 
-	public List<String> getResources(String searchTerm, int k) {
+	public List<Instance> getResources(String searchTerm, int k) {
 		super.comparator = super.frequencyComparator;
 
 		List<Instance> result = getDirectMatches(searchTerm, "label", "URI", k, indexDirectory);
 
-		List<String> resources = result.stream().map(instance -> instance.getUri()).collect(Collectors.toList());
-		// List<String> resources = new LinkedHashSet<>();
-		// result.forEach(i1 -> resources.add(i1.getUri()));
-
-		return resources;
+		return result;
 	}
 
 }
