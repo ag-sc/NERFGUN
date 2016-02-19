@@ -24,7 +24,7 @@ import variables.AbstractState;
 
 public class State extends AbstractState implements Serializable {
 
-	private static Logger log = LogManager.getFormatterLogger(State.class.getName());
+	private static Logger log = LogManager.getFormatterLogger();
 
 	private static final String GENERATED_ENTITY_ID_PREFIX = "G";
 	private static final DecimalFormat scoreFormat = new DecimalFormat("0.00000");

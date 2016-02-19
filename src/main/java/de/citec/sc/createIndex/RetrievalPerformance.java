@@ -32,6 +32,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+//github.com/ag-sc/NED.git
+import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.CorpusLoader;
+import de.citec.sc.corpus.DefaultCorpus;
+import de.citec.sc.corpus.Document;
+import de.citec.sc.evaluator.Evaluator;
+import de.citec.sc.query.CandidateRetriever;
+import de.citec.sc.query.CandidateRetrieverOnLucene;
+import de.citec.sc.query.Instance;
+
 /**
  *
  * @author sherzod

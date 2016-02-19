@@ -7,8 +7,10 @@ package de.citec.sc.templates;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.variables.State;
@@ -22,6 +24,8 @@ import utility.VariableID;
  * @author sherzod
  */
 public class IndexRankTemplate extends templates.AbstractTemplate<State> {
+
+	private static Logger log = LogManager.getFormatterLogger();
 
 	public IndexRankTemplate() {
 	}
@@ -38,9 +42,10 @@ public class IndexRankTemplate extends templates.AbstractTemplate<State> {
 	@Override
 	protected void computeFactor(State state, AbstractFactor absFactor) {
 		if (absFactor instanceof SingleVariableFactor) {
-
 			SingleVariableFactor factor = (SingleVariableFactor) absFactor;
 			Annotation entity = state.getEntity(factor.entityID);
+			log.info("Compute IndexRank factor for state %s and variable %s", state.getID(), entity);
+
 			// String uri =
 			// entity.getLink().replace("http://dbpedia.org/resource/", "");
 			Vector featureVector = new Vector();

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level - %msg%n" />
+			<!-- PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} 
+				- %msg%n" / -->
+		</Console>
+		<File name="LogFile" fileName="src/main/resources/all.log" immediateFlush="false"
+			append="false">
+			<!-- <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level 
+				- %msg%n" /> -->
+			<PatternLayout
+				pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} 
+				- %msg%n" />
+		</File>
+	</Appenders>
+	<Loggers>
+		<Root level="WARN">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Root>
+		<!-- ++++++++++++++++++++++++ -->
+		<!-- Loggers for this project -->
+		<!-- ++++++++++++++++++++++++ -->
+		<Logger name="de.citec.sc.BIREMain" level="DEBUG"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+		<Logger name="de.citec.sc.templates" level="INFO"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+		<Logger name="de.citec.sc.variables" level="WARN"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+		<Logger name="de.citec.sc.sampling" level="WARN"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+		<!-- ++++++++++++++++++++++++ -->
+		<!-- Loggers for BIRE project -->
+		<!-- ++++++++++++++++++++++++ -->
+
+		<Logger name="learning.DefaultLearner" level="DEBUG"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+
+		<Logger name="learning.Trainer" level="INFO" additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+		<Logger name="sampling.DefaultSampler" level="WARN"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+
+		<Logger name="evaluation.EvaluationUtil" level="INFO"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+		<Logger name="evaluation.TaggedTimer" level="INFO" additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+
+		<Logger name="learning.callbacks.SimpleLogCallback" level="INFO"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+	</Loggers>
+</Configuration>

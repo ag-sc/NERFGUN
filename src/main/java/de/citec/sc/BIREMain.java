@@ -60,7 +60,7 @@ public class BIREMain {
 		 * Load the index API.
 		 */
 		log.info("Load Index...");
-                CandidateRetriever index = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
+		CandidateRetriever index = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
 
 		// Search index = new SearchCache(false, "dbpediaIndexAll");
 		/*

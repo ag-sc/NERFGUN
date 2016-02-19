@@ -6,16 +6,6 @@
 package de.citec.sc.createIndex;
 
 import de.citec.sc.index.AnchorTextLoader;
-import de.citec.sc.index.SurfaceFormsDBpedia;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 
 /**
  *
@@ -23,24 +13,23 @@ import java.util.Set;
  */
 public class CreateIndexes {
 
-    public static void main(String[] args) {
-        run();
-    }
+	public static void main(String[] args) {
+		run();
+	}
 
-    public static void run() {
-        System.out.println("Creating index files ...");
+	public static void run() {
+		System.out.println("Creating index files ...");
 
+		// SurfaceFormsDBpedia dbpediaLoader = new
+		// SurfaceFormsDBpedia("propList3.txt");
+		// System.out.println("dbpediaIndexAll ...");
+		// dbpediaLoader.load("dbpediaFiles/");
 
-      
-//        SurfaceFormsDBpedia dbpediaLoader = new SurfaceFormsDBpedia("propList3.txt");
-//        System.out.println("dbpediaIndexAll ...");
-//        dbpediaLoader.load("dbpediaFiles/");
+		AnchorTextLoader anchorLoader = new AnchorTextLoader();
+		anchorLoader.load(true, "anchorIndex", "anchorFiles/");
 
-        AnchorTextLoader anchorLoader = new AnchorTextLoader();
-        anchorLoader.load(true, "anchorIndex", "anchorFiles/");
-        
-        anchorLoader.load(true, "dbpediaIndex", "dbpediaFiles/");
+		anchorLoader.load(true, "dbpediaIndex", "dbpediaFiles/");
 
-        System.out.println("DONE.");
-    }
+		System.out.println("DONE.");
+	}
 }
