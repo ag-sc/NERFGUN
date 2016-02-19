@@ -18,7 +18,7 @@ test.tsv
 /models
 /README.md~
 /anchorIndex
-/dbpediaIndexAll
+/dbpediaIndex
 log.out
 log.out~
 nbactions.xml
