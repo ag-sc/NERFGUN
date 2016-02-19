@@ -43,12 +43,12 @@ public class TestSearch {
 
 		List<String> terms = new ArrayList<>();
 		terms.add("U.S.");
-		terms.add("CHICAGO");
-		terms.add("United States");
+		terms.add("Gothic");
+		terms.add("Metal");
 
 		for (String term : terms) {
-			List<String> anchor = indexSearch.getResourcesFromAnchors(term, 50);
-			List<String> dbpedia = indexSearch.getResourcesFromDBpedia(term, 50);
+			List<String> anchor = indexSearch.getResourcesFromAnchors(term, 100);
+			List<String> dbpedia = indexSearch.getResourcesFromDBpedia(term, 100);
 			List<String> all = indexSearch.getAllResources(term, 100);
 			System.out.println("---------------------------");
 			System.out.println(String.format("%s: #%s:\n%s\n", "anchor", anchor.size(), anchor));

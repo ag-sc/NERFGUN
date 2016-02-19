@@ -38,17 +38,17 @@ public class DocumentSimilarityTest {
 	 * The number of wikipedia documents.
 	 */
 	public static double NUMBER_OF_WIKI_DOCUMENTS;
+	public static String indexFile = "tfidfIndexDatabase.bin";
+	public static String tfidfFile = "en_wiki_large_abstracts.tfidf";
+	public static String dfFile = "en_wiki_large_abstracts.docfrequency";
 
 	public static void main(String[] args) throws IOException, EmptyIndexException {
-
-		String indexFile = "tfidfIndexDatabase.bin";
-		String tfidfFile = "en_wiki_large_abstracts.tfidf";
 
 		boolean storeIndexOnDrive = true;
 
 		FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
 
-		IDFProvider.getIDF();
+		IDFProvider.getIDF(dfFile);
 
 		lemmatizer = new StanfordLemmatizer();
 
@@ -118,7 +118,7 @@ public class DocumentSimilarityTest {
 
 		String bestEntity = null;
 
-		Set<String> candidates = indexSearch.getAllResources(word, 100);
+		List<String> candidates = indexSearch.getAllResources(word, 100);
 
 		for (String candidate : candidates) {
 			// System.out.println("candidate = " +
@@ -151,7 +151,7 @@ public class DocumentSimilarityTest {
 
 		String bestEntity = null;
 
-		Set<String> candidates = indexSearch.getAllResources(word, 100);
+		List<String> candidates = indexSearch.getAllResources(word, 100);
 
 		for (String candidate : candidates) {
 
@@ -181,7 +181,7 @@ public class DocumentSimilarityTest {
 		Map<String, Double> currentDocumentVector;
 		final List<String> preprocessedDocument = preprocessDocument(document);
 
-		currentDocumentVector = TFIDF.getTFWikiIDF(preprocessedDocument, IDFProvider.getIDF(),
+		currentDocumentVector = TFIDF.getTFWikiIDF(preprocessedDocument, IDFProvider.getIDF(dfFile),
 				NUMBER_OF_WIKI_DOCUMENTS);
 
 		return currentDocumentVector;

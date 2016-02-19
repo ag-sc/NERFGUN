@@ -28,7 +28,7 @@ public class IDFProvider {
 	 * @return the entire IDF vector.
 	 * @throws IOException
 	 */
-	public static Map<String, Double> getIDF() throws IOException {
+	public static Map<String, Double> getIDF(final String dfFile) throws IOException {
 
 		if (idf == null) {
 
@@ -36,7 +36,7 @@ public class IDFProvider {
 			 * The file that stores the IDF data.
 			 */
 			BufferedReader docFreqStream = new BufferedReader(
-					new FileReader(new File("en_wiki_large_abstracts.docfrequency")));
+					new FileReader(new File(dfFile)));
 			/*
 			 * The current line of the file.
 			 */

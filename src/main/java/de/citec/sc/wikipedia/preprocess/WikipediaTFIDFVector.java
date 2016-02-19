@@ -22,7 +22,8 @@ public class WikipediaTFIDFVector {
 
 	public static void main(String[] args) throws IOException {
 
-		Map<String, Double> documentFrequency = IDFProvider.getIDF();
+		String dfFile = "en_wiki_large_abstracts.docfrequency";
+		Map<String, Double> documentFrequency = IDFProvider.getIDF(dfFile);
 
 		final double docNumber = countLines("gen/en_wiki_large_abstracts.termfrequency");
 

@@ -43,17 +43,18 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 
 	private String currentDocumentName;
 
+	private String dfFile;
 	/**
 	 * The number of wikipedia documents.
 	 */
 	final public double NUMBER_OF_WIKI_DOCUMENTS;
 
-	public DocumentSimilarityTemplate(final String indexFile, final String tfidfFile, final boolean storeIndexOnDrive)
-			throws IOException {
+	public DocumentSimilarityTemplate(final String indexFile, final String tfidfFile, final String dfFile,
+			final boolean storeIndexOnDrive) throws IOException {
 
 		FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
-
-		IDFProvider.getIDF();
+		this.dfFile = dfFile;
+		IDFProvider.getIDF(dfFile);
 		lemmatizer = new StanfordLemmatizer();
 
 		NUMBER_OF_WIKI_DOCUMENTS = WikipediaTFIDFVector.countLines(tfidfFile);
@@ -107,7 +108,7 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 
 		final List<String> preprocessedDocument = preprocessDocument(document);
 
-		currentDocumentVector = TFIDF.getTFWikiIDF(preprocessedDocument, IDFProvider.getIDF(),
+		currentDocumentVector = TFIDF.getTFWikiIDF(preprocessedDocument, IDFProvider.getIDF(this.dfFile),
 				NUMBER_OF_WIKI_DOCUMENTS);
 
 		return currentDocumentVector;

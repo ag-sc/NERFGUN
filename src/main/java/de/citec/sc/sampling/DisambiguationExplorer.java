@@ -36,7 +36,8 @@ public class DisambiguationExplorer implements Explorer<State> {
 			// currentState.getDocument().getDocumentContent().substring(a.getStartIndex(),a.getEndIndex());
 			List<String> candidateURIs = index.getAllResources(annotationText, maxNumberOfCandidateURIs);
 			for (int i = 0; i < candidateURIs.size(); i++) {
-				String candidateURI = candidateURIs.get(i).replace("http://dbpedia.org/resource/", "");
+				String candidateURI = candidateURIs.get(i);// .replace("http://dbpedia.org/resource/",
+															// "");
 				State generatedState = new State(currentState);
 				Annotation modifiedAnntation = generatedState.getEntity(a.getID());
 				modifiedAnntation.setLink(candidateURI);

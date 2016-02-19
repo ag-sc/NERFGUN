@@ -38,35 +38,8 @@ public class Search {
 	 * @param topK
 	 */
 	public List<String> getResourcesFromDBpedia(String searchTerm, int topK) {
-		List<String> result = new ArrayList<>();
 
-		// Set<String> searchTermSet = new LinkedHashSet<>();
-		// searchTermSet.add(searchTerm);
-
-		// for (String term : searchTermSet) {
-		// get all from DBpedia
-		// for (String e1 : dbpediaRetriever.getResources(searchTerm, topK,
-		// false)) {
-		// try {
-		result.addAll(dbpediaRetriever.getResources(searchTerm, topK, false));
-		// result.add(URLDecoder.decode(e1, "UTF-8"));
-		// } catch (UnsupportedEncodingException ex) {
-		// Logger.getLogger(Search.class.getName()).log(Level.SEVERE,
-		// null, ex);
-		// }
-		// }
-		// }
-
-		// if (result.size() > topK) {
-		// List<String> temp = new ArrayList<>();
-		// temp.addAll(result);
-		//
-		// result.clear();
-		//
-		// result.addAll(temp.subList(0, topK));
-		// }
-
-		return result;
+		return dbpediaRetriever.getResources(searchTerm, topK, false);
 	}
 
 	/**
@@ -77,30 +50,13 @@ public class Search {
 	public List<String> getResourcesFromAnchors(String searchTerm, int topK) {
 		List<String> result = new ArrayList<>();
 
-		// Set<String> searchTermSet = new LinkedHashSet<>();
-		// searchTermSet.add(searchTerm);
-
-		// for (String term : searchTermSet) {
-		// get all from Anchor
 		for (String e1 : anchorRetriever.getResources(searchTerm, topK)) {
 			try {
-
 				result.add(URLDecoder.decode(e1, "UTF-8"));
-
 			} catch (UnsupportedEncodingException ex) {
 				Logger.getLogger(Search.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
-		// }
-
-		// if (result.size() > topK) {
-		// List<String> temp = new ArrayList<>();
-		// temp.addAll(result);
-		//
-		// result.clear();
-		//
-		// result.addAll(temp.subList(0, topK));
-		// }
 
 		return result;
 	}
@@ -113,15 +69,20 @@ public class Search {
 	 */
 	public List<String> getAllResources(String searchTerm, int topK) {
 		LinkedHashSet<String> result = new LinkedHashSet<>();
-		List<String> anchor = anchorRetriever.getResources(searchTerm, (topK + 1) / 2);
-		List<String> dbpedia = dbpediaRetriever.getResources(searchTerm, topK / 2, false);
+		List<String> anchor = anchorRetriever.getResources(searchTerm, topK);
+		List<String> dbpedia = dbpediaRetriever.getResources(searchTerm, topK, false);
 
-		// if (anchor.size() <= (topK + 1) / 2) {
-		// result.addAll(anchor);
-		// result.addAll(dbpedia.subList(0, result.size()));
-		// }
-		result.addAll(anchor);
-		result.addAll(dbpedia);
+		if (anchor.size() < dbpedia.size()) {
+			int a = Math.min(topK / 2, anchor.size());
+			int b = topK - a;
+			result.addAll(anchor.subList(0, a));
+			result.addAll(dbpedia.subList(0, Math.min(b, dbpedia.size())));
+		} else {
+			int a = Math.min(topK / 2, dbpedia.size());
+			int b = topK - a;
+			result.addAll(anchor.subList(0, Math.min(b, anchor.size())));
+			result.addAll(dbpedia.subList(0, a));
+		}
 		return new ArrayList<>(result);
 	}
 }

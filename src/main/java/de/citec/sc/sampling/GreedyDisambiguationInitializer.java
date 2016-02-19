@@ -23,7 +23,7 @@ public class GreedyDisambiguationInitializer implements Initializer<Document, St
 		for (Annotation annotation : document.getGoldResult()) {
 			List<String> candidateURIs = index.getAllResources(annotation.getWord(), 10);
 			String initialLink = candidateURIs.get(0);
-			initialLink = initialLink.replace("http://dbpedia.org/resource/", "");
+//			initialLink = initialLink.replace("http://dbpedia.org/resource/", "");
 			Annotation newAnnotation = new Annotation(annotation.getWord(), initialLink, annotation.getStartIndex(),
 					annotation.getEndIndex(), state.generateEntityID());
 

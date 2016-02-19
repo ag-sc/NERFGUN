@@ -1,5 +1,6 @@
 package de.citec.sc;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -21,9 +22,9 @@ import de.citec.sc.corpus.Document;
 import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.Search;
-import de.citec.sc.sampling.GreedyDisambiguationInitializer;
 import de.citec.sc.sampling.DisambiguationExplorer;
-import de.citec.sc.templates.IndexRankTemplate;
+import de.citec.sc.sampling.GreedyDisambiguationInitializer;
+import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import learning.DefaultLearner;
@@ -49,6 +50,9 @@ public class BIREMain {
 		loggerConfig.setLevel(Level.INFO);
 		ctx.updateLoggers();
 
+		String indexFile = "tfidf.bin";
+		String dfFile = "en_wiki_large_abstracts.docfrequency";
+		String tfidfFile = "en_wiki_large_abstracts.tfidf";
 		/*
 		 * Load the index API.
 		 */
@@ -63,13 +67,13 @@ public class BIREMain {
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLL);
 		List<Document> documents = corpus.getDocuments();
 
-		// documents = documents.subList(0, 10);
+		documents = documents.subList(0, 10);
 		/*
 		 * Remove namespace from annotations
 		 */
 		for (Document document : documents) {
 			for (Annotation a : document.getGoldResult()) {
-				a.setLink(a.getLink().replace("http://en.wikipedia.org/wiki/", ""));
+				a.setLink(a.getLink().replace("http://en.wikipedia.org/wiki/", "http://dbpedia.org/resource/"));
 			}
 		}
 
@@ -111,7 +115,13 @@ public class BIREMain {
 			 * factors/features to score intermediate, generated states.
 			 */
 			List<AbstractTemplate<State>> templates = new ArrayList<>();
-			templates.add(new IndexRankTemplate());
+			// templates.add(new IndexRankTemplate());
+			try {
+				templates.add(new DocumentSimilarityTemplate(indexFile, tfidfFile, dfFile, true));
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				System.exit(1);
+			}
 			// templates.add(new PageRankTemplate());
 
 			/*
