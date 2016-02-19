@@ -10,6 +10,7 @@
 /retrieval
 /anchorFiles
 /dbpediaFiles
+/testFiles
 /dbpediaIndexOnlyLabels
 test.nt
 test.tsv
