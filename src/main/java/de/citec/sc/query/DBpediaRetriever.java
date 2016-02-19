@@ -5,12 +5,13 @@
  */
 package de.citec.sc.query;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -22,7 +23,6 @@ import org.apache.lucene.store.RAMDirectory;
  * @author sherzod
  */
 public class DBpediaRetriever extends LabelRetriever {
-
     
     private String instancesTokenizedIndexPath = "resourceTokenizedIndex";
     private String instancesIndexPath = "resourceIndex";
@@ -68,24 +68,21 @@ public class DBpediaRetriever extends LabelRetriever {
      * 
      * 
      */
-    public Set<String> getResources(String searchTerm, int k, boolean mergePartialMatches) {
+    public List<Instance> getResources(String searchTerm, int k, boolean mergePartialMatches) {
 
         super.comparator = super.frequencyComparator;
 
-        Set<Instance> resultDirectMatch = getDirectMatches(searchTerm, "label", "URI", k, instanceIndexDirectory);
+        List<Instance> resultDirectMatch= getDirectMatches(searchTerm, "label", "URI", k, instanceIndexDirectory);
         
 
         if (mergePartialMatches) {
-            Set<Instance> resultPartialMatch = getPartialMatches(searchTerm, "labelTokenized", "URI", k, instanceTokenizedIndexDirectory, analyzer);
+            List<Instance> resultPartialMatch = getPartialMatches(searchTerm, "labelTokenized", "URI", k, instanceTokenizedIndexDirectory, analyzer);
             //add partial matches to direct
             resultDirectMatch.addAll(resultPartialMatch);
         }
 
-        Set<String> resources = new LinkedHashSet<>();
-        resultDirectMatch.forEach(i1 -> resources.add(i1.getUri()));
-
-        //resources = sortBySimilarity(resources, searchTerm, k);
-        return resources;
+        
+        return resultDirectMatch;
 
     }
 

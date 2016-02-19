@@ -6,8 +6,6 @@
 
 package de.citec.sc.index;
 
-import de.citec.sc.index.Indexer;
-
 /**
  *
  * @author sherzod

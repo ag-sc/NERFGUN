@@ -5,12 +5,20 @@
  */
 package de.citec.sc.evaluator;
 
-import de.citec.sc.corpus.Annotation;
-import de.citec.sc.corpus.Document;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
+import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.Document;
+
+import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.Document;
 
 /**
  *
@@ -18,7 +26,7 @@ import java.util.Map;
  */
 public class Evaluator {
 
-    private Map<String, Integer> calculate(Document d) {
+    private static Map<String, Integer> calculate(Document d) {
         Map<String, Integer> result = new LinkedHashMap<>();
 
         List<Annotation> annotations = d.getAnnotations();
@@ -44,7 +52,7 @@ public class Evaluator {
         return result;
     }
 
-    public Map<String, Double> evaluate(Document document) {
+    public static Map<String, Double> evaluate(Document document) {
         Map<String, Double> result = new HashMap<>();
 
         Map<String, Integer> numbers = calculate(document);
@@ -78,7 +86,7 @@ public class Evaluator {
         return result;
     }
 
-    public Map<String, Double> evaluateAll(List<Document> documents) {
+    public static Map<String, Double> evaluateAll(List<Document> documents) {
         Map<String, Double> result = new LinkedHashMap<>();
 
         int sumOfTP = 0, sumOfFP = 0, sumOfFN = 0, sumOfTN = 0;
@@ -142,27 +150,27 @@ public class Evaluator {
         return result;
     }
 
-    private double getRecall(int TP, int FN) {
+    private static double getRecall(int TP, int FN) {
         double r = TP / (double) (FN + TP);
         if (TP == 0 && FN == 0) {
-            r = 0;
+            r = 1;
         }
         return r;
     }
 
-    private double getPrecision(int TP, int FP) {
+    private static double getPrecision(int TP, int FP) {
         double p = TP / (double) (TP + FP);
         if (TP == 0 && FP == 0) {
-            p = 0;
+            p = 1;
         }
         return p;
     }
 
-    private double getF1(double precision, double recall) {
+    private static double getF1(double precision, double recall) {
         return (2 * precision * recall) / (precision + recall);
     }
 
-    private double round(double value, int places) {
+    private static double round(double value, int places) {
         if (places < 0) {
             throw new IllegalArgumentException();
         }
@@ -171,6 +179,15 @@ public class Evaluator {
         value = value * factor;
         long tmp = Math.round(value);
         return (double) tmp / factor;
+    }
+
+    public static Map<String, Double> add(Map<String, Double> r1, Map<String, Double> r2) {
+        Map<String, Double> result = new LinkedHashMap<>();
+        Set<String> keys = Sets.union(r1.keySet(), r2.keySet());
+        for (String key : keys) {
+            result.put(key, r1.getOrDefault(key, 0.0) + r1.getOrDefault(key, 0.0));
+        }
+        return result;
     }
 
 }

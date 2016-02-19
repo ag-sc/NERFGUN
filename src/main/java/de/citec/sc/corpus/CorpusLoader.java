@@ -6,23 +6,15 @@
 package de.citec.sc.corpus;
 
 
-import corpus.Corpus;
-import corpus.LabeledInstance;
-import de.citec.sc.corpus.Annotation;
-
-import de.citec.sc.corpus.Document;
-import de.citec.sc.variables.State;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 import utility.VariableID;
 
 /**

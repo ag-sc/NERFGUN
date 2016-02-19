@@ -1,7 +1,5 @@
 package de.citec.sc.index;
 
-import de.citec.sc.index.DBpediaLabelIndexer;
-import de.citec.sc.index.Indexer;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -26,9 +24,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.queryparser.classic.ParseException;
-import test.TestSearch;
 
 public class DBpediaLoader implements Loader {
 
@@ -85,7 +80,7 @@ public class DBpediaLoader implements Loader {
             //processor = new DBpediaRedirectQueryProcessor(true);
             long start = System.currentTimeMillis();
             System.out.println("Adding 'dbpediaFiles/redirects_en.nt' to memory for indexing");
-            //redirects = getRedirects(new File("dbpediaFiles/redirects_en.nt"));
+            redirects = getRedirects(new File("dbpediaFiles/redirects_en.nt"));
             long end = System.currentTimeMillis() - start;
             System.out.println("DONE " + (end) + " ms.");
 
@@ -169,7 +164,7 @@ public class DBpediaLoader implements Loader {
                                     try {
                                         uri = URLDecoder.decode(uri, "UTF-8");
                                     } catch (UnsupportedEncodingException ex) {
-                                        Logger.getLogger(TestSearch.class.getName()).log(Level.SEVERE, null, ex);
+                                        
                                     }
 
                                     //add to index

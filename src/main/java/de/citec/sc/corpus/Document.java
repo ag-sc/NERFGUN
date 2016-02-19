@@ -3,26 +3,27 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package de.citec.sc.corpus;
 
-import corpus.LabeledInstance;
-import de.citec.sc.variables.State;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import corpus.LabeledInstance;
+
+import corpus.LabeledInstance;
 
 /**
  *
  * @author sherzod
  */
-public class Document implements LabeledInstance<List<Annotation>>{
-    
+public class Document implements LabeledInstance<List<Annotation>> {
+
     private String documentContent;
-    
+
     private List<Annotation> goldStandard;
     private List<Annotation> annotations;
-    
+
     private String documentName;
 
     public Document(String documentContent, String docName) {
@@ -30,8 +31,6 @@ public class Document implements LabeledInstance<List<Annotation>>{
         this.documentName = docName;
         this.annotations = new ArrayList<>();
     }
-    
-
 
     public String getDocumentContent() {
         return documentContent;
@@ -95,25 +94,21 @@ public class Document implements LabeledInstance<List<Annotation>>{
         return true;
     }
 
-
-
     @Override
     public String toString() {
-        String a = "Doc name: "+documentName+"\nContent: \n"+documentContent+"\n\nAnnotations:\n";
+        String a = "Doc name: " + documentName + "\nContent: \n" + documentContent + "\n\nAnnotations:\n";
 
-        a+= "\n\nGoldSet:\n";
-        for(Annotation a1 : goldStandard){
-            a+=a1.toString()+"\n";
+        a += "\n\nGoldSet:\n";
+        for (Annotation a1 : goldStandard) {
+            a += a1.toString() + "\n";
         }
-        
-        a+= "\nAnnotations:\n";
-        for(Annotation a1 : annotations){
-            a+=a1.toString()+"\n";
+
+        a += "\nAnnotations:\n";
+        for (Annotation a1 : annotations) {
+            a += a1.toString() + "\n";
         }
         return a;
     }
-
-
 
     @Override
     public List<Annotation> getGoldResult() {
@@ -121,11 +116,7 @@ public class Document implements LabeledInstance<List<Annotation>>{
     }
 
     public void addAnnotation(Annotation a) {
-        
+
         this.annotations.add(a);
     }
-
-
-    
-    
 }

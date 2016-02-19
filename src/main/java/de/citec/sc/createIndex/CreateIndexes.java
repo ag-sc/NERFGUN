@@ -30,22 +30,18 @@ public class CreateIndexes {
     public static void run() {
         System.out.println("Creating index files ...");
 
-        DBpediaLoader dbpediaLoader = new DBpediaLoader("propList1.txt");
-//
-//        System.out.println("dbpediaIndexOnlyLabels ...");
-//        dbpediaLoader.load(true, "dbpediaIndexOnlyLabels", "dbpediaFiles/");
-//
-        dbpediaLoader = new DBpediaLoader("propList3.txt");
+        DBpediaLoader dbpediaLoader = new DBpediaLoader("propList3.txt");
+
         System.out.println("dbpediaIndex ...");
-        dbpediaLoader.load(true, "dbpediaIndex", "testFiles/");
+        dbpediaLoader.load(true, "dbpediaIndex", "dbpediaFiles/");
 //
         
 //        SurfaceFormsDBpedia dbpediaLoader = new SurfaceFormsDBpedia("propList3.txt");
 //        System.out.println("dbpediaIndexAll ...");
 //        dbpediaLoader.load("dbpediaFiles/");
 
-//        AnchorTextLoader anchorLoader = new AnchorTextLoader();
-//        anchorLoader.load(true, "anchorIndex", "anchorFiles/");
+        AnchorTextLoader anchorLoader = new AnchorTextLoader();
+        anchorLoader.load(true, "anchorIndex", "anchorFiles/");
 
         System.out.println("DONE.");
     }
