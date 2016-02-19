@@ -6,7 +6,6 @@
 package de.citec.sc.createIndex;
 
 import de.citec.sc.index.AnchorTextLoader;
-import de.citec.sc.index.DBpediaLoader;
 import de.citec.sc.index.SurfaceFormsDBpedia;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -16,6 +15,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
 
 /**
  *
@@ -30,12 +30,8 @@ public class CreateIndexes {
     public static void run() {
         System.out.println("Creating index files ...");
 
-//        DBpediaLoader dbpediaLoader = new DBpediaLoader("propList3.txt");
-//
-//        System.out.println("dbpediaIndex ...");
-//        dbpediaLoader.load(true, "dbpediaIndex", "testFiles/");
-//
-        
+
+      
 //        SurfaceFormsDBpedia dbpediaLoader = new SurfaceFormsDBpedia("propList3.txt");
 //        System.out.println("dbpediaIndexAll ...");
 //        dbpediaLoader.load("dbpediaFiles/");

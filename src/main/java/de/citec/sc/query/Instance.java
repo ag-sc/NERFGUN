@@ -78,7 +78,4 @@ public class Instance implements Comparable<Instance> {
     public String toString() {
         return uri + " " + score;
     }
-    
-    
-
 }

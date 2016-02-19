@@ -5,6 +5,14 @@
  */
 package test;
 
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.DefaultCorpus;
@@ -15,14 +23,17 @@ import de.citec.sc.exceptions.EmptyIndexException;
 import de.citec.sc.helper.StanfordLemmatizer;
 import de.citec.sc.helper.Stopwords;
 import de.citec.sc.helper.Tokenizer;
+
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.query.Instance;
+
 import de.citec.sc.similarity.database.FileDB;
 import de.citec.sc.similarity.measures.SimilarityMeasures;
 import de.citec.sc.similarity.tfidf.IDFProvider;
 import de.citec.sc.similarity.tfidf.TFIDF;
 import de.citec.sc.wikipedia.preprocess.WikipediaTFIDFVector;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;

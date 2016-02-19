@@ -21,8 +21,10 @@ import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
+
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
+
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.GreedyDisambiguationInitializer;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
@@ -59,7 +61,7 @@ public class BIREMain {
 		 */
 		log.info("Load Index...");
                 CandidateRetriever index = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
-		
+
 		// Search index = new SearchCache(false, "dbpediaIndexAll");
 		/*
 		 * Load training and test data.

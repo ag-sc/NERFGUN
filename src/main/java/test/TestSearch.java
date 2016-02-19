@@ -33,11 +33,19 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import com.google.common.collect.Sets;
+
+import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.CorpusLoader;
+import de.citec.sc.corpus.DefaultCorpus;
+import de.citec.sc.corpus.Document;
 
 /**
  *
  * @author sherzod
  */
+
+
 public class TestSearch {
 
     public static void main(String[] args) throws UnsupportedEncodingException {
@@ -126,7 +134,7 @@ public class TestSearch {
             if (map.containsKey(uri)) {
                 Double v1 = map.get(uri);
                 values.add(v1);
-				// int v = (int)
+                // int v = (int)
                 // ranges.put(v1, ranges.getOrDefault(v, 0) + 1);
             }
         }
@@ -142,7 +150,7 @@ public class TestSearch {
             System.out.println(valuesAsList.get(k));
         }
 
-		////
+        ////
         // int sum = 0;
         // for(Integer k : ranges.keySet()){
         // sum +=ranges.get(k);

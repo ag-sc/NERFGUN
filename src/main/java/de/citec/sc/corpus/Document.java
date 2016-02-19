@@ -29,7 +29,6 @@ public class Document implements LabeledInstance<List<Annotation>> {
     public Document(String documentContent, String docName) {
         this.documentContent = documentContent;
         this.documentName = docName;
-        this.annotations = new ArrayList<>();
     }
 
     public String getDocumentContent() {
@@ -96,27 +95,36 @@ public class Document implements LabeledInstance<List<Annotation>> {
 
     @Override
     public String toString() {
-        String a = "Doc name: " + documentName + "\nContent: \n" + documentContent + "\n\nAnnotations:\n";
+        String a = "Doc name: " + documentName + "\nContent:\n" + documentContent;
+
+        a += "\n\nAnnotations:\n";
+        for (Annotation a1 : annotations) {
+            a += a1.toString() + "\n";
+        }
 
         a += "\n\nGoldSet:\n";
         for (Annotation a1 : goldStandard) {
             a += a1.toString() + "\n";
         }
-
-        a += "\nAnnotations:\n";
-        for (Annotation a1 : annotations) {
-            a += a1.toString() + "\n";
-        }
         return a;
     }
 
+	// @Override
+    // public String toString() {
+    // return "Document [documentContent=" + documentContent + ", goldStandard="
+    // + goldStandard + ", annotations="
+    // + annotations + ", documentName=" + documentName + "]";
+    // }
     @Override
     public List<Annotation> getGoldResult() {
         return goldStandard;
     }
 
     public void addAnnotation(Annotation a) {
-
+        if (this.annotations == null) {
+            this.annotations = new ArrayList<>();
+        }
         this.annotations.add(a);
     }
+
 }

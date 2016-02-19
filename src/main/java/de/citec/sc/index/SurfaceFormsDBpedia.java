@@ -1,6 +1,5 @@
 package de.citec.sc.index;
 
-import de.citec.sc.index.DBpediaLabelIndexer;
 import de.citec.sc.index.Indexer;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
