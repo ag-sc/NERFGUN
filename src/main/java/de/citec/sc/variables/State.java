@@ -8,7 +8,12 @@ package de.citec.sc.variables;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -142,11 +147,38 @@ public class State extends AbstractState implements Serializable {
 		builder.append(scoreFormat.format(objectiveScore));
 		builder.append("]: ");
 		builder.append(getDocument().toString() + "\n\n");
-		for (Annotation a : entities.values()) {
+
+		for (Annotation a : sortByValue(entities).values()) {
 			builder.append(a.toString() + "\n");
 		}
 
 		return builder.toString();
+	}
+
+	private HashMap<VariableID, Annotation> sortByValue(Map<VariableID, Annotation> unsortMap) {
+
+		if (unsortMap == null) {
+			return new HashMap<>();
+		}
+
+		List<Map.Entry<VariableID, Annotation>> list = new LinkedList<Map.Entry<VariableID, Annotation>>(
+				unsortMap.entrySet());
+
+		// Sorting the list based on values
+		Collections.sort(list, new Comparator<Map.Entry<VariableID, Annotation>>() {
+			public int compare(Map.Entry<VariableID, Annotation> o1, Map.Entry<VariableID, Annotation> o2) {
+
+				return Integer.compare(o1.getValue().getStartIndex(), o2.getValue().getStartIndex());
+			}
+		});
+
+		// Maintaining insertion order with the help of LinkedList
+		HashMap<VariableID, Annotation> sortedMap = new LinkedHashMap<VariableID, Annotation>();
+		for (Map.Entry<VariableID, Annotation> entry : list) {
+			sortedMap.put(entry.getKey(), entry.getValue());
+		}
+
+		return sortedMap;
 	}
 
 }

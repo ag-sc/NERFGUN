@@ -28,7 +28,7 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="de.citec.sc.templates" level="INFO"
+		<Logger name="de.citec.sc.templates" level="WARN"
 			additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />

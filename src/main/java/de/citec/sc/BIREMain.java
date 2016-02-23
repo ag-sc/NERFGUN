@@ -1,6 +1,5 @@
 package de.citec.sc;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -25,7 +24,7 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.GreedyDisambiguationInitializer;
-import de.citec.sc.templates.DocumentSimilarityTemplate;
+import de.citec.sc.templates.EditDistanceTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import learning.DefaultLearner;
@@ -67,15 +66,7 @@ public class BIREMain {
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLL);
 		List<Document> documents = corpus.getDocuments();
 
-		documents = documents.subList(0, 10);
-		/*
-		 * Remove namespace from annotations
-		 */
-		for (Document document : documents) {
-			for (Annotation a : document.getGoldResult()) {
-				a.setLink(a.getLink().replace("http://en.wikipedia.org/wiki/", "http://dbpedia.org/resource/"));
-			}
-		}
+		// documents = documents.subList(0, 10);
 
 		/*
 		 * Some code for n-fold cross validation
@@ -92,6 +83,8 @@ public class BIREMain {
 			double j = k;
 			k = j + step;
 
+			// List<Document> test = documents;
+			// List<Document> train = documents;
 			List<Document> test = documents.subList((int) Math.floor(j), (int) Math.floor(k));
 			List<Document> train = new ArrayList<>(documents);
 			train.removeAll(test);
@@ -116,12 +109,14 @@ public class BIREMain {
 			 */
 			List<AbstractTemplate<State>> templates = new ArrayList<>();
 			// templates.add(new IndexRankTemplate());
-			try {
-				templates.add(new DocumentSimilarityTemplate(indexFile, tfidfFile, dfFile, true));
-			} catch (IOException e1) {
-				e1.printStackTrace();
-				System.exit(1);
-			}
+			templates.add(new EditDistanceTemplate());
+			// try {
+			// templates.add(new DocumentSimilarityTemplate(indexFile,
+			// tfidfFile, dfFile, true));
+			// } catch (IOException e1) {
+			// e1.printStackTrace();
+			// System.exit(1);
+			// }
 			// templates.add(new PageRankTemplate());
 
 			/*
@@ -254,7 +249,7 @@ public class BIREMain {
 			log.info("Model weights:");
 			EvaluationUtil.printWeights(model, -1);
 
-			avrgTrain = Evaluator.add(avrgTrain, trainEvaluation);
+			// avrgTrain = Evaluator.add(avrgTrain, trainEvaluation);
 			avrgTest = Evaluator.add(avrgTest, testEvaluation);
 		}
 		/*

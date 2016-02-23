@@ -6,6 +6,7 @@
 package test;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,6 +71,8 @@ public class DocumentSimilarityTest {
 		int counter = 0;
 		final int max = c.getDocuments().size();
 
+		PrintStream ps = new PrintStream("goldCandidates");
+
 		for (Document d : c.getDocuments()) {
 			System.out.print((counter++) + "/" + max + ": ");
 			final String document = d.getDocumentContent();
@@ -82,26 +85,34 @@ public class DocumentSimilarityTest {
 			for (Annotation a : d.getGoldResult()) {
 				gold.get(d.getDocumentName()).add(a);
 
+				List<Instance> candidates = indexSearch.getAllResources(a.getWord(), 100);
+
+				for (Instance instance : candidates) {
+					ps.println(instance.getUri());
+				}
+
 				// String bestEntity = getFirst(indexSearch, a.getWord());
 
 				// String bestEntity = getBestByStringSimilarity(indexSearch,
 				// a.getWord());
 				//
-				String bestEntity = getBestByCosineSimilarity(indexSearch, currentDocumentVector, a.getWord());
+				// String bestEntity = getBestByCosineSimilarity(indexSearch,
+				// currentDocumentVector, a.getWord());
 
 				// String bestEntity = getBestBothSim(indexSearch, a.getWord(),
 				// currentDocumentVector);
 
 				// System.out.println(bestEntity);
 				// System.out.println(a.getWord());
-				if (bestEntity == null) {
-					continue;
-				}
-
-				Annotation a1 = a.clone();
-				a1.setLink(bestEntity.replace("http://dbpedia.org/resource/", "http://en.wikipedia.org/wiki/"));
-				annotations.add(a1);
-				results.get(d.getDocumentName()).add(a1);
+				// if (bestEntity == null) {
+				// continue;
+				// }
+				//
+				// Annotation a1 = a.clone();
+				// a1.setLink(bestEntity.replace("http://dbpedia.org/resource/",
+				// "http://en.wikipedia.org/wiki/"));
+				// annotations.add(a1);
+				// results.get(d.getDocumentName()).add(a1);
 			}
 			d.setAnnotations(annotations);
 			// System.out.println(d);
