@@ -27,3 +27,4 @@ src/main/resources/log4j.properties~
 matoll.log
 matoll.log~
 src/main/resources/stopwords.txt~
+/bin/
