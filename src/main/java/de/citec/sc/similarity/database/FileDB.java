@@ -163,13 +163,12 @@ public class FileDB {
 				continue;
 			}
 			bytesOfAbstract = line.getBytes("UTF-8").length + System.lineSeparator().getBytes().length;
-			final String[] data = line.split(">", 2);
+			final String[] data = line.split("\t", 2);
 			if (data.length == 2) {
 				for (int i = 0; i < data.length; i++) {
 					data[i] = data[i].trim();
 				}
-				indices.put(data[0] + ">",
-						new Index(new File(filename).getName(), previousNumOfBytes, bytesOfAbstract));
+				indices.put(data[0], new Index(new File(filename).getName(), previousNumOfBytes, bytesOfAbstract));
 			} else {
 				System.err.println("Line could not be read + " + line);
 			}

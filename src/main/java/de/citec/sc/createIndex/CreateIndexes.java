@@ -6,7 +6,6 @@
 package de.citec.sc.createIndex;
 
 import de.citec.sc.index.AnchorTextLoader;
-import de.citec.sc.index.DBpediaLoader;
 
 /**
  *
@@ -14,29 +13,23 @@ import de.citec.sc.index.DBpediaLoader;
  */
 public class CreateIndexes {
 
-    public static void main(String[] args) {
-        run();
-    }
+	public static void main(String[] args) {
+		run();
+	}
 
-    public static void run() {
-        System.out.println("Creating index files ...");
+	public static void run() {
+		System.out.println("Creating index files ...");
 
-        DBpediaLoader dbpediaLoader = new DBpediaLoader("propList1.txt");
-//
-//        System.out.println("dbpediaIndexOnlyLabels ...");
-//        dbpediaLoader.load(true, "dbpediaIndexOnlyLabels", "dbpediaFiles/");
-//
-//        dbpediaLoader = new DBpediaLoader("propList2.txt");
-//        System.out.println("dbpediaIndexOnlyOntology ...");
-//        dbpediaLoader.load(true, "dbpediaIndexOnlyOntology", "dbpediaFiles/");
-//
-        dbpediaLoader = new DBpediaLoader("propList3.txt");
-        System.out.println("dbpediaIndexAll ...");
-        dbpediaLoader.load(true, "dbpediaIndexAll", "dbpediaFiles/");
+		// SurfaceFormsDBpedia dbpediaLoader = new
+		// SurfaceFormsDBpedia("propList3.txt");
+		// System.out.println("dbpediaIndexAll ...");
+		// dbpediaLoader.load("dbpediaFiles/");
 
-        AnchorTextLoader anchorLoader = new AnchorTextLoader();
-        anchorLoader.load(true, "anchorIndex", "anchorFiles/");
+		AnchorTextLoader anchorLoader = new AnchorTextLoader();
+		anchorLoader.load(true, "anchorIndex", "anchorFiles/");
 
-        System.out.println("DONE.");
-    }
+		anchorLoader.load(true, "dbpediaIndex", "dbpediaFiles/");
+
+		System.out.println("DONE.");
+	}
 }

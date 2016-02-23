@@ -23,7 +23,9 @@ import de.citec.sc.exceptions.EmptyIndexException;
 import de.citec.sc.helper.StanfordLemmatizer;
 import de.citec.sc.helper.Stopwords;
 import de.citec.sc.helper.Tokenizer;
-import de.citec.sc.query.Search;
+import de.citec.sc.query.CandidateRetriever;
+import de.citec.sc.query.CandidateRetrieverOnLucene;
+import de.citec.sc.query.Instance;
 import de.citec.sc.similarity.database.FileDB;
 import de.citec.sc.similarity.measures.SimilarityMeasures;
 import de.citec.sc.similarity.tfidf.IDFProvider;
@@ -38,23 +40,23 @@ public class DocumentSimilarityTest {
 	 * The number of wikipedia documents.
 	 */
 	public static double NUMBER_OF_WIKI_DOCUMENTS;
+	public static String indexFile = "tfidfIndexDatabase.bin";
+	public static String tfidfFile = "en_wiki_large_abstracts.tfidf";
+	public static String dfFile = "en_wiki_large_abstracts.docfrequency";
 
 	public static void main(String[] args) throws IOException, EmptyIndexException {
-
-		String indexFile = "tfidfIndexDatabase.bin";
-		String tfidfFile = "en_wiki_large_abstracts.tfidf";
 
 		boolean storeIndexOnDrive = true;
 
 		FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
 
-		IDFProvider.getIDF();
+		IDFProvider.getIDF(dfFile);
 
 		lemmatizer = new StanfordLemmatizer();
 
 		NUMBER_OF_WIKI_DOCUMENTS = WikipediaTFIDFVector.countLines(tfidfFile);
 
-		Search indexSearch = new Search(false, "dbpediaIndexAll");
+		CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
 
 		CorpusLoader loader = new CorpusLoader();
 		DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
@@ -92,9 +94,9 @@ public class DocumentSimilarityTest {
 
 				// System.out.println(bestEntity);
 				// System.out.println(a.getWord());
-
-				if (bestEntity == null)
+				if (bestEntity == null) {
 					continue;
+				}
 
 				Annotation a1 = a.clone();
 				a1.setLink(bestEntity.replace("http://dbpedia.org/resource/", "http://en.wikipedia.org/wiki/"));
@@ -111,8 +113,8 @@ public class DocumentSimilarityTest {
 
 	}
 
-	private static String getBestBothSim(Search indexSearch, String word, Map<String, Double> currentDocumentVector)
-			throws IOException, EmptyIndexException {
+	private static String getBestBothSim(CandidateRetriever indexSearch, String word,
+			Map<String, Double> currentDocumentVector) throws IOException, EmptyIndexException {
 		// Micro precision = 0.544
 		// Micro recall = 0.502
 		// Micro F1 = 0.522
@@ -125,15 +127,15 @@ public class DocumentSimilarityTest {
 
 		String bestEntity = null;
 
-		Set<String> candidates = indexSearch.getAllResources(word, 100);
+		List<Instance> candidates = indexSearch.getAllResources(word, 100);
 		int maxDist = 40;
 
 		double candRank = 0;
 		int count = 1;
-		for (String candidate : candidates) {
+		for (Instance inst : candidates) {
+			final String candidate = inst.getUri().replace("http://dbpedia.org/resource/", "");
 			candRank = Math.pow(1 + (1 - (count / candidates.size())), 4);
-			int levenDist = SimilarityMeasures
-					.levenshteinDistance(candidate.replace("http://dbpedia.org/resource/", ""), word);
+			int levenDist = SimilarityMeasures.levenshteinDistance(candidate, word);
 
 			// maxDist = Math.max(maxDist, levenDist);
 
@@ -162,7 +164,7 @@ public class DocumentSimilarityTest {
 		return bestEntity;
 	}
 
-	private static String getFirst(Search indexSearch, String word) {
+	private static String getFirst(CandidateRetriever indexSearch, String word) {
 		// Micro precision = 0.703
 		// Micro recall = 0.701
 		// Micro F1 = 0.702
@@ -170,15 +172,15 @@ public class DocumentSimilarityTest {
 		// Macro precision = 0.726
 		// Macro recall = 0.724
 		// Macro F1 = 0.725
-		Set<String> candidates = indexSearch.getResourcesFromDBpedia(word, 100);
+		List<Instance> candidates = indexSearch.getAllResources(word, 100);
 
-		for (String candidate : candidates) {
-			return candidate;
+		for (Instance candidate : candidates) {
+			return candidate.getUri().replace("http://dbpedia.org/resource/", "");
 		}
 		return null;
 	}
 
-	private static String getBestByStringSimilarity(Search indexSearch, String word) {
+	private static String getBestByStringSimilarity(CandidateRetriever indexSearch, String word) {
 
 		// Micro-average Precision=0.548
 		// Micro-average Recall=0.546
@@ -190,14 +192,13 @@ public class DocumentSimilarityTest {
 
 		String bestEntity = null;
 
-		Set<String> candidates = indexSearch.getAllResources(word, 100);
+		List<Instance> candidates = indexSearch.getAllResources(word, 100);
 
-		for (String candidate : candidates) {
+		for (Instance instance : candidates) {
 
-			long t = System.nanoTime();
-			int levenDist = SimilarityMeasures
-					.levenshteinDistance(candidate.replace("http://dbpedia.org/resource/", ""), word);
-			System.out.println(System.nanoTime() - t);
+			String candidate = instance.getUri().replace("http://dbpedia.org/resource/", "");
+
+			int levenDist = SimilarityMeasures.levenshteinDistance(candidate, word);
 			if (maxDist > levenDist) {
 				bestEntity = candidate;
 				maxDist = levenDist;
@@ -207,8 +208,8 @@ public class DocumentSimilarityTest {
 		return bestEntity;
 	}
 
-	private static String getBestByCosineSimilarity(Search indexSearch, Map<String, Double> currentDocumentVector,
-			String word) throws IOException, EmptyIndexException {
+	private static String getBestByCosineSimilarity(CandidateRetriever indexSearch,
+			Map<String, Double> currentDocumentVector, String word) throws IOException, EmptyIndexException {
 		// Micro-average Precision=0.349
 		// Micro-average Recall=0.327
 		// F1 Micro-average=0.337
@@ -220,11 +221,11 @@ public class DocumentSimilarityTest {
 
 		String bestEntity = null;
 
-		Set<String> candidates = indexSearch.getAllResources(word, 100);
+		List<Instance> candidates = indexSearch.getAllResources(word, 100);
 
-		for (String candidate : candidates) {
-
-			final String datapoint = FileDB.query("<" + candidate + ">");
+		for (Instance i1 : candidates) {
+			String candidate = i1.getUri().replace("http://dbpedia.org/resource/", "");
+			final String datapoint = FileDB.query(candidate);
 
 			/*
 			 * This should not happen.
@@ -250,7 +251,7 @@ public class DocumentSimilarityTest {
 		Map<String, Double> currentDocumentVector;
 		final List<String> preprocessedDocument = preprocessDocument(document);
 
-		currentDocumentVector = TFIDF.getTFWikiIDF(preprocessedDocument, IDFProvider.getIDF(),
+		currentDocumentVector = TFIDF.getTFWikiIDF(preprocessedDocument, IDFProvider.getIDF(dfFile),
 				NUMBER_OF_WIKI_DOCUMENTS);
 
 		return currentDocumentVector;
@@ -274,7 +275,7 @@ public class DocumentSimilarityTest {
 
 		final Map<String, Double> vector = new HashMap<String, Double>();
 
-		final String vectorData = line.split(">", 2)[1];
+		final String vectorData = line.split("\t", 2)[1];
 
 		for (String dataPoint : vectorData.split("\t")) {
 			final String[] data = dataPoint.split(" ");
