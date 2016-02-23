@@ -70,10 +70,9 @@ public class DocumentSimilarityTest {
 
 		for (Document d : c.getDocuments()) {
 			System.out.print((counter++) + "/" + max + ": ");
-			// final String document = d.getDocumentContent();
+			final String document = d.getDocumentContent();
 
-			// Map<String, Double> currentDocumentVector =
-			// convertDocumentToVector(document);
+			Map<String, Double> currentDocumentVector = convertDocumentToVector(document);
 
 			List<Annotation> annotations = new ArrayList<Annotation>();
 			gold.put(d.getDocumentName(), new HashSet<Annotation>());
@@ -81,9 +80,15 @@ public class DocumentSimilarityTest {
 			for (Annotation a : d.getGoldResult()) {
 				gold.get(d.getDocumentName()).add(a);
 
-				String bestEntity = getBestByStringSimilarity(indexSearch, a.getWord());
-				// String bestEntity = getBestByCosineSimilarity(indexSearch,
-				// currentDocumentVector, a.getWord());
+				// String bestEntity = getFirst(indexSearch, a.getWord());
+
+				// String bestEntity = getBestByStringSimilarity(indexSearch,
+				// a.getWord());
+				//
+				String bestEntity = getBestByCosineSimilarity(indexSearch, currentDocumentVector, a.getWord());
+
+				// String bestEntity = getBestBothSim(indexSearch, a.getWord(),
+				// currentDocumentVector);
 
 				// System.out.println(bestEntity);
 				// System.out.println(a.getWord());
@@ -106,6 +111,73 @@ public class DocumentSimilarityTest {
 
 	}
 
+	private static String getBestBothSim(Search indexSearch, String word, Map<String, Double> currentDocumentVector)
+			throws IOException, EmptyIndexException {
+		// Micro precision = 0.544
+		// Micro recall = 0.502
+		// Micro F1 = 0.522
+		//
+		// Macro precision = 0.541
+		// Macro recall = 0.509
+		// Macro F1 = 0.523
+		//
+		double maxScore = 0;
+
+		String bestEntity = null;
+
+		Set<String> candidates = indexSearch.getAllResources(word, 100);
+		int maxDist = 40;
+
+		double candRank = 0;
+		int count = 1;
+		for (String candidate : candidates) {
+			candRank = Math.pow(1 + (1 - (count / candidates.size())), 4);
+			int levenDist = SimilarityMeasures
+					.levenshteinDistance(candidate.replace("http://dbpedia.org/resource/", ""), word);
+
+			// maxDist = Math.max(maxDist, levenDist);
+
+			double cosineSimilarity = 0;
+
+			final String datapoint = FileDB.query("<" + candidate + ">");
+
+			/*
+			 * This should not happen.
+			 */
+			if (datapoint != null) {
+
+				Map<String, Double> candidateVector = lineToVector(datapoint);
+
+				cosineSimilarity = SimilarityMeasures.cosineDistance(candidateVector, currentDocumentVector);
+			}
+
+			final double score = (maxDist - levenDist) * cosineSimilarity * candRank;
+
+			if (maxScore < score) {
+				bestEntity = candidate;
+				maxScore = score;
+			}
+
+		}
+		return bestEntity;
+	}
+
+	private static String getFirst(Search indexSearch, String word) {
+		// Micro precision = 0.703
+		// Micro recall = 0.701
+		// Micro F1 = 0.702
+		//
+		// Macro precision = 0.726
+		// Macro recall = 0.724
+		// Macro F1 = 0.725
+		Set<String> candidates = indexSearch.getResourcesFromDBpedia(word, 100);
+
+		for (String candidate : candidates) {
+			return candidate;
+		}
+		return null;
+	}
+
 	private static String getBestByStringSimilarity(Search indexSearch, String word) {
 
 		// Micro-average Precision=0.548
@@ -121,14 +193,11 @@ public class DocumentSimilarityTest {
 		Set<String> candidates = indexSearch.getAllResources(word, 100);
 
 		for (String candidate : candidates) {
-			// System.out.println("candidate = " +
-			// candidate.replace("http://dbpedia.org/resource/", ""));
-			// System.out.println("word = " + word);
 
+			long t = System.nanoTime();
 			int levenDist = SimilarityMeasures
 					.levenshteinDistance(candidate.replace("http://dbpedia.org/resource/", ""), word);
-			// System.out.println(levenDist);
-
+			System.out.println(System.nanoTime() - t);
 			if (maxDist > levenDist) {
 				bestEntity = candidate;
 				maxDist = levenDist;
