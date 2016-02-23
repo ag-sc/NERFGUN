@@ -146,7 +146,7 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 
 		final Map<String, Double> vector = new HashMap<String, Double>();
 
-		final String vectorData = line.split(">", 2)[1];
+		final String vectorData = line.split("\t", 2)[1];
 
 		for (String dataPoint : vectorData.split("\t")) {
 			final String[] data = dataPoint.split(" ");
