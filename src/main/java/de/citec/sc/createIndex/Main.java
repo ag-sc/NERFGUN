@@ -8,7 +8,7 @@ package de.citec.sc.createIndex;
 
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import java.io.UnsupportedEncodingException;
-import test.TestOnMemory;
+import de.citec.sc.BIREMain;
 
 /**
  *
@@ -25,6 +25,7 @@ public class Main {
         
 //        CreateIndexes.run();
         
-        RetrievalPerformance.run();
+//        RetrievalPerformance.run();
+        BIREMain.main(args);
     }
 }

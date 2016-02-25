@@ -11,6 +11,9 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.GreedyDisambiguationInitializer;
+import de.citec.sc.templates.EditDistanceTemplate;
+import de.citec.sc.templates.LuceneScoreTemplate;
+import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
@@ -57,7 +60,7 @@ public class BIREMain {
 		 * Load the index API.
 		 */
 		log.info("Load Index...");
-		CandidateRetriever index = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
+		CandidateRetriever index = new CandidateRetrieverOnLucene(true, "dbpediaIndex", "anchorIndex");
 
 		// Search index = new SearchCache(false, "dbpediaIndexAll");
 		/*
@@ -68,7 +71,7 @@ public class BIREMain {
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLL);
 		List<Document> documents = corpus.getDocuments();
 
-		documents = documents.subList(0, 10);
+		documents = documents.subList(0, 2);
 
 		/*
 		 * Some code for n-fold cross validation
@@ -80,6 +83,8 @@ public class BIREMain {
 		int n = 2;
 		double step = ((float) N) / n;
 		double k = 0;
+                //PageRankTemplate pTemplate = new PageRankTemplate();
+//                LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
 		for (int i = 0; i < n; i++) {
 			log.info("Cross-Validation Fold %s/%s", i + 1, n);
 			double j = k;
@@ -111,12 +116,14 @@ public class BIREMain {
 			 */
 			List<AbstractTemplate<State>> templates = new ArrayList<>();
 			// templates.add(new IndexRankTemplate());
+                        
 			try {
-				// templates.add(new EditDistanceTemplate());
-				templates.add(new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile));
+//                            templates.add(lTemplate);
+				 templates.add(new EditDistanceTemplate());
+//				templates.add(new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile));
 				// templates.add(new DocumentSimilarityTemplate(indexFile,
 				// tfidfFile, dfFile, true));
-			} catch (IOException e1) {
+			} catch (Exception e1) {
 				e1.printStackTrace();
 				System.exit(1);
 			}
