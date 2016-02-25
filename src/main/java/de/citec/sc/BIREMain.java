@@ -31,8 +31,9 @@ import evaluation.EvaluationUtil;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
-import learning.Scorer;
+import learning.scorer.Scorer;
 import learning.Trainer;
+import learning.scorer.DefaultScorer;
 import sampling.DefaultSampler;
 import sampling.Explorer;
 import sampling.Initializer;
@@ -132,7 +133,7 @@ public class BIREMain {
 			 * Create the scorer object that computes a score from the features
 			 * of a factor and the weight vectors of the templates.
 			 */
-			Scorer<State> scorer = new Scorer<State>(model);
+			DefaultScorer<State> scorer = new DefaultScorer<>();
 
 			/*
 			 * Create an Initializer that is responsible for providing an
