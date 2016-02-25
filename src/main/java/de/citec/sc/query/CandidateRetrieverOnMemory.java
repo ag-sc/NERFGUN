@@ -38,6 +38,7 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
         dbpediSurfaceForms = new ConcurrentHashMap<>();
         loadFiles("dbpediaFiles/dbpediaSurfaceForms.ttl", dbpediSurfaceForms);
         System.out.println("Loading anchor surface forms ...");
+        System.out.println(dbpediSurfaceForms.size());
         anchorSurfaceForms = new ConcurrentHashMap<>();
         loadFiles("anchorFiles/wikipedia_anchors.ttl", anchorSurfaceForms);
     }
@@ -64,15 +65,14 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
             }
         }
 
-        int sum = 0;
-        for (Integer i : result.values()) {
-            sum += i;
-        }
-
+       //        int sum = 0;
+//        for (Integer i : result.values()) {
+//            sum += i;
+//        }
         List<Instance> instances = new ArrayList<>();
         for (String r1 : result.keySet()) {
-            double score = (double) result.get(r1) / (double) sum;
-            Instance i = new Instance(r1, score);
+            //double score = (double) result.get(r1) / (double) sum;
+            Instance i = new Instance(r1, result.get(r1));
             instances.add(i);
         }
 
@@ -96,22 +96,25 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
                 } catch (UnsupportedEncodingException ex) {
                     Logger.getLogger(CandidateRetrieverOnMemory.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                result.put(s1, result2.get(s1));
+                if (result.containsKey(s1)) {
+                    result.put(s1, result.get(s1) + result2.get(s1));
+                } else {
+                    result.put(s1, result2.get(s1));
+                }
                 counter++;
             } else {
                 break;
             }
         }
 
-        int sum = 0;
-        for (Integer i : result.values()) {
-            sum += i;
-        }
-
+//        int sum = 0;
+//        for (Integer i : result.values()) {
+//            sum += i;
+//        }
         List<Instance> instances = new ArrayList<>();
         for (String r1 : result.keySet()) {
-            double score = (double) result.get(r1) / (double) sum;
-            Instance i = new Instance(r1, score);
+            //double score = (double) result.get(r1) / (double) sum;
+            Instance i = new Instance(r1, result.get(r1));
             instances.add(i);
         }
 
@@ -125,47 +128,50 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
 
         result1 = sortByValue(result1);
         result2 = sortByValue(result2);
-
-        HashMap<String, Integer> result = new LinkedHashMap<>();
-        int counter = 0;
-        for (String s1 : result1.keySet()) {
-            if (counter <= topK) {
-                try {
-                    s1 = URLDecoder.decode(s1, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(CandidateRetrieverOnMemory.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                result.put(s1, result1.get(s1));
-                counter++;
-            } else {
-                break;
-            }
-        }
-        counter = 0;
-        for (String s1 : result2.keySet()) {
-            if (counter <= topK) {
-                try {
-                    s1 = URLDecoder.decode(s1, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(CandidateRetrieverOnMemory.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                result.put(s1, result2.get(s1));
-                counter++;
-            } else {
-                break;
-            }
-        }
-
-        int sum = 0;
-        for (Integer i : result.values()) {
-            sum += i;
-        }
-
         List<Instance> instances = new ArrayList<>();
-        for (String r1 : result.keySet()) {
-            double score = (double) result.get(r1) / (double) sum;
-            Instance i = new Instance(r1, score);
-            instances.add(i);
+
+        try {
+            HashMap<String, Integer> result = new LinkedHashMap<>();
+            int counter = 0;
+            for (String s1 : result1.keySet()) {
+                if (counter <= topK) {
+                    try {
+                        s1 = URLDecoder.decode(s1, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        Logger.getLogger(CandidateRetrieverOnMemory.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    result.put(s1, result1.get(s1));
+                    counter++;
+                } else {
+                    break;
+                }
+            }
+            counter = 0;
+            for (String s1 : result2.keySet()) {
+                if (counter <= topK) {
+                    try {
+                        s1 = URLDecoder.decode(s1, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        Logger.getLogger(CandidateRetrieverOnMemory.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    result.put(s1, result2.get(s1));
+                    counter++;
+                } else {
+                    break;
+                }
+            }
+
+//            int sum = 0;
+//            for (Integer i : result.values()) {
+//                sum += i;
+//            }
+            for (String r1 : result.keySet()) {
+                //double score = (double) result.get(r1) / (double) sum;
+                Instance i = new Instance(r1, result.get(r1));
+                instances.add(i);
+            }
+        } catch (Exception e) {
+
         }
 
         return instances;

@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -32,7 +33,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.queryparser.classic.ParseException;
 import test.TestSearch;
 
-public class SurfaceFormsDBpedia{
+public class SurfaceFormsDBpedia {
 
     //docDirectory => dbpedia *.nt files
     //luceneIndex => lucene creates indexes 
@@ -52,7 +53,6 @@ public class SurfaceFormsDBpedia{
     public SurfaceFormsDBpedia() {
     }
 
-    
     public void load(String dbpediaFilesDirectory) {
 
         try {
@@ -83,57 +83,69 @@ public class SurfaceFormsDBpedia{
                     if (fileExtension.equals("nt")) {
 
                         try {
-                            System.out.print(dbpediaFilesDirectory + listOfFiles[i].getName()+ " ");
+                            System.out.print(dbpediaFilesDirectory + listOfFiles[i].getName() + " ");
                             long startTime = System.currentTimeMillis();
-                            indexData(dbpediaFilesDirectory + listOfFiles[i].getName()); 
+                            indexData(dbpediaFilesDirectory + listOfFiles[i].getName());
                             long endTime = System.currentTimeMillis();
                             System.out.println((endTime - startTime) / 1000 + " sec.");
                             System.out.println(frequencies.keySet().size());
-                            
 
                         } catch (Exception ex) {
-                            System.err.println("Problem loading file: " + listOfFiles[i].getName() );
+                            System.err.println("Problem loading file: " + listOfFiles[i].getName());
                             ex.printStackTrace();
                         }
                     }
                 }
             }
-            
-            writeListToFile(frequencies, "dbpediaSurfaceForms.txt");
-            
-            
+
+            writeListToFile(frequencies, "dbpediaFiles/dbpediaSurfaceForms.ttl");
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
-    
+
     public void writeListToFile(ConcurrentHashMap<String, Integer> map, String fileName) {
         try {
             File file = new File(fileName);
 
+            if (file.exists()) {
+                file.delete();
+                file.createNewFile();
+            }
             // if file doesnt exists, then create it
             if (!file.exists()) {
                 file.createNewFile();
             }
-            FileWriter fw = new FileWriter(file);
-            BufferedWriter bw = new BufferedWriter(fw);
-            bw.write("");
-            for(String s : map.keySet()){
-                bw.append(s.substring(s.indexOf("###")+3)+"\t"+s.substring(0, s.indexOf("###"))+"\t"+map.get(s)+"\n");
-            }
-            
+            PrintStream p = new PrintStream(file);
 
-            bw.close();
+            for (String s : map.keySet()) {
+                String label = s.substring(s.indexOf("###") + 3);
+                String uri = s.substring(0, s.indexOf("###"));
+                String freq = map.get(s).toString();
+
+//                try {
+//                    label = URLDecoder.decode(label, "UTF-8");
+//                } catch (Exception e) {
+//
+//                }
+//                try {
+//                    uri = URLDecoder.decode(uri, "UTF-8");
+//                } catch (Exception e) {
+//
+//                }
+                p.println(label + "\t" + uri + "\t" + freq + "\n");
+                
+            }
+
+            p.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-
     // reads chunks of data from filePath
-    
     public void indexData(String filePath) {
 
         String redirectPatternString = "^(?!(#))<http://dbpedia.org/resource/(.*?)> <http://dbpedia.org/ontology/wikiPageRedirects> <http://dbpedia.org/resource/(.*?)>";
@@ -153,13 +165,7 @@ public class SurfaceFormsDBpedia{
                     String label = m.group(4);
 
                     if (!(uri.contains("Category:") || uri.contains("(disambiguation)"))) {
-                        if (properties.contains(property) && !redirects.contains(uri)) {
-
-                            try {
-                                uri = URLDecoder.decode(uri, "UTF-8");
-                            } catch (UnsupportedEncodingException ex) {
-                                Logger.getLogger(TestSearch.class.getName()).log(Level.SEVERE, null, ex);
-                            }
+                        if (properties.contains(property)) {
 
                             //add to index
                             if (label.contains(",")) {
@@ -172,13 +178,23 @@ public class SurfaceFormsDBpedia{
                             label = label.trim();
                             label = label.toLowerCase();
 
-                            try {
-                                uri = URLDecoder.decode(uri, "UTF-8");
-                                label = URLDecoder.decode(label, "UTF-8");
-                                frequencies.put(uri+"###"+label, frequencies.getOrDefault(uri+"###"+label, 0) + 1);
-                            } catch (Exception e) {
+//                            try {
+//                                uri = URLDecoder.decode(uri, "UTF-8");
+//
+//                            } catch (Exception e) {
+//
+//                            }
+//                            try {
+//                                label = URLDecoder.decode(label, "UTF-8");
+//
+//                            } catch (Exception e) {
+//
+//                            }
 
+                            if (!redirects.contains(uri)) {
+                                frequencies.put(uri + "###" + label, frequencies.getOrDefault(uri + "###" + label, 0) + 1);
                             }
+
                         }
                     }
                 }
@@ -228,12 +244,20 @@ public class SurfaceFormsDBpedia{
                     s = s.trim();
 
                     //add to index
-                    try {
-                        uri = URLDecoder.decode(uri, "UTF-8");
-                        frequencies.put(uri+"###"+s, frequencies.getOrDefault(uri+"###"+s, 0) + 1);
-                    } catch (Exception ex) {
-                        Logger.getLogger(SurfaceFormsDBpedia.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+//                    try {
+//                        uri = URLDecoder.decode(uri, "UTF-8");
+//
+//                    } catch (Exception e) {
+//
+//                    }
+//                    try {
+//                        s = URLDecoder.decode(s, "UTF-8");
+//
+//                    } catch (Exception e) {
+//
+//                    }
+
+                    frequencies.put(uri + "###" + s, frequencies.getOrDefault(uri + "###" + s, 0) + 1);
 
                 }
 
@@ -242,7 +266,6 @@ public class SurfaceFormsDBpedia{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
 
     }
 
@@ -263,6 +286,11 @@ public class SurfaceFormsDBpedia{
                 Matcher m = pattern.matcher(line);
                 while (m.find()) {
                     String s = m.group(2);
+//
+//                    try {
+//                        s = URLDecoder.decode(s, "UTF-8");
+//                    } catch (Exception e) {
+//                    }
 
                     //String o = m.group(3);
                     content.add(s);
@@ -297,6 +325,7 @@ public class SurfaceFormsDBpedia{
 
         return content;
     }
+
     public Set<String> readFile(File file) {
         Set<String> content = null;
         try {
