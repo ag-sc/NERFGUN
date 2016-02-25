@@ -1,5 +1,6 @@
 package de.citec.sc.query;
 
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -86,6 +87,7 @@ public abstract class LabelRetriever {
                     freq = 1;
                 }
 
+                p = URLDecoder.decode(p, "UTF-8");
                 if (freq > 0) {
                     if (resultMap.containsKey(p)) {
                         resultMap.put(p, resultMap.get(p) + freq);
