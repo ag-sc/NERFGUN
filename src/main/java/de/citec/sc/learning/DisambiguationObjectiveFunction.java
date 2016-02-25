@@ -9,10 +9,11 @@ import com.google.common.collect.Sets;
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.variables.State;
 import learning.ObjectiveFunction;
+
 /**
-*
-* @author sjebbara
-*/
+ *
+ * @author sjebbara
+ */
 public class DisambiguationObjectiveFunction extends ObjectiveFunction<State, List<Annotation>> {
 
 	@Override
@@ -35,8 +36,11 @@ public class DisambiguationObjectiveFunction extends ObjectiveFunction<State, Li
 
 		double precision = tp / (tp + fp);
 		double recall = tp / (tp + fn);
-		double f1 = 2 * precision * recall / (precision * recall);
+		double f1 = 2 * precision * recall / (precision + recall);
 
+		if (Double.isNaN(f1)) {
+			return 0;
+		}
 		return f1;
 	}
 

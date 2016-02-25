@@ -28,7 +28,7 @@ public class WikipediaDocumentFrequency {
 
 		while ((line = br.readLine()) != null) {
 			count++;
-			final String[] termsAsArray = line.split(">", 2)[1].split(" ");
+			final String[] termsAsArray = line.split("\t", 2)[1].split(" ");
 
 			Set<String> terms = new HashSet<String>(Arrays.asList(termsAsArray));
 

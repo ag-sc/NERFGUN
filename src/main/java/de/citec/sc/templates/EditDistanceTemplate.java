@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.citec.sc.corpus.Annotation;
+import de.citec.sc.similarity.measures.SimilarityMeasures;
 import de.citec.sc.variables.State;
 import factors.AbstractFactor;
 import factors.impl.SingleVariableFactor;
@@ -20,17 +21,17 @@ import learning.Vector;
 import utility.VariableID;
 
 /**
+ * 
+ * Computes a similarity score given the distance of two strings weighted by
+ * their length. The longer the strings and the lower the edit distance the
+ * higher the similarity.
+ * 
+ * @author hterhors
  *
- * @author sherzod
+ *         Feb 18, 2016
  */
-public class IndexRankTemplate extends templates.AbstractTemplate<State> {
-
+public class EditDistanceTemplate extends templates.AbstractTemplate<State> {
 	private static Logger log = LogManager.getFormatterLogger();
-
-	private static int[] rankBins = { 1, 2, 3, 5, 10, 25, 50, 75, 90 };
-
-	public IndexRankTemplate() {
-	}
 
 	@Override
 	protected Collection<AbstractFactor> generateFactors(State state) {
@@ -38,6 +39,7 @@ public class IndexRankTemplate extends templates.AbstractTemplate<State> {
 		for (VariableID entityID : state.getEntityIDs()) {
 			factors.add(new SingleVariableFactor(this, entityID));
 		}
+		log.info("Generate %s factors for state %s.", factors.size(), state.getID());
 		return factors;
 	}
 
@@ -46,19 +48,22 @@ public class IndexRankTemplate extends templates.AbstractTemplate<State> {
 		if (absFactor instanceof SingleVariableFactor) {
 			SingleVariableFactor factor = (SingleVariableFactor) absFactor;
 			Annotation entity = state.getEntity(factor.entityID);
-			log.info("Compute IndexRank factor for state %s and variable %s", state.getID(), entity);
-
-			// String uri =
-			// entity.getLink().replace("http://dbpedia.org/resource/", "");
+			log.debug("Compute DocumentSimilarity factor for state %s and variable %s", state.getID(), entity);
 			Vector featureVector = new Vector();
-			int rank = entity.getIndexRank();
 
-			featureVector.set("IndexRank", (double) rank);
-			for (int rankBin : rankBins) {
-				featureVector.set("IndexRank < " + rankBin, rank < rankBin);
-			}
-			int lastBin = rankBins[rankBins.length - 1];
-			featureVector.set("IndexRank >= " + lastBin, rank >= lastBin);
+			log.debug("Retrieve text for query link %s...", entity.getLink());
+
+			final String link = entity.getLink().replaceAll("_", " ").toLowerCase();
+			final String word = entity.getWord().toLowerCase();
+
+			final int levenDist = SimilarityMeasures.levenshteinDistance(link, word);
+
+			final int max = Math.max(link.length(), word.length());
+
+			final double weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
+
+			featureVector.set("WeightedEditSimilarity", weightedEditSimilarity);
+
 			factor.setFeatures(featureVector);
 		}
 	}

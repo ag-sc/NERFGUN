@@ -30,9 +30,9 @@ public class WikipediaTermFrequency {
 
 			Map<String, Integer> termFrequency = new HashMap<String, Integer>();
 			count++;
-			final String docID = line.split(">", 2)[0];
-			StringBuffer line2Write = new StringBuffer(docID + ">");
-			final String[] terms = line.split(">", 2)[1].split(" ");
+			final String docID = line.split("\t", 2)[0];
+			StringBuffer line2Write = new StringBuffer(docID + "\t");
+			final String[] terms = line.split("\t", 2)[1].split(" ");
 			for (int i = 0; i < terms.length; i++) {
 				termFrequency.put(terms[i], termFrequency.getOrDefault(terms[i], 0) + 1);
 			}

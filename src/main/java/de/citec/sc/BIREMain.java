@@ -21,25 +21,21 @@ import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
-
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
-
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.GreedyDisambiguationInitializer;
-import de.citec.sc.templates.DocumentSimilarityTemplate;
+import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
+import learning.Scorer;
 import learning.Trainer;
-import learning.scorer.DefaultScorer;
-import learning.scorer.Scorer;
 import sampling.DefaultSampler;
 import sampling.Explorer;
 import sampling.Initializer;
-import sampling.stoppingcriterion.StepLimitCriterion;
 import sampling.stoppingcriterion.StoppingCriterion;
 import templates.AbstractTemplate;
 
@@ -56,6 +52,9 @@ public class BIREMain {
 		String indexFile = "tfidf.bin";
 		String dfFile = "en_wiki_large_abstracts.docfrequency";
 		String tfidfFile = "en_wiki_large_abstracts.tfidf";
+		String tsprFile = "tspr.gold";
+		String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
+
 		/*
 		 * Load the index API.
 		 */
@@ -72,14 +71,6 @@ public class BIREMain {
 		List<Document> documents = corpus.getDocuments();
 
 		documents = documents.subList(0, 10);
-		/*
-		 * Remove namespace from annotations
-		 */
-		for (Document document : documents) {
-			for (Annotation a : document.getGoldResult()) {
-				a.setLink(a.getLink().replace("http://en.wikipedia.org/wiki/", "http://dbpedia.org/resource/"));
-			}
-		}
 
 		/*
 		 * Some code for n-fold cross validation
@@ -96,6 +87,8 @@ public class BIREMain {
 			double j = k;
 			k = j + step;
 
+			// List<Document> test = documents;
+			// List<Document> train = documents;
 			List<Document> test = documents.subList((int) Math.floor(j), (int) Math.floor(k));
 			List<Document> train = new ArrayList<>(documents);
 			train.removeAll(test);
@@ -121,7 +114,10 @@ public class BIREMain {
 			List<AbstractTemplate<State>> templates = new ArrayList<>();
 			// templates.add(new IndexRankTemplate());
 			try {
-				templates.add(new DocumentSimilarityTemplate(indexFile, tfidfFile, dfFile, true));
+				// templates.add(new EditDistanceTemplate());
+				templates.add(new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile));
+				// templates.add(new DocumentSimilarityTemplate(indexFile,
+				// tfidfFile, dfFile, true));
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				System.exit(1);
@@ -136,7 +132,7 @@ public class BIREMain {
 			 * Create the scorer object that computes a score from the features
 			 * of a factor and the weight vectors of the templates.
 			 */
-			Scorer<State> scorer = new DefaultScorer<>();
+			Scorer<State> scorer = new Scorer<State>(model);
 
 			/*
 			 * Create an Initializer that is responsible for providing an
@@ -162,9 +158,23 @@ public class BIREMain {
 			 * time.
 			 */
 			int numberOfSamplingSteps = 30;
-			StoppingCriterion<State> stoppingCriterion = new StepLimitCriterion<>(numberOfSamplingSteps);
+
+			/*
+			 * Stop sampling if objective score is equal to 1.
+			 */
+			StoppingCriterion<State> objectiveOne = new StoppingCriterion<State>() {
+
+				@Override
+				public boolean checkCondition(List<State> chain, int step) {
+					return !chain.isEmpty() && chain.get(chain.size() - 1).getObjectiveScore() >= 1
+							|| step >= numberOfSamplingSteps;
+				}
+			};
+
+			// StoppingCriterion<State> stoppingCriterion = new
+			// StepLimitCriterion<>(numberOfSamplingSteps);
 			DefaultSampler<State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective, explorers,
-					stoppingCriterion);
+					objectiveOne);
 
 			/*
 			 * Define a learning strategy. The learner will receive state pairs
@@ -182,11 +192,37 @@ public class BIREMain {
 			int numberOfEpochs = 1;
 			Trainer trainer = new Trainer();
 			trainer.train(sampler, initializer, learner, train, numberOfEpochs);
+
+			/*
+			 * Stop sampling if model score does not increase for 5 iterations.
+			 */
+			StoppingCriterion<State> stopAtMaxModelScore = new StoppingCriterion<State>() {
+
+				@Override
+				public boolean checkCondition(List<State> chain, int step) {
+
+					if (chain.isEmpty())
+						return false;
+
+					double maxScore = chain.get(chain.size() - 1).getModelScore();
+					int count = 0;
+					final int maxCount = 5;
+
+					for (int i = 0; i < chain.size(); i++) {
+						if (chain.get(i).getModelScore() >= maxScore) {
+							count++;
+						}
+					}
+					return count >= maxCount || step >= numberOfSamplingSteps;
+				}
+			};
+
+			sampler.setStoppingCriterion(stopAtMaxModelScore);
+
 			/*
 			 * Perform prediction on training and test data.
 			 */
 			List<State> trainResults = trainer.test(sampler, initializer, train);
-			List<State> testResults = trainer.test(sampler, initializer, test);
 
 			/*
 			 * Give the final annotations to the Document for the Evaluator
@@ -194,22 +230,16 @@ public class BIREMain {
 			for (State state : trainResults) {
 				state.getDocument().setAnnotations(new ArrayList<>(state.getEntities()));
 			}
-			for (State state : testResults) {
-				state.getDocument().setAnnotations(new ArrayList<>(state.getEntities()));
-			}
 			/*
 			 * Evaluate train and test predictions
 			 */
 			Map<String, Double> trainEvaluation = Evaluator.evaluateAll(train);
-			Map<String, Double> testEvaluation = Evaluator.evaluateAll(test);
 
 			/*
 			 * Print evaluation
 			 */
 			log.info("Evaluation on training data:");
 			trainEvaluation.entrySet().forEach(e -> log.info(e));
-			log.info("Evaluation on test data:");
-			testEvaluation.entrySet().forEach(e -> log.info(e));
 
 			/*
 			 * Finally, print the models weights.
@@ -218,6 +248,23 @@ public class BIREMain {
 			EvaluationUtil.printWeights(model, -1);
 
 			avrgTrain = Evaluator.add(avrgTrain, trainEvaluation);
+
+			/*
+			 * Same for testdata
+			 */
+
+			List<State> testResults = trainer.test(sampler, initializer, test);
+			for (State state : testResults) {
+				state.getDocument().setAnnotations(new ArrayList<>(state.getEntities()));
+			}
+			Map<String, Double> testEvaluation = Evaluator.evaluateAll(test);
+			log.info("Evaluation on test data:");
+			testEvaluation.entrySet().forEach(e -> log.info(e));
+			/*
+			 * Finally, print the models weights.
+			 */
+			log.info("Model weights:");
+			EvaluationUtil.printWeights(model, -1);
 			avrgTest = Evaluator.add(avrgTest, testEvaluation);
 		}
 		/*

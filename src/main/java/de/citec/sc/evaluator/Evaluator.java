@@ -181,7 +181,7 @@ public class Evaluator {
 		Map<String, Double> result = new LinkedHashMap<>();
 		Set<String> keys = Sets.union(r1.keySet(), r2.keySet());
 		for (String key : keys) {
-			result.put(key, r1.getOrDefault(key, 0.0) + r1.getOrDefault(key, 0.0));
+			result.put(key, r1.getOrDefault(key, 0.0) + r2.getOrDefault(key, 0.0));
 		}
 		return result;
 	}

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 
 import corpus.LabeledInstance;
-import corpus.LabeledInstance;
 
 /**
  *
@@ -96,9 +95,11 @@ public class Document implements LabeledInstance<List<Annotation>> {
 	public String toString() {
 		String a = "Doc name: " + documentName + "\nContent:\n" + documentContent;
 		a += "\n\nAnnotations:\n";
+
 		for (Annotation a1 : annotations) {
 			a += a1.toString() + "\n";
 		}
+
 		a += "\n\nGoldSet:\n";
 		for (Annotation a1 : goldStandard) {
 			a += a1.toString() + "\n";

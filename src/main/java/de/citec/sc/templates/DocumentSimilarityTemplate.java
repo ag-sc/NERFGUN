@@ -80,12 +80,12 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 		if (absFactor instanceof SingleVariableFactor) {
 			SingleVariableFactor factor = (SingleVariableFactor) absFactor;
 			Annotation entity = state.getEntity(factor.entityID);
-			log.info("Compute DocumentSimilarity factor for state %s and variable %s", state.getID(), entity);
+			log.debug("Compute DocumentSimilarity factor for state %s and variable %s", state.getID(), entity);
 			Vector featureVector = new Vector();
 
 			try {
 				log.debug("Retrieve text for query link %s...", entity.getLink());
-				String queryResult = FileDB.query("<" + entity.getLink() + ">");
+				String queryResult = FileDB.query(entity.getLink());
 				double cosineSimilarity = 0;
 				if (queryResult != null) {
 					log.debug("Convert retrieved abstract to vector...");
@@ -146,7 +146,7 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 
 		final Map<String, Double> vector = new HashMap<String, Double>();
 
-		final String vectorData = line.split(">", 2)[1];
+		final String vectorData = line.split("\t", 2)[1];
 
 		for (String dataPoint : vectorData.split("\t")) {
 			final String[] data = dataPoint.split(" ");

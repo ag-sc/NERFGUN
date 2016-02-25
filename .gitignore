@@ -28,3 +28,13 @@ src/main/resources/log4j.properties~
 matoll.log
 matoll.log~
 src/main/resources/stopwords.txt~
+/bin/
+/en_wiki_large_abstracts.docfrequency
+/en_wiki_large_abstracts.tfidf
+/tfidfIndexDatabase.bin
+/.classpath
+/.project
+/.settings/
+/tfidf.bin
+/tspr.gold
+/wikipagegraphdataDecoded.keys

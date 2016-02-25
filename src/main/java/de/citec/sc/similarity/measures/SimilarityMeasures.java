@@ -239,6 +239,10 @@ public class SimilarityMeasures {
 		}
 		final double denominator = Math.sqrt(d1) * Math.sqrt(d2);
 		final double result = numerator / denominator;
+
+		if (Double.isNaN(result))
+			return 0;
+
 		return result;
 	}
 

@@ -20,9 +20,10 @@ import de.citec.sc.similarity.tfidf.IDFProvider;
 
 public class WikipediaTFIDFVector {
 
+	public static String dfFile = "en_wiki_large_abstracts.docfrequency";
+
 	public static void main(String[] args) throws IOException {
 
-		String dfFile = "en_wiki_large_abstracts.docfrequency";
 		Map<String, Double> documentFrequency = IDFProvider.getIDF(dfFile);
 
 		final double docNumber = countLines("gen/en_wiki_large_abstracts.termfrequency");
@@ -41,10 +42,10 @@ public class WikipediaTFIDFVector {
 			if (countLines % 1000 == 0) {
 				System.out.println("Processed: " + countLines + " files.");
 			}
-			final String docID = line.split(">", 2)[0] + ">";
+			final String docID = line.split("\t", 2)[0] + "\t";
 			StringBuffer line2Write = new StringBuffer(docID);
 
-			final String[] terms = line.split(">", 2)[1].split("\t");
+			final String[] terms = line.split("\t", 2)[1].split("\t");
 
 			Map<String, Double> tfidfForDoc = new HashMap<String, Double>();
 
