@@ -27,6 +27,8 @@ public class IndexRankTemplate extends templates.AbstractTemplate<State> {
 
 	private static Logger log = LogManager.getFormatterLogger();
 
+	private static int[] rankBins = { 1, 2, 3, 5, 10, 25, 50, 75, 90 };
+
 	public IndexRankTemplate() {
 	}
 
@@ -52,7 +54,6 @@ public class IndexRankTemplate extends templates.AbstractTemplate<State> {
 			int rank = entity.getIndexRank();
 
 			featureVector.set("IndexRank", (double) rank);
-			int[] rankBins = { 1, 2, 3, 5, 10, 25, 50, 75, 90 };
 			for (int rankBin : rankBins) {
 				featureVector.set("IndexRank < " + rankBin, rank < rankBin);
 			}

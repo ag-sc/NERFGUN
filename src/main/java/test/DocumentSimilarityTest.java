@@ -7,6 +7,7 @@ package test;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +32,6 @@ import de.citec.sc.similarity.database.FileDB;
 import de.citec.sc.similarity.measures.SimilarityMeasures;
 import de.citec.sc.similarity.tfidf.IDFProvider;
 import de.citec.sc.similarity.tfidf.TFIDF;
-import de.citec.sc.wikipedia.preprocess.WikipediaTFIDFVector;
 
 public class DocumentSimilarityTest {
 
@@ -47,15 +47,16 @@ public class DocumentSimilarityTest {
 
 	public static void main(String[] args) throws IOException, EmptyIndexException {
 
-		boolean storeIndexOnDrive = true;
+		// boolean storeIndexOnDrive = true;
 
-		FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
+		// FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
 
-		IDFProvider.getIDF(dfFile);
+		// IDFProvider.getIDF(dfFile);
 
-		lemmatizer = new StanfordLemmatizer();
+		// lemmatizer = new StanfordLemmatizer();
 
-		NUMBER_OF_WIKI_DOCUMENTS = WikipediaTFIDFVector.countLines(tfidfFile);
+		// NUMBER_OF_WIKI_DOCUMENTS =
+		// WikipediaTFIDFVector.countLines(tfidfFile);
 
 		CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
 
@@ -73,22 +74,39 @@ public class DocumentSimilarityTest {
 
 		PrintStream ps = new PrintStream("goldCandidates");
 
+		Set<String> candidateSet = new HashSet<String>();
 		for (Document d : c.getDocuments()) {
 			System.out.print((counter++) + "/" + max + ": ");
 			final String document = d.getDocumentContent();
 
-			Map<String, Double> currentDocumentVector = convertDocumentToVector(document);
+			// Map<String, Double> currentDocumentVector =
+			// convertDocumentToVector(document);
 
 			List<Annotation> annotations = new ArrayList<Annotation>();
 			gold.put(d.getDocumentName(), new HashSet<Annotation>());
 			results.put(d.getDocumentName(), new HashSet<Annotation>());
+
 			for (Annotation a : d.getGoldResult()) {
 				gold.get(d.getDocumentName()).add(a);
 
 				List<Instance> candidates = indexSearch.getAllResources(a.getWord(), 100);
 
 				for (Instance instance : candidates) {
-					ps.println(instance.getUri());
+
+					final String x = URLDecoder.decode(instance.getUri(), "UTF-8");
+					final String y = instance.getUri();
+
+					if (!x.equals(y)) {
+						System.out.println(a.getWord());
+						System.out.println(a.getLink());
+						System.out.println(x);
+						System.out.println(y);
+						System.out.println();
+						System.out.println();
+						System.out.println();
+					}
+
+					candidateSet.add(instance.getUri());
 				}
 
 				// String bestEntity = getFirst(indexSearch, a.getWord());
@@ -118,6 +136,8 @@ public class DocumentSimilarityTest {
 			// System.out.println(d);
 			System.out.println(evaluator.evaluate(d));
 		}
+		candidateSet.forEach(ps::println);
+
 		// evaluator.evaluateAll(c.getDocuments()).entrySet().forEach(System.out::println);
 
 		PRF1.calculate(gold, results);

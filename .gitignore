@@ -35,3 +35,6 @@ src/main/resources/stopwords.txt~
 /.classpath
 /.project
 /.settings/
+/tfidf.bin
+/tspr.gold
+/wikipagegraphdataDecoded.keys

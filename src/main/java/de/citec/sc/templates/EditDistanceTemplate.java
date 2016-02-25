@@ -22,17 +22,16 @@ import utility.VariableID;
 
 /**
  * 
+ * Computes a similarity score given the distance of two strings weighted by
+ * their length. The longer the strings and the lower the edit distance the
+ * higher the similarity.
+ * 
  * @author hterhors
  *
  *         Feb 18, 2016
  */
 public class EditDistanceTemplate extends templates.AbstractTemplate<State> {
-
 	private static Logger log = LogManager.getFormatterLogger();
-
-	public EditDistanceTemplate() {
-
-	}
 
 	@Override
 	protected Collection<AbstractFactor> generateFactors(State state) {
@@ -54,10 +53,16 @@ public class EditDistanceTemplate extends templates.AbstractTemplate<State> {
 
 			log.debug("Retrieve text for query link %s...", entity.getLink());
 
-			double levenDist = SimilarityMeasures.levenshteinDistance(
-					entity.getLink().replaceAll("_", " ").toLowerCase(), entity.getWord().toLowerCase());
+			final String link = entity.getLink().replaceAll("_", " ").toLowerCase();
+			final String word = entity.getWord().toLowerCase();
 
-			featureVector.set("EditDistance", levenDist);
+			final int levenDist = SimilarityMeasures.levenshteinDistance(link, word);
+
+			final int max = Math.max(link.length(), word.length());
+
+			final double weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
+
+			featureVector.set("WeightedEditSimilarity", weightedEditSimilarity);
 
 			factor.setFeatures(featureVector);
 		}

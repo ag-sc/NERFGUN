@@ -1,5 +1,6 @@
 package de.citec.sc;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -24,7 +25,7 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.GreedyDisambiguationInitializer;
-import de.citec.sc.templates.EditDistanceTemplate;
+import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import learning.DefaultLearner;
@@ -51,6 +52,9 @@ public class BIREMain {
 		String indexFile = "tfidf.bin";
 		String dfFile = "en_wiki_large_abstracts.docfrequency";
 		String tfidfFile = "en_wiki_large_abstracts.tfidf";
+		String tsprFile = "tspr.gold";
+		String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
+
 		/*
 		 * Load the index API.
 		 */
@@ -66,7 +70,7 @@ public class BIREMain {
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLL);
 		List<Document> documents = corpus.getDocuments();
 
-		// documents = documents.subList(0, 10);
+		documents = documents.subList(0, 10);
 
 		/*
 		 * Some code for n-fold cross validation
@@ -109,14 +113,15 @@ public class BIREMain {
 			 */
 			List<AbstractTemplate<State>> templates = new ArrayList<>();
 			// templates.add(new IndexRankTemplate());
-			templates.add(new EditDistanceTemplate());
-			// try {
-			// templates.add(new DocumentSimilarityTemplate(indexFile,
-			// tfidfFile, dfFile, true));
-			// } catch (IOException e1) {
-			// e1.printStackTrace();
-			// System.exit(1);
-			// }
+			try {
+				// templates.add(new EditDistanceTemplate());
+				templates.add(new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile));
+				// templates.add(new DocumentSimilarityTemplate(indexFile,
+				// tfidfFile, dfFile, true));
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				System.exit(1);
+			}
 			// templates.add(new PageRankTemplate());
 
 			/*
@@ -218,7 +223,6 @@ public class BIREMain {
 			 * Perform prediction on training and test data.
 			 */
 			List<State> trainResults = trainer.test(sampler, initializer, train);
-			List<State> testResults = trainer.test(sampler, initializer, test);
 
 			/*
 			 * Give the final annotations to the Document for the Evaluator
@@ -226,22 +230,16 @@ public class BIREMain {
 			for (State state : trainResults) {
 				state.getDocument().setAnnotations(new ArrayList<>(state.getEntities()));
 			}
-			for (State state : testResults) {
-				state.getDocument().setAnnotations(new ArrayList<>(state.getEntities()));
-			}
 			/*
 			 * Evaluate train and test predictions
 			 */
 			Map<String, Double> trainEvaluation = Evaluator.evaluateAll(train);
-			Map<String, Double> testEvaluation = Evaluator.evaluateAll(test);
 
 			/*
 			 * Print evaluation
 			 */
 			log.info("Evaluation on training data:");
 			trainEvaluation.entrySet().forEach(e -> log.info(e));
-			log.info("Evaluation on test data:");
-			testEvaluation.entrySet().forEach(e -> log.info(e));
 
 			/*
 			 * Finally, print the models weights.
@@ -249,7 +247,24 @@ public class BIREMain {
 			log.info("Model weights:");
 			EvaluationUtil.printWeights(model, -1);
 
-			// avrgTrain = Evaluator.add(avrgTrain, trainEvaluation);
+			avrgTrain = Evaluator.add(avrgTrain, trainEvaluation);
+
+			/*
+			 * Same for testdata
+			 */
+
+			List<State> testResults = trainer.test(sampler, initializer, test);
+			for (State state : testResults) {
+				state.getDocument().setAnnotations(new ArrayList<>(state.getEntities()));
+			}
+			Map<String, Double> testEvaluation = Evaluator.evaluateAll(test);
+			log.info("Evaluation on test data:");
+			testEvaluation.entrySet().forEach(e -> log.info(e));
+			/*
+			 * Finally, print the models weights.
+			 */
+			log.info("Model weights:");
+			EvaluationUtil.printWeights(model, -1);
 			avrgTest = Evaluator.add(avrgTest, testEvaluation);
 		}
 		/*
