@@ -48,17 +48,17 @@ public class IndexRankTemplate extends templates.AbstractTemplate<State> {
 			Annotation entity = state.getEntity(factor.entityID);
 			log.info("Compute IndexRank factor for state %s and variable %s", state.getID(), entity);
 
-			// String uri =
-			// entity.getLink().replace("http://dbpedia.org/resource/", "");
 			Vector featureVector = new Vector();
 			int rank = entity.getIndexRank();
 
-			featureVector.set("IndexRank", (double) rank);
-			for (int rankBin : rankBins) {
-				featureVector.set("IndexRank < " + rankBin, rank < rankBin);
+			if (rank != -1) {
+				featureVector.set("IndexRank", (double) rank);
+				for (int rankBin : rankBins) {
+					featureVector.set("IndexRank < " + rankBin, rank < rankBin);
+				}
+				int lastBin = rankBins[rankBins.length - 1];
+				featureVector.set("IndexRank >= " + lastBin, rank >= lastBin);
 			}
-			int lastBin = rankBins[rankBins.length - 1];
-			featureVector.set("IndexRank >= " + lastBin, rank >= lastBin);
 			factor.setFeatures(featureVector);
 		}
 	}
