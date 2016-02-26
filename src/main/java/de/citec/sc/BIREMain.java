@@ -11,10 +11,10 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.EmptyURIInitializer;
+import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
 import de.citec.sc.templates.LuceneScoreTemplate;
 import de.citec.sc.templates.PageRankTemplate;
-import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import java.io.IOException;
@@ -26,6 +26,7 @@ import java.util.Map;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
+import learning.scorer.DefaultScorer;
 import learning.Trainer;
 import learning.scorer.DefaultScorer;
 import learning.scorer.Scorer;
@@ -92,7 +93,10 @@ public class BIREMain {
 			double j = k;
 			k = j + step;
 
-			// List<Document> test = documents;
+			// List<Document> test = documents;(IOException e1) {
+			// e1.printStackTrace();
+			// System.exit(1);
+			// }
 			// List<Document> train = documents;
 			List<Document> test = documents.subList((int) Math.floor(j), (int) Math.floor(k));
 			List<Document> train = new ArrayList<>(documents);
@@ -132,6 +136,7 @@ public class BIREMain {
 				e1.printStackTrace();
 				System.exit(1);
 			}
+
 			// templates.add(new PageRankTemplate());
 
 			/*
@@ -142,7 +147,7 @@ public class BIREMain {
 			 * Create the scorer object that computes a score from the features
 			 * of a factor and the weight vectors of the templates.
 			 */
-			Scorer<State> scorer = new DefaultScorer<State>();
+			Scorer<State> scorer = new DefaultScorer<>();
 
 			/*
 			 * Create an Initializer that is responsible for providing an

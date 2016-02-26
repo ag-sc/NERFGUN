@@ -22,9 +22,8 @@ import org.apache.logging.log4j.Logger;
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.variables.State;
 import factors.AbstractFactor;
-import factors.impl.SingleVariableFactor;
+import factors.impl.UnorderedVariablesFactor;
 import learning.Vector;
-import utility.VariableID;
 
 /**
  * 
@@ -36,16 +35,6 @@ import utility.VariableID;
  *         Feb 18, 2016
  */
 public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<State> {
-
-	// public static void main(String[] args) throws
-	// UnsupportedEncodingException {
-	//
-	// String x = "%E2%80%93";
-	//
-	// String y = URLDecoder.decode(x, "UTF-8");
-	// System.out.println(x);
-	// System.out.println(y);
-	// }
 
 	private static final int NUM_OF_GOLD_INDICIES = 1700000;
 
@@ -104,18 +93,22 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 
 	@Override
 	protected Collection<AbstractFactor> generateFactors(State state) {
+
 		Set<AbstractFactor> factors = new HashSet<>();
-		for (VariableID entityID : state.getEntityIDs()) {
-			factors.add(new SingleVariableFactor(this, entityID));
-		}
+		// for (VariableID entityID : state.getEntityIDs()) {
+		// factors.add(new SingleVariableFactor(this, entityID));
+		// }
+
+		factors.add(new UnorderedVariablesFactor(this, state.getEntityIDs()));
+
 		log.debug("Generate %s factors for state %s.", factors.size(), state.getID());
 		return factors;
 	}
 
 	@Override
 	protected void computeFactor(State state, AbstractFactor absFactor) {
-		if (absFactor instanceof SingleVariableFactor) {
-			SingleVariableFactor factor = (SingleVariableFactor) absFactor;
+		if (absFactor instanceof UnorderedVariablesFactor) {
+			UnorderedVariablesFactor factor = (UnorderedVariablesFactor) absFactor;
 			log.debug("Compute Topic Specific Page Rank factor for state %s", state.getID());
 			Vector featureVector = new Vector();
 
@@ -152,7 +145,7 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 					if (annotation.equals(annotation2))
 						continue;
 
-					final String link2 = annotation.getLink().trim();
+					final String link2 = annotation2.getLink().trim();
 
 					if (link2.isEmpty())
 						continue;
@@ -175,10 +168,19 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 					 * If tspr of startnode contains node
 					 */
 					score += tspr.get(linkNodeIndex).get(linkNodeIndex2);
-
+					// System.out.println("link = " + link);
+					// System.out.println("link2 = " + link2);
+					// System.out.println("tspr = " +
+					// tspr.get(linkNodeIndex).get(linkNodeIndex2));
 				}
 			}
 
+			// state.getEntities().forEach(System.out::println);
+			// System.out.println("Score = " + score);
+			//
+			// System.out.println("===============");
+			// System.out.println();
+			// System.out.println();
 			/*
 			 * Normalize by number of additions.
 			 */
