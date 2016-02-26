@@ -17,11 +17,12 @@ import variables.AbstractVariable;
  */
 public class Annotation extends AbstractVariable<State> {
 
+    public final static String DEFAULT_ID = "<EMPTY-URI>";
     private String word;
     private String link;
     private int startIndex, endIndex;
     private int indexRank = -1;
-    private double indexScore = 0.0;
+    private double indexScore;
 
     public Annotation(String word, String link, int startIndex, int endIndex, VariableID vID) {
         super(vID);
@@ -29,6 +30,14 @@ public class Annotation extends AbstractVariable<State> {
         this.link = link;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
+    }
+
+    public double getIndexScore() {
+        return indexScore;
+    }
+
+    public void setIndexScore(double indexScore) {
+        this.indexScore = indexScore;
     }
 
     /**
@@ -42,14 +51,6 @@ public class Annotation extends AbstractVariable<State> {
 
     public void setStartIndex(int startIndex) {
         this.startIndex = startIndex;
-    }
-
-    public double getIndexScore() {
-        return indexScore;
-    }
-
-    public void setIndexScore(double indexScore) {
-        this.indexScore = indexScore;
     }
 
     public int getEndIndex() {
@@ -125,7 +126,6 @@ public class Annotation extends AbstractVariable<State> {
 
     public Annotation clone() {
         Annotation a = new Annotation(word, link, startIndex, endIndex, id);
-        a.setIndexRank(indexRank);
         a.setIndexScore(indexScore);
         return a;
     }

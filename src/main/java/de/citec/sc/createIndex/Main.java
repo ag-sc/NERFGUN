@@ -5,9 +5,8 @@
  */
 package de.citec.sc.createIndex;
 
-import de.citec.sc.query.CandidateRetrieverOnMemory;
-import java.io.UnsupportedEncodingException;
 import de.citec.sc.BIREMain;
+import java.io.UnsupportedEncodingException;
 
 /**
  *

@@ -10,9 +10,8 @@ import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.DisambiguationExplorer;
-import de.citec.sc.sampling.GreedyDisambiguationInitializer;
+import de.citec.sc.sampling.EmptyURIInitializer;
 import de.citec.sc.templates.EditDistanceTemplate;
-import de.citec.sc.templates.IndexRankTemplate;
 import de.citec.sc.templates.LuceneScoreTemplate;
 import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
@@ -29,6 +28,7 @@ import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
 import learning.scorer.DefaultScorer;
+import learning.scorer.Scorer;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -142,13 +142,13 @@ public class BIREMain {
 			 * Create the scorer object that computes a score from the features
 			 * of a factor and the weight vectors of the templates.
 			 */
-			DefaultScorer<State> scorer = new DefaultScorer<>();
+			Scorer<State> scorer = new DefaultScorer<State>();
 
 			/*
 			 * Create an Initializer that is responsible for providing an
 			 * initial state for the sampling chain given a sentence.
 			 */
-			Initializer<Document, State> initializer = new GreedyDisambiguationInitializer(index);
+			Initializer<Document, State> initializer = new EmptyURIInitializer();
 
 			/*
 			 * Define the explorers that will provide "neighboring" states given
