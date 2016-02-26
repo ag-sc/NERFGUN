@@ -2,6 +2,7 @@ package de.citec.sc.wikipedia.preprocess;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -13,10 +14,44 @@ import de.citec.sc.helper.Tokenizer;
 
 public class WikiLargeAbstractConverter {
 
+	final static String prefix = "<http://dbpedia.org/resource/";
+
 	public static void main(String[] args) throws IOException {
 
+		tmp();
+
+		// constructFromRaw();
+
+	}
+
+	private static void tmp() throws IOException {
+		BufferedReader br = new BufferedReader(
+				new FileReader(new File("gen/en_wiki_large_abstracts_regexp_lemmat_token_ized.txtOLD")));
+		PrintStream psOut = new PrintStream("gen/en_wiki_large_abstracts_regexp_lemmat_token_ized.txt");
+
+		String line;
+
+		while ((line = br.readLine()) != null) {
+
+			String data[] = line.split(">", 2);
+
+			String name = data[0].trim().replaceAll(prefix, "");
+			String l = data[1].trim();
+			psOut.println(name + "\t" + l);
+		}
+
+		psOut.close();
+		br.close();
+	}
+
+	private static void constructFromRaw() throws FileNotFoundException, IOException {
 		BufferedReader br = new BufferedReader(
 				new FileReader(new File("/home/hterhors/EnWikipedia/long-abstracts_en.nt")));
+
+		// BufferedReader br = new BufferedReader(
+		// new InputStreamReader(new
+		// FileInputStream("/home/hterhors/EnWikipedia/long-abstracts_en.nt"),
+		// "ASCII"));
 
 		String line;
 
@@ -39,7 +74,9 @@ public class WikiLargeAbstractConverter {
 			line = line.replaceAll("> \"", "> ");
 			line = line.replaceAll("<http://dbpedia\\.org/ontology/abstract>", "");
 			curAbstract = new StringBuffer();
-			curAbstract.append(line.substring(0, line.indexOf(">") + 1));
+			final String name = line.substring(prefix.length(), line.indexOf(">"));
+
+			curAbstract.append(name + "\t");
 
 			line = line.substring(line.indexOf(">") + 1, line.length());
 
@@ -64,6 +101,5 @@ public class WikiLargeAbstractConverter {
 		linesToWrite.forEach(psOut::println);
 		psOut.close();
 		br.close();
-
 	}
 }

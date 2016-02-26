@@ -24,7 +24,7 @@ import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.DisambiguationExplorer;
-import de.citec.sc.sampling.GreedyDisambiguationInitializer;
+import de.citec.sc.sampling.EmptyURIInitializer;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
@@ -143,7 +143,7 @@ public class BIREMain {
 			 * Create an Initializer that is responsible for providing an
 			 * initial state for the sampling chain given a sentence.
 			 */
-			Initializer<Document, State> initializer = new GreedyDisambiguationInitializer(index);
+			Initializer<Document, State> initializer = new EmptyURIInitializer();
 
 			/*
 			 * Define the explorers that will provide "neighboring" states given

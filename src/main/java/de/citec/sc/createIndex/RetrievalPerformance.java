@@ -30,6 +30,7 @@ import de.citec.sc.corpus.Document;
 import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
+import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.query.Instance;
 
 /**
@@ -52,6 +53,8 @@ public class RetrievalPerformance {
         List<Integer> topKs = new ArrayList<>();
         // topKs.add(10);
         topKs.add(100);
+//        topKs.add(200);
+//        topKs.add(500);
         // topKs.add(1000);
         // topKs.add(2000);
 
@@ -62,7 +65,7 @@ public class RetrievalPerformance {
 
         List<String> indexType = new ArrayList<>();
         // indexType.add("dbpedia");
-        // indexType.add("anchors");
+         //indexType.add("anchors");
         indexType.add("all");
 
         List<String> dbindexPaths = new ArrayList<>();
@@ -71,21 +74,20 @@ public class RetrievalPerformance {
         dbindexPaths.add("dbpediaIndexAll");
 
         List<Boolean> useMemory = new ArrayList<>();
-        useMemory.add(Boolean.FALSE);
-        // useMemory.add(Boolean.TRUE);
+//        useMemory.add(Boolean.FALSE);
+         useMemory.add(Boolean.TRUE);
 
         CorpusLoader loader = new CorpusLoader(false);
 
         String overallResult = "";
         long start = System.currentTimeMillis();
-        indexSearch = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
+        
         //indexSearch = new CandidateRetrieverOnMemory();
         long end = System.currentTimeMillis();
         System.out.println((end - start) + " ms loading the index ");
-        
-        
 
         for (Boolean m : useMemory) {
+            indexSearch = new CandidateRetrieverOnLucene(m, "dbpediaIndex", "anchorIndex");
             for (String indexT : indexType) {
                 for (Integer t : topKs) {
                     for (String dataset : datasets) {
@@ -172,9 +174,8 @@ public class RetrievalPerformance {
                                 System.out.println(docs.indexOf(d) + "  " + m + "  " + topK);
                             }
 
-                            Evaluator eva = new Evaluator();
 
-                            Map<String, Double> result = eva.evaluateAll(docs);
+                            Map<String, Double> result = Evaluator.evaluateAll(docs);
 
                             String s1 = "";
                             for (String s : result.keySet()) {
@@ -183,7 +184,9 @@ public class RetrievalPerformance {
                             }
 
                             time = time / (long) annotationsCount;
-                            s1 += "\n\nRuntime per entity: " + time + " ms.";
+                            s1 += "\n\nRuntime per entity: " + time + " nanoseconds.";
+                            
+                            System.out.println(s1);
 
                             String n = "";
                             for (String n1 : notFound.keySet()) {
@@ -244,7 +247,7 @@ public class RetrievalPerformance {
         boolean useWordNet = false;
         // retrieve matches
         for (String q : queryTerms) {
-            long start = System.currentTimeMillis();
+            long start = System.nanoTime();
             if (index.contains("dbpedia")) {
 
                 temp.addAll(indexSearch.getResourcesFromDBpedia(q, topK));
@@ -256,7 +259,7 @@ public class RetrievalPerformance {
                 temp.addAll(indexSearch.getAllResources(q, topK));
             }
 
-            long end = System.currentTimeMillis();
+            long end = System.nanoTime();
 
             time += (end - start);
         }

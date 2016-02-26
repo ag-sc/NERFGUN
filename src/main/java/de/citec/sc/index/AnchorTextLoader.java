@@ -4,24 +4,29 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.io.StringReader;
 import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 public class AnchorTextLoader implements Loader {
 
     //docDirectory => dbpedia *.nt files
     //luceneIndex => lucene creates indexes 
-    private Set<String> redirects = new LinkedHashSet<String>();
+    private HashMap<String, String> redirects = new LinkedHashMap<String, String>();
 
     @Override
     public void load(boolean deleteIndexFiles, String indexDirectory, String anchorFilesDirectory) {
@@ -108,74 +113,47 @@ public class AnchorTextLoader implements Loader {
 
             AnchorTextIndexer anchorIndexer = (AnchorTextIndexer) indexer;
 
-            System.out.println("Loading file: " + filePath);
-            RandomAccessFile aFile = new RandomAccessFile(filePath, "r");
-            FileChannel inChannel = aFile.getChannel();
-            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            BufferedReader wpgk = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), "UTF-8"));
             String line = "";
-            while (inChannel.read(buffer) > 0) {
-                buffer.flip();
-                for (int i = 0; i < buffer.limit(); i++) {
-                    String b = (char) buffer.get() + "";
-                    if (b.equals("\n")) {
 
-                        try {
-                            String[] all = line.split("\t");
-                            String label = all[0];
-                            String uri = all[1];
-                            int freq = Integer.parseInt(all[2]);
+            while ((line = wpgk.readLine()) != null) {
 
-                            label = label.toLowerCase();
+                String[] data = line.split("\t");
 
-                            Properties p1 = new Properties();
-                            try {
-                                p1.load(new StringReader("key=" + uri));
-                            } catch (IOException ex) {
+                if (data.length == 3) {
+                    
+                    try {
+                        String label = data[0];
 
-                            }
-                            uri = p1.getProperty("key");
-                            uri = URLDecoder.decode(uri, "UTF-8");
+                        String uri = data[1];
 
-                            if (!redirects.contains(uri)) {
-                                uri = uri.replace("http://dbpedia.org/resource/", "");
-                                anchorIndexer.addEntity(label, uri, freq);
-                            }
+                        int freq = Integer.parseInt(data[2]);
 
-//                            Set<String> subjects = processor.getSubject(uri);
-//                            if (subjects.isEmpty()) {
-//                                anchorIndexer.addEntity(label, uri, freq);
-//                            }
-//                            else{
-//                                int z=2;
-//                            }
-                        } catch (Exception ex) {
-                            //System.err.println(line);
+                        //replace redirect with its main page
+                        if (redirects.containsKey(uri)) {
+                            uri = redirects.get(uri);
                         }
 
-                        line = "";
-
-                    } else {
-                        line += b;
-
+                        if (!uri.contains("Category:") && !uri.contains("(disambiguation)") && !uri.contains("File:")) {
+                            label = label.toLowerCase();
+                            
+                            anchorIndexer.addEntity(label, uri, freq);
+                        }
+                    } catch (Exception e) {
                     }
 
                 }
-                buffer.clear();
+
             }
-            inChannel.close();
-            aFile.close();
         } catch (Exception e) {
-            e.printStackTrace();
-            //System.err.println(e.printStackTrace());
 
         }
     }
 
-    public Set<String> getRedirects(File file) {
-        //HashMap<String, Set<String>> content = new HashMap<>();
+    public HashMap<String, String> getRedirects(File file) {
+        HashMap<String, String> content = new HashMap<>();
 
-        Set<String> content = new LinkedHashSet<>();
-
+        //Set<String> content = new LinkedHashSet<>();
         try {
             FileInputStream fstream = new FileInputStream(file);
             DataInputStream in = new DataInputStream(fstream);
@@ -189,8 +167,21 @@ public class AnchorTextLoader implements Loader {
                 while (m.find()) {
                     String s = m.group(2);
 
-                    //String o = m.group(3);
-                    content.add(s);
+                    String o = m.group(3);
+                    
+                    s = StringEscapeUtils.unescapeJava(s);
+                    o = StringEscapeUtils.unescapeJava(o);
+
+                    try {
+                        o = URLDecoder.decode(o, "UTF-8");
+                    } catch (Exception e) {
+                    }
+                    try {
+                        s = URLDecoder.decode(s, "UTF-8");
+                    } catch (Exception e) {
+                    }
+                    //content.add(s);
+                    content.put(s, o);
                 }
 
 //                if (!line.startsWith("#")) {

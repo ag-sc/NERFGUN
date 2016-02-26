@@ -17,6 +17,7 @@ import variables.AbstractVariable;
  */
 public class Annotation extends AbstractVariable<State> {
 
+	public final static String DEFAULT_ID = "<EMPTY-URI>";
 	private String word;
 	private String link;
 	private int startIndex, endIndex;
