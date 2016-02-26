@@ -145,7 +145,7 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 					if (annotation.equals(annotation2))
 						continue;
 
-					final String link2 = annotation.getLink().trim();
+					final String link2 = annotation2.getLink().trim();
 
 					if (link2.isEmpty())
 						continue;
@@ -168,10 +168,19 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 					 * If tspr of startnode contains node
 					 */
 					score += tspr.get(linkNodeIndex).get(linkNodeIndex2);
-
+					// System.out.println("link = " + link);
+					// System.out.println("link2 = " + link2);
+					// System.out.println("tspr = " +
+					// tspr.get(linkNodeIndex).get(linkNodeIndex2));
 				}
 			}
 
+			// state.getEntities().forEach(System.out::println);
+			// System.out.println("Score = " + score);
+			//
+			// System.out.println("===============");
+			// System.out.println();
+			// System.out.println();
 			/*
 			 * Normalize by number of additions.
 			 */
