@@ -11,9 +11,11 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import utility.VariableID;
 
@@ -195,7 +197,25 @@ public class CorpusLoader {
                 List<Annotation> goldSet = new ArrayList<>();
 
                 for (int i = 0; i < arrayOfAnnotations.length; i = i + 2) {
-                    Annotation a1 = new Annotation(arrayOfAnnotations[i], arrayOfAnnotations[i + 1], 0, 0, new VariableID("S"+goldSet.size()));
+                    
+                    String label = arrayOfAnnotations[i];
+                    String uri = arrayOfAnnotations[i+1].replace("http://dbpedia.org/resource/", "");
+                    label = StringEscapeUtils.unescapeJava(label);
+                    uri = StringEscapeUtils.unescapeJava(uri);
+                    try{
+                        uri = URLDecoder.decode(uri, "UTF-8");
+                    }
+                    catch(Exception e){
+                    
+                    }
+                    
+                    try{
+                        label = URLDecoder.decode(label, "UTF-8");
+                    }
+                    catch(Exception e){
+                    
+                    }
+                    Annotation a1 = new Annotation(label, uri, 0, 0, new VariableID("S"+goldSet.size()));
                     goldSet.add(a1);
                 }
 

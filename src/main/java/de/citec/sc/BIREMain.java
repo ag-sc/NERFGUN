@@ -12,6 +12,7 @@ import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.GreedyDisambiguationInitializer;
 import de.citec.sc.templates.EditDistanceTemplate;
+import de.citec.sc.templates.IndexRankTemplate;
 import de.citec.sc.templates.LuceneScoreTemplate;
 import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
@@ -71,7 +72,7 @@ public class BIREMain {
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLL);
 		List<Document> documents = corpus.getDocuments();
 
-		documents = documents.subList(0, 2);
+		documents = documents.subList(0, 10);
 
 		/*
 		 * Some code for n-fold cross validation
@@ -83,8 +84,9 @@ public class BIREMain {
 		int n = 2;
 		double step = ((float) N) / n;
 		double k = 0;
-                //PageRankTemplate pTemplate = new PageRankTemplate();
-//                LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
+                PageRankTemplate pTemplate = new PageRankTemplate();
+                LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
+//                IndexRankTemplate rankTemplate = new IndexRankTemplate();
 		for (int i = 0; i < n; i++) {
 			log.info("Cross-Validation Fold %s/%s", i + 1, n);
 			double j = k;
@@ -118,7 +120,10 @@ public class BIREMain {
 			// templates.add(new IndexRankTemplate());
                         
 			try {
-//                            templates.add(lTemplate);
+//                            templates.add(rankTemplate);
+                            templates.add(pTemplate);
+                            
+                            templates.add(lTemplate);
 				 templates.add(new EditDistanceTemplate());
 //				templates.add(new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile));
 				// templates.add(new DocumentSimilarityTemplate(indexFile,
@@ -162,7 +167,7 @@ public class BIREMain {
 			 * optimal solution. Large values, however, increase computation
 			 * time.
 			 */
-			int numberOfSamplingSteps = 30;
+			int numberOfSamplingSteps = 200;
 
 			/*
 			 * Stop sampling if objective score is equal to 1.

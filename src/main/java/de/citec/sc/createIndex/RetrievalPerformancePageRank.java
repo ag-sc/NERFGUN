@@ -32,24 +32,53 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.query.Instance;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+import test.TestSearch;
 
 /**
  *
  * @author sherzod
  */
-public class RetrievalPerformance {
+public class RetrievalPerformancePageRank {
 
     static CandidateRetriever indexSearch;
+
+    static ConcurrentHashMap<String, Double> pageRankMap;
 
     static long time;
     static String index;
     private static int topK;
+
+    protected static final Comparator<Instance> frequencyComparator = new Comparator<Instance>() {
+
+        @Override
+        public int compare(Instance s1, Instance s2) {
+
+            if (s1.getScore() > s2.getScore()) {
+                return -1;
+            } else if (s1.getScore() < s2.getScore()) {
+                return 1;
+            }
+
+            return 0;
+        }
+    };
 
     public static void main(String[] args) throws UnsupportedEncodingException {
         run();
     }
 
     public static void run() throws UnsupportedEncodingException {
+
+        loadPageRanks();
+
         List<Integer> topKs = new ArrayList<>();
         // topKs.add(10);
         topKs.add(100);
@@ -59,15 +88,15 @@ public class RetrievalPerformance {
         // topKs.add(2000);
 
         List<String> datasets = new ArrayList<>();
-        datasets.add("tweets");
-//        datasets.add("news");
+//        datasets.add("tweets");
+        datasets.add("news");
         // datasets.add("small");
 
         boolean compareAll = false;
 
         List<String> indexType = new ArrayList<>();
-         indexType.add("dbpedia");
-        indexType.add("anchors");
+//         indexType.add("dbpedia");
+//        indexType.add("anchors");
         indexType.add("all");
 
         List<String> dbindexPaths = new ArrayList<>();
@@ -152,8 +181,26 @@ public class RetrievalPerformance {
                                             }
                                         }
                                     } else {
-                                        if(!matches.isEmpty()){
-                                            if(matches.get(0).getUri().equals(link)){
+                                        if (!matches.isEmpty()) {
+
+                                            Double maxScore = 0.0;
+                                            String maxURI = "";
+                                            
+                                            for (Instance i : matches) {
+                                                Double score = pageRankMap.get(i.getUri());
+                                                if (score == null) {
+                                                    score = 0.0;
+                                                }
+                                                if(maxScore < score){
+                                                    maxScore = score;
+                                                    maxURI = i.getUri();
+                                                }
+
+                                            }
+                                            
+                                            
+
+                                            if (maxURI.equals(link)) {
                                                 contains = true;
                                             }
                                         }
@@ -225,7 +272,7 @@ public class RetrievalPerformance {
             }
         }
 
-        writeListToFile("overallResult_compareAll_"+compareAll+".txt", overallResult);
+        writeListToFile("overallResult_PageRank_compareAll_" + compareAll + ".txt", overallResult);
     }
 
     public static void writeListToFile(String fileName, String content) {
@@ -277,4 +324,47 @@ public class RetrievalPerformance {
         return temp;
 
     }
+
+    private static void loadPageRanks() {
+
+        pageRankMap = new ConcurrentHashMap<>(19500000);
+//            String path = "dbpediaFiles/pageranks.ttl";
+        String path = "pagerank.csv";
+
+        System.out.print("Loading pagerank scores to memory ...");
+
+        try (Stream<String> stream = Files.lines(Paths.get(path))) {
+            stream.parallel().forEach(item -> {
+
+                String line = item.toString();
+
+                String[] data = line.split("\t");
+                String uri = data[1];
+                Double v = Double.parseDouble(data[2]);
+                if (!(uri.contains("Category:") || uri.contains("(disambiguation)"))) {
+                    try {
+                        //counter.incrementAndGet();
+                        uri = URLDecoder.decode(uri, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        Logger.getLogger(TestSearch.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    pageRankMap.put(uri, v);
+
+                }
+
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("  DONE");
+
+        System.out.println(pageRankMap.get("Germany"));
+        System.out.println(pageRankMap.get("History_of_Germany"));
+        System.out.println(pageRankMap.get("German_language"));
+
+        int z = 1;
+    }
+
 }

@@ -63,24 +63,12 @@ public class LuceneScoreTemplate extends templates.AbstractTemplate<State> {
 
             SingleVariableFactor factor = (SingleVariableFactor) absFactor;
             Annotation entity = state.getEntity(factor.entityID);
-            String uri = entity.getLink();
-
-            Double score = 0.0;
-            if (!uri.equals("")) {
-                List<Instance> instances = indexSearch.getAllResources(entity.getWord(), 100);
-                for (Instance i : instances) {
-                    if (i.getUri().equals(uri)) {
-                        score = i.getScore();
-                        break;
-                    }
-                }
-            }
 
             Vector featureVector = new Vector();
 
-            String pageRankPrefix = "LuceneScore";
+            String pageRankPrefix = "Relative TF (URI, label)";
 
-            featureVector.set(pageRankPrefix, score);
+            featureVector.set(pageRankPrefix, entity.getIndexScore());
 
             factor.setFeatures(featureVector);
         }
