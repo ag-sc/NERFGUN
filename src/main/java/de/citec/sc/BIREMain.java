@@ -25,7 +25,7 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.GreedyDisambiguationInitializer;
-import de.citec.sc.templates.TopicSpecificPageRankTemplate;
+import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import learning.DefaultLearner;
@@ -87,7 +87,10 @@ public class BIREMain {
 			double j = k;
 			k = j + step;
 
-			// List<Document> test = documents;
+			// List<Document> test = documents;(IOException e1) {
+			// e1.printStackTrace();
+			// System.exit(1);
+			// }
 			// List<Document> train = documents;
 			List<Document> test = documents.subList((int) Math.floor(j), (int) Math.floor(k));
 			List<Document> train = new ArrayList<>(documents);
@@ -113,15 +116,17 @@ public class BIREMain {
 			 */
 			List<AbstractTemplate<State>> templates = new ArrayList<>();
 			// templates.add(new IndexRankTemplate());
+			// templates.add(new EditDistanceTemplate());
 			try {
-				// templates.add(new EditDistanceTemplate());
-				templates.add(new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile));
-				// templates.add(new DocumentSimilarityTemplate(indexFile,
-				// tfidfFile, dfFile, true));
+				// templates.add(new
+				// TopicSpecificPageRankTemplate(tsprIndexMappingFile,
+				// tsprFile));
+				templates.add(new DocumentSimilarityTemplate(indexFile, tfidfFile, dfFile, true));
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				System.exit(1);
 			}
+
 			// templates.add(new PageRankTemplate());
 
 			/*
@@ -157,7 +162,7 @@ public class BIREMain {
 			 * optimal solution. Large values, however, increase computation
 			 * time.
 			 */
-			int numberOfSamplingSteps = 30;
+			int numberOfSamplingSteps = 200;
 
 			/*
 			 * Stop sampling if objective score is equal to 1.
