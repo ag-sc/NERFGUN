@@ -88,7 +88,7 @@ public class TestSearch {
 //        }
 
         List<String> terms = new ArrayList<>();
-        terms.add("raul");
+        terms.add("syria");
 
         for (String term : terms) {
             List<Instance> anchor = indexSearch.getResourcesFromAnchors(term, 100);

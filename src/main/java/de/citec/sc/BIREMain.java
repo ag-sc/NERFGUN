@@ -25,7 +25,6 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.EmptyURIInitializer;
-import de.citec.sc.templates.EditDistanceTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
@@ -55,7 +54,7 @@ import templates.AbstractTemplate;
 public class BIREMain {
 	private static Logger log = LogManager.getFormatterLogger();
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		Configuration config = ctx.getConfiguration();
 		LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
@@ -95,6 +94,16 @@ public class BIREMain {
 		int n = 2;
 		double step = ((float) N) / n;
 		double k = 0;
+		// PageRankTemplate pTemplate = new PageRankTemplate();
+		// LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
+		// IndexRankTemplate rankTemplate = new IndexRankTemplate();
+		TopicSpecificPageRankTemplate tsprTemplate = new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile);
+		// EditDistanceTemplate editDistanceTemplate = new
+		// EditDistanceTemplate();
+		// DocumentSimilarityTemplate documentSimilarityTemplate = new
+		// DocumentSimilarityTemplate(indexFile, tfidfFile,
+		// dfFile, true);
+
 		for (int i = 0; i < n; i++) {
 			log.info("Cross-Validation Fold %s/%s", i + 1, n);
 			double j = k;
@@ -128,13 +137,12 @@ public class BIREMain {
 			 * factors/features to score intermediate, generated states.
 			 */
 			List<AbstractTemplate<State>> templates = new ArrayList<>();
-			// templates.add(new IndexRankTemplate());
-			templates.add(new EditDistanceTemplate());
 			try {
-				templates.add(new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile));
-				// templates.add(new DocumentSimilarityTemplate(indexFile,
-				// tfidfFile, dfFile, true));
-			} catch (IOException e1) {
+				// templates.add(rankTemplate);
+				// templates.add(pTemplate);
+				// templates.add(lTemplate);
+				templates.add(tsprTemplate);
+			} catch (Exception e1) {
 				e1.printStackTrace();
 				System.exit(1);
 			}
@@ -149,7 +157,7 @@ public class BIREMain {
 			 * Create the scorer object that computes a score from the features
 			 * of a factor and the weight vectors of the templates.
 			 */
-			Scorer<State> scorer = new DefaultScorer<State>();
+			Scorer<State> scorer = new DefaultScorer<>();
 
 			/*
 			 * Create an Initializer that is responsible for providing an

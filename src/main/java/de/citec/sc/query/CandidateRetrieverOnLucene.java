@@ -42,6 +42,9 @@ public class CandidateRetrieverOnLucene implements CandidateRetriever {
     @Override
     public List<Instance> getAllResources(String searchTerm, int topK) {
         List<Instance> result = new ArrayList<>();
+        
+        if(searchTerm.equals(""))
+            return result;
 
         List<Instance> anchor = anchorRetriever.getResources(searchTerm, topK);
         List<Instance> dbpedia = dbpediaRetriever.getResources(searchTerm, topK);

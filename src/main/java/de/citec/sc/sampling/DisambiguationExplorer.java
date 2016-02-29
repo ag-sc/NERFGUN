@@ -50,6 +50,7 @@ public class DisambiguationExplorer implements Explorer<State> {
 				Annotation modifiedAnntation = generatedState.getEntity(a.getID());
 				modifiedAnntation.setLink(candidateURI.getUri());
 				modifiedAnntation.setIndexRank(i);
+                                modifiedAnntation.setIndexScore(candidateURI.getScore());
 				generatedStates.add(generatedState);
 			}
 		}
