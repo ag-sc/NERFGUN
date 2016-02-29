@@ -69,6 +69,7 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 			lemmatizer = new StanfordLemmatizer();
 
 			NUMBER_OF_WIKI_DOCUMENTS = WikipediaTFIDFVector.countLines(tfidfFile);
+			isInitialized = true;
 		}
 
 	}
