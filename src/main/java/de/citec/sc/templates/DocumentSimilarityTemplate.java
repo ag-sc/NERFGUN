@@ -41,28 +41,44 @@ import utility.VariableID;
 public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State> {
 
 	private static Logger log = LogManager.getFormatterLogger();
-	private final StanfordLemmatizer lemmatizer;
+	private static StanfordLemmatizer lemmatizer;
 
 	private Map<String, Double> currentDocumentVector = null;
 
 	private String currentDocumentName = null;
 
-	private String dfFile;
+	private static String dfFile;
 	/**
 	 * The number of wikipedia documents.
 	 */
-	final public double NUMBER_OF_WIKI_DOCUMENTS;
+	static public double NUMBER_OF_WIKI_DOCUMENTS;
 
-	public DocumentSimilarityTemplate(final String indexFile, final String tfidfFile, final String dfFile,
+	private static boolean isInitialized = false;
+
+	public static boolean isInitialized() {
+		return isInitialized;
+	}
+
+	public static void init(final String indexFile, final String tfidfFile, final String dfFile,
 			final boolean storeIndexOnDrive) throws IOException {
 
-		FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
-		this.dfFile = dfFile;
-		IDFProvider.getIDF(dfFile);
-		lemmatizer = new StanfordLemmatizer();
+		if (isInitialized) {
+			FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
+			DocumentSimilarityTemplate.dfFile = dfFile;
+			IDFProvider.getIDF(dfFile);
+			lemmatizer = new StanfordLemmatizer();
 
-		NUMBER_OF_WIKI_DOCUMENTS = WikipediaTFIDFVector.countLines(tfidfFile);
+			NUMBER_OF_WIKI_DOCUMENTS = WikipediaTFIDFVector.countLines(tfidfFile);
+		}
 
+	}
+
+	public DocumentSimilarityTemplate() {
+		if (isInitialized) {
+			log.warn("DocumentSimilarityTemplate is NOT initialized correctly!");
+			log.warn("Call DocumentSimilarityTemplate.init() for proper initlialization.");
+			System.exit(1);
+		}
 	}
 
 	@Override

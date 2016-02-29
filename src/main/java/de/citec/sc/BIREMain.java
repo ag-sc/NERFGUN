@@ -25,6 +25,7 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.EmptyURIInitializer;
+import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
@@ -68,7 +69,7 @@ public class BIREMain {
 		String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 
 		TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
-
+		DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
 		/*
 		 * Load the index API.
 		 */
@@ -138,8 +139,7 @@ public class BIREMain {
 				// EditDistanceTemplate editDistanceTemplate = new
 				// EditDistanceTemplate();
 				// DocumentSimilarityTemplate documentSimilarityTemplate = new
-				// DocumentSimilarityTemplate(indexFile, tfidfFile,
-				// dfFile, true);
+				// DocumentSimilarityTemplate();
 
 				// templates.add(rankTemplate);
 				// templates.add(pTemplate);

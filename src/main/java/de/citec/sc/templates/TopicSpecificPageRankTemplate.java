@@ -66,6 +66,14 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 
 	}
 
+	public TopicSpecificPageRankTemplate() {
+		if (isInitialized) {
+			log.warn("TopicSpecificPageRankTemplate is NOT initialized correctly!");
+			log.warn("Call TopicSpecificPageRankTemplate.init() for proper initlialization.");
+			System.exit(1);
+		}
+	}
+
 	private static Set<Integer> loadTopicSpecificPageRanks(String pageRankFile)
 			throws NumberFormatException, IOException {
 		final Set<Integer> goldIndicies = new HashSet<>();
