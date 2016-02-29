@@ -67,6 +67,8 @@ public class BIREMain {
 		String tsprFile = "tspr.gold";
 		String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 
+		TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
+
 		/*
 		 * Load the index API.
 		 */
@@ -97,12 +99,6 @@ public class BIREMain {
 		// PageRankTemplate pTemplate = new PageRankTemplate();
 		// LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
 		// IndexRankTemplate rankTemplate = new IndexRankTemplate();
-		TopicSpecificPageRankTemplate tsprTemplate = new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile);
-		// EditDistanceTemplate editDistanceTemplate = new
-		// EditDistanceTemplate();
-		// DocumentSimilarityTemplate documentSimilarityTemplate = new
-		// DocumentSimilarityTemplate(indexFile, tfidfFile,
-		// dfFile, true);
 
 		for (int i = 0; i < n; i++) {
 			log.info("Cross-Validation Fold %s/%s", i + 1, n);
@@ -138,6 +134,13 @@ public class BIREMain {
 			 */
 			List<AbstractTemplate<State>> templates = new ArrayList<>();
 			try {
+				TopicSpecificPageRankTemplate tsprTemplate = new TopicSpecificPageRankTemplate();
+				// EditDistanceTemplate editDistanceTemplate = new
+				// EditDistanceTemplate();
+				// DocumentSimilarityTemplate documentSimilarityTemplate = new
+				// DocumentSimilarityTemplate(indexFile, tfidfFile,
+				// dfFile, true);
+
 				// templates.add(rankTemplate);
 				// templates.add(pTemplate);
 				// templates.add(lTemplate);

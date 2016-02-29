@@ -44,21 +44,32 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 	private static Map<String, Integer> indexMappings = new HashMap<>(NUM_OF_GOLD_INDICIES);
 	private static Map<Integer, Map<Integer, Double>> tspr = new HashMap<>();
 
-	private Set<Integer> indicies = new HashSet<>();
+	private static boolean isInitialized = false;
 
-	public TopicSpecificPageRankTemplate(final String keyFiles, final String pageRankFile) throws IOException {
+	public static boolean isInitialized() {
+		return isInitialized;
+	}
 
-		log.info("Load topic specific page rank file...");
-		loadTopicSpecificPageRanks(pageRankFile);
-		log.info("Done, loading topic specific page rank index mapping file");
+	public static void init(final String keyFiles, final String pageRankFile) throws IOException {
 
-		log.info("Load topic specific page rank index mapping file...");
-		loadIndexMapping(keyFiles);
-		log.info("Done, loading topic specific page rank index mapping file");
+		if (isInitialized) {
+			final Set<Integer> indicies;
+			log.info("Load topic specific page rank file...");
+			indicies = loadTopicSpecificPageRanks(pageRankFile);
+			log.info("Done, loading topic specific page rank index mapping file");
+
+			log.info("Load topic specific page rank index mapping file...");
+			loadIndexMapping(keyFiles, indicies);
+			log.info("Done, loading topic specific page rank index mapping file");
+			isInitialized = true;
+		}
 
 	}
 
-	private void loadTopicSpecificPageRanks(String pageRankFile) throws NumberFormatException, IOException {
+	private static Set<Integer> loadTopicSpecificPageRanks(String pageRankFile)
+			throws NumberFormatException, IOException {
+		final Set<Integer> goldIndicies = new HashSet<>();
+
 		BufferedReader topicSpecificPageRankReader = new BufferedReader(new FileReader(new File(pageRankFile)));
 		String line = topicSpecificPageRankReader.readLine();
 		log.debug("Topic specific pagerank file format = " + line);
@@ -66,7 +77,7 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 			String[] allDataPoints = line.split("\t");
 			final int startNode = Integer.parseInt(allDataPoints[0]);
 			tspr.put(startNode, new HashMap<>());
-			indicies.add(startNode);
+			goldIndicies.add(startNode);
 			for (int dataPointIndex = 1; dataPointIndex < allDataPoints.length; dataPointIndex++) {
 
 				final String[] data = allDataPoints[dataPointIndex].split(":");
@@ -74,13 +85,15 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 				final int node = Integer.parseInt(data[0]);
 				final double value = Double.parseDouble(data[1]);
 				tspr.get(startNode).put(node, value);
-				indicies.add(node);
+				goldIndicies.add(node);
 			}
 		}
 		topicSpecificPageRankReader.close();
+		return goldIndicies;
 	}
 
-	private void loadIndexMapping(final String keyFiles) throws FileNotFoundException, IOException {
+	private static void loadIndexMapping(final String keyFiles, Set<Integer> indicies)
+			throws FileNotFoundException, IOException {
 		BufferedReader indexMappingReader = new BufferedReader(new FileReader(new File(keyFiles)));
 		String line = "";
 		while ((line = indexMappingReader.readLine()) != null) {
@@ -103,7 +116,7 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 			}
 		}
 
-		log.info("Generate %s factors for state %s.", factors.size(), state.getID());
+		log.debug("Generate %s factors for state %s.", factors.size(), state.getID());
 		return factors;
 	}
 
