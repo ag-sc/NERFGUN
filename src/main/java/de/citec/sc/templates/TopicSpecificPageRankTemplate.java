@@ -40,7 +40,17 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 	/*
 	 * Handmade
 	 */
-	private static double[] bins = new double[] { 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 };
+	final private static int NUMBER_OF_BINS = 1000;
+
+	private static double[] bins = new double[NUMBER_OF_BINS + 1];
+
+	static {
+
+		for (int i = 0; i <= NUMBER_OF_BINS; i++) {
+			bins[i] = (double) i / (double) NUMBER_OF_BINS;
+		}
+
+	}
 
 	private static final int NUM_OF_GOLD_INDICIES = 1700000;
 
@@ -57,7 +67,7 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 
 	public static void init(final String keyFiles, final String pageRankFile) throws IOException {
 
-		if (isInitialized) {
+		if (!isInitialized) {
 			final Set<Integer> indicies;
 			log.info("Load topic specific page rank file...");
 			indicies = loadTopicSpecificPageRanks(pageRankFile);
@@ -72,7 +82,7 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 	}
 
 	public TopicSpecificPageRankTemplate() {
-		if (isInitialized) {
+		if (!isInitialized) {
 			log.warn("TopicSpecificPageRankTemplate is NOT initialized correctly!");
 			log.warn("Call TopicSpecificPageRankTemplate.init() for proper initlialization.");
 			System.exit(1);
@@ -195,7 +205,7 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 			// featureVector.set("TopicSpecificPageRankFor_" + link + "_to_" +
 			// link2, score);
 
-			// featureVector.set("TopicSpecificPageRankFor", score);
+			// featureVector.set("TopicSpecificPageRank", score);
 			final int bin = getBin(score);
 			featureVector.set("TopicSpecificPageRankInBin_" + bin, score);
 

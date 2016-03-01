@@ -62,7 +62,7 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 	public static void init(final String indexFile, final String tfidfFile, final String dfFile,
 			final boolean storeIndexOnDrive) throws IOException {
 
-		if (isInitialized) {
+		if (!isInitialized) {
 			FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
 			DocumentSimilarityTemplate.dfFile = dfFile;
 			IDFProvider.getIDF(dfFile);
@@ -75,7 +75,7 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 	}
 
 	public DocumentSimilarityTemplate() {
-		if (isInitialized) {
+		if (!isInitialized) {
 			log.warn("DocumentSimilarityTemplate is NOT initialized correctly!");
 			log.warn("Call DocumentSimilarityTemplate.init() for proper initlialization.");
 			System.exit(1);
