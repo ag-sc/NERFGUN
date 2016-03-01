@@ -37,6 +37,11 @@ import utility.VariableID;
  */
 public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<State> {
 
+	/*
+	 * Handmade
+	 */
+	private static double[] bins = new double[] { 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 };
+
 	private static final int NUM_OF_GOLD_INDICIES = 1700000;
 
 	private static Logger log = LogManager.getFormatterLogger();
@@ -185,14 +190,25 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 				/*
 				 * Normalize by number of additions.
 				 */
-				score /= 2;
-
 			}
 
-			featureVector.set("TopicSpecificPageRankFor_" + link + "_to_" + link2, score);
+			// featureVector.set("TopicSpecificPageRankFor_" + link + "_to_" +
+			// link2, score);
+
+			// featureVector.set("TopicSpecificPageRankFor", score);
+			final int bin = getBin(score);
+			featureVector.set("TopicSpecificPageRankInBin_" + bin, score);
 
 			factor.setFeatures(featureVector);
 		}
+	}
+
+	private int getBin(final double score) {
+		for (int i = 0; i < bins.length - 1; i++) {
+			if (bins[i] <= score && score < bins[i + 1])
+				return i;
+		}
+		return -1;
 	}
 
 	// @Override
