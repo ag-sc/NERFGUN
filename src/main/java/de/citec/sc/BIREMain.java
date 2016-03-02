@@ -1,5 +1,19 @@
 package de.citec.sc;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.CorpusLoader.CorpusName;
@@ -15,36 +29,32 @@ import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.sampling.EmptyURIInitializer;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
-import de.citec.sc.templates.EditDistanceTemplate;
-import de.citec.sc.templates.LuceneScoreTemplate;
-import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
 import learning.scorer.DefaultScorer;
 import learning.scorer.Scorer;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import sampling.DefaultSampler;
 import sampling.Explorer;
 import sampling.Initializer;
 import sampling.stoppingcriterion.StoppingCriterion;
 import templates.AbstractTemplate;
 
+/*
+ * 	templates.add(new EditDistanceTemplate());
+ *	templates.add(new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile));
+ *
+ */
+//02:52:23.144 [main] INFO  - Micro-average Precision=0.5445
+//02:52:23.144 [main] INFO  - Micro-average Recall=0.5445
+//02:52:23.144 [main] INFO  - F1 Micro-average=0.5445
+//02:52:23.144 [main] INFO  - Macro-average Precision=0.5525
+//02:52:23.145 [main] INFO  - Macro-average Recall=0.5525
+//02:52:23.145 [main] INFO  - F1 Macro-average=0.5525
 public class BIREMain {
 	private static Logger log = LogManager.getFormatterLogger();
 
@@ -61,12 +71,14 @@ public class BIREMain {
 		String tsprFile = "tspr.gold";
 		String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 
+		TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
+		DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
 		/*
 		 * Load the index API.
 		 */
 		log.info("Load Index...");
-//		CandidateRetriever index = new CandidateRetrieverOnLucene(false,"mergedIndex");
-                CandidateRetriever index = new CandidateRetrieverOnMemory();
+                CandidateRetriever index = new CandidateRetrieverOnLucene(false,"mergedIndex");
+//                CandidateRetriever index = new CandidateRetrieverOnMemory();
 
 		// Search index = new SearchCache(false, "dbpediaIndexAll");
 		/*
@@ -129,17 +141,7 @@ public class BIREMain {
 			 * factors/features to score intermediate, generated states.
 			 */
 			List<AbstractTemplate<State>> templates = new ArrayList<>();
-			// templates.add(new IndexRankTemplate());
-                        
 			try {
-//                            templates.add(rankTemplate);
-//                            templates.add(pTemplate);
-//                            
-                            templates.add(new LuceneScoreTemplate(index));
-//				 templates.add(new EditDistanceTemplate());
-//				templates.add(topicSpecificPRTemplate);
-				// templates.add(new DocumentSimilarityTemplate(indexFile,
-				// tfidfFile, dfFile, true));
 			} catch (Exception e1) {
 				e1.printStackTrace();
 				System.exit(1);
@@ -269,7 +271,7 @@ public class BIREMain {
 			 * Finally, print the models weights.
 			 */
 			log.info("Model weights:");
-			EvaluationUtil.printWeights(model, -1);
+			EvaluationUtil.printWeights(model, 0);
 
 			avrgTrain = Evaluator.add(avrgTrain, trainEvaluation);
 
@@ -288,7 +290,7 @@ public class BIREMain {
 			 * Finally, print the models weights.
 			 */
 			log.info("Model weights:");
-			EvaluationUtil.printWeights(model, -1);
+			EvaluationUtil.printWeights(model, 0);
 			avrgTest = Evaluator.add(avrgTest, testEvaluation);
 		}
 		/*
