@@ -5,6 +5,7 @@
  */
 package de.citec.sc.query;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -31,20 +32,16 @@ import java.util.stream.Stream;
 public class CandidateRetrieverOnMemory implements CandidateRetriever {
 
     private ConcurrentHashMap<String, HashMap<String, Integer>> dbpediSurfaceForms;
-    private ConcurrentHashMap<String, HashMap<String, Integer>> anchorSurfaceForms;
 
     public CandidateRetrieverOnMemory() {
         System.out.println("Loading dbpedia surface forms ...");
-        dbpediSurfaceForms = new ConcurrentHashMap<>();
-        loadFiles("dbpediaFiles/dbpediaSurfaceForms.ttl", dbpediSurfaceForms);
-        System.out.println("Loading anchor surface forms ...");
-        System.out.println(dbpediSurfaceForms.size());
-        anchorSurfaceForms = new ConcurrentHashMap<>();
-        loadFiles("anchorFiles/wikipedia_anchors.ttl", anchorSurfaceForms);
+        dbpediSurfaceForms = new ConcurrentHashMap<>(15000000);
+        loadFiles("anchorFiles/", dbpediSurfaceForms);
+
     }
 
     @Override
-    public List<Instance> getResourcesFromDBpedia(String searchTerm, int topK) {
+    public List<Instance> getAllResources(String searchTerm, int topK) {
         HashMap<String, Integer> result1 = dbpediSurfaceForms.get(searchTerm.toLowerCase());
 
         result1 = sortByValue(result1);
@@ -53,11 +50,6 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
         int counter = 0;
         for (String s1 : result1.keySet()) {
             if (counter <= topK) {
-                try {
-                    s1 = URLDecoder.decode(s1, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(CandidateRetrieverOnMemory.class.getName()).log(Level.SEVERE, null, ex);
-                }
                 result.put(s1, result1.get(s1));
                 counter++;
             } else {
@@ -65,144 +57,78 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
             }
         }
 
-       //        int sum = 0;
-//        for (Integer i : result.values()) {
-//            sum += i;
-//        }
+        int sum = 0;
+        for (Integer i : result.values()) {
+            sum += i;
+        }
         List<Instance> instances = new ArrayList<>();
         for (String r1 : result.keySet()) {
-            //double score = (double) result.get(r1) / (double) sum;
+            double score = (double) result.get(r1) / (double) sum;
             Instance i = new Instance(r1, result.get(r1));
+            i.setScore(score);
+//            i.setScore(result.get(r1));
             instances.add(i);
         }
 
         return instances;
     }
 
-    @Override
-    public List<Instance> getResourcesFromAnchors(String searchTerm, int topK) {
 
-        HashMap<String, Integer> result2 = anchorSurfaceForms.get(searchTerm.toLowerCase());
+    private void loadFiles(String directory, ConcurrentHashMap<String, HashMap<String, Integer>> map) {
 
-        result2 = sortByValue(result2);
+        File indexFolder = new File(directory);
+        File[] listOfFiles = indexFolder.listFiles();
+        
 
-        HashMap<String, Integer> result = new LinkedHashMap<>();
-        int counter = 0;
+        for (int d = 0; d < listOfFiles.length; d++) {
+            if (listOfFiles[d].isFile() && !listOfFiles[d].isHidden()) {
+                
+                String fileExtension = listOfFiles[d].getName().substring(listOfFiles[d].getName().lastIndexOf(".") + 1);
+                
+                if (fileExtension.equals("ttl")) {
 
-        for (String s1 : result2.keySet()) {
-            if (counter <= topK) {
-                try {
-                    s1 = URLDecoder.decode(s1, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(CandidateRetrieverOnMemory.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                if (result.containsKey(s1)) {
-                    result.put(s1, result.get(s1) + result2.get(s1));
-                } else {
-                    result.put(s1, result2.get(s1));
-                }
-                counter++;
-            } else {
-                break;
-            }
-        }
+                    String filePath = listOfFiles[d].getPath();
+                    
+                    System.out.println("Loading "+filePath);
 
-//        int sum = 0;
-//        for (Integer i : result.values()) {
-//            sum += i;
-//        }
-        List<Instance> instances = new ArrayList<>();
-        for (String r1 : result.keySet()) {
-            //double score = (double) result.get(r1) / (double) sum;
-            Instance i = new Instance(r1, result.get(r1));
-            instances.add(i);
-        }
+                    try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
+                        stream.parallel().forEach(item -> {
 
-        return instances;
-    }
+                            String[] c = item.toString().split("\t");
+                            if (c.length == 3) {
 
-    @Override
-    public List<Instance> getAllResources(String searchTerm, int topK) {
-        HashMap<String, Integer> result1 = dbpediSurfaceForms.get(searchTerm.toLowerCase());
-        HashMap<String, Integer> result2 = anchorSurfaceForms.get(searchTerm.toLowerCase());
+                                String label = c[0].toLowerCase();
+                                String uri = c[1];
+                                int freq = Integer.parseInt(c[2]);
 
-        result1 = sortByValue(result1);
-        result2 = sortByValue(result2);
-        List<Instance> instances = new ArrayList<>();
+                                if (map.containsKey(label)) {
 
-        try {
-            HashMap<String, Integer> result = new LinkedHashMap<>();
-            int counter = 0;
-            for (String s1 : result1.keySet()) {
-                if (counter <= topK) {
-                    try {
-                        s1 = URLDecoder.decode(s1, "UTF-8");
-                    } catch (UnsupportedEncodingException ex) {
-                        Logger.getLogger(CandidateRetrieverOnMemory.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    result.put(s1, result1.get(s1));
-                    counter++;
-                } else {
-                    break;
-                }
-            }
-            counter = 0;
-            for (String s1 : result2.keySet()) {
-                if (counter <= topK) {
-                    try {
-                        s1 = URLDecoder.decode(s1, "UTF-8");
-                    } catch (UnsupportedEncodingException ex) {
-                        Logger.getLogger(CandidateRetrieverOnMemory.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    result.put(s1, result2.get(s1));
-                    counter++;
-                } else {
-                    break;
-                }
-            }
+                                    HashMap<String, Integer> m = map.get(label);
+                                    if (m.containsKey(uri)) {
+                                        m.put(uri, freq + m.get(uri));
+                                    } else {
+                                        m.put(uri, freq);
+                                    }
 
-//            int sum = 0;
-//            for (Integer i : result.values()) {
-//                sum += i;
-//            }
-            for (String r1 : result.keySet()) {
-                //double score = (double) result.get(r1) / (double) sum;
-                Instance i = new Instance(r1, result.get(r1));
-                instances.add(i);
-            }
-        } catch (Exception e) {
+                                    map.put(label, m);
+                                } else {
 
-        }
+                                    HashMap<String, Integer> m = new HashMap<>();
+                                    m.put(uri, freq);
+                                    map.put(label, m);
+                                }
+                            }
 
-        return instances;
-    }
+                        });
 
-    private void loadFiles(String filePath, ConcurrentHashMap<String, HashMap<String, Integer>> map) {
-
-        try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
-            stream.parallel().forEach(item -> {
-
-                String[] c = item.toString().split("\t");
-                if (c.length == 3) {
-                    if (map.containsKey(c[0].toLowerCase())) {
-                        int i = Integer.parseInt(c[2]);
-                        HashMap<String, Integer> m = map.get(c[0].toLowerCase());
-                        m.put(c[1].replace("http://dbpedia.org/resource/", ""), i);
-
-                        map.put(c[0].toLowerCase(), m);
-                    } else {
-                        int i = Integer.parseInt(c[2]);
-                        HashMap<String, Integer> m = new HashMap<>();
-                        m.put(c[1].replace("http://dbpedia.org/resource/", ""), i);
-                        map.put(c[0].toLowerCase(), m);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
-
-            });
-
-        } catch (IOException e) {
-            e.printStackTrace();
+            }
         }
+        
+//        System.out.println(map.size());
 
     }
 
@@ -231,5 +157,15 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
         }
 
         return sortedMap;
+    }
+
+    @Override
+    public List<Instance> getResourcesFromDBpedia(String searchTerm, int topK) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Instance> getResourcesFromAnchors(String searchTerm, int topK) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

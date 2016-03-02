@@ -22,7 +22,10 @@ public class Annotation extends AbstractVariable<State> {
     private String link;
     private int startIndex, endIndex;
     private int indexRank = -1;
-    private double indexScore;
+    private double relativeTermFrequencyScore;
+    private double pageRankScore;
+    private double stringSimilarity;
+    
 
     public Annotation(String word, String link, int startIndex, int endIndex, VariableID vID) {
         super(vID);
@@ -32,13 +35,7 @@ public class Annotation extends AbstractVariable<State> {
         this.endIndex = endIndex;
     }
 
-    public double getIndexScore() {
-        return indexScore;
-    }
-
-    public void setIndexScore(double indexScore) {
-        this.indexScore = indexScore;
-    }
+   
 
     /**
      * @param word
@@ -119,6 +116,8 @@ public class Annotation extends AbstractVariable<State> {
         return true;
     }
 
+   
+
     @Override
     public String toString() {
         return "[" + id + ": " + link + "] \"" + word + "\" (" + startIndex + " - " + endIndex + ")";
@@ -126,8 +125,39 @@ public class Annotation extends AbstractVariable<State> {
 
     public Annotation clone() {
         Annotation a = new Annotation(word, link, startIndex, endIndex, id);
-        a.setIndexScore(indexScore);
+        a.setIndexRank(indexRank);
+        a.setStringSimilarity(stringSimilarity);
+        a.setPageRankScore(pageRankScore);
+        a.setRelativeTermFrequencyScore(relativeTermFrequencyScore);
         return a;
     }
+
+    public double getRelativeTermFrequencyScore() {
+        return relativeTermFrequencyScore;
+    }
+
+    public void setRelativeTermFrequencyScore(double relativeTermFrequencyScore) {
+        this.relativeTermFrequencyScore = relativeTermFrequencyScore;
+    }
+
+    public double getPageRankScore() {
+        return pageRankScore;
+    }
+
+    public void setPageRankScore(double pageRankScore) {
+        this.pageRankScore = pageRankScore;
+    }
+
+    public double getStringSimilarity() {
+        return stringSimilarity;
+    }
+
+    public void setStringSimilarity(double stringSimilarity) {
+        this.stringSimilarity = stringSimilarity;
+    }
+
+    
+    
+    
 
 }

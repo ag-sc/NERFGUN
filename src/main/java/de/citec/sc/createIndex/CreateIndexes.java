@@ -43,9 +43,9 @@ public class CreateIndexes {
 //
         System.out.println("Creating index files ...");
         AnchorTextLoader anchorLoader = new AnchorTextLoader();
-        anchorLoader.load(true, "anchorIndex", "anchorFiles/");
+        anchorLoader.load(true, "mergedIndex", "anchorFiles/");
 
-        anchorLoader.load(true, "dbpediaIndex", "dbpediaFiles/");
+//        anchorLoader.load(true, "emptyIndex", "testFiles/");
 //
         System.out.println("DONE.");
     }

@@ -72,6 +72,7 @@ public class AnchorTextLoader implements Loader {
 
                             long startTime = System.currentTimeMillis();
 
+                            System.out.println(anchorFilesDirectory + listOfFiles[i].getName());
                             indexData(anchorFilesDirectory + listOfFiles[i].getName(), indexer);
 
                             indexer.finilize();

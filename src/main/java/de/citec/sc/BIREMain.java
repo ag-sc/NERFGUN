@@ -9,12 +9,16 @@ import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
+import de.citec.sc.query.CandidateRetrieverOnMemory;
+import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationExplorer;
+import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.sampling.EmptyURIInitializer;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
 import de.citec.sc.templates.LuceneScoreTemplate;
 import de.citec.sc.templates.PageRankTemplate;
+import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import java.io.IOException;
@@ -26,7 +30,6 @@ import java.util.Map;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
-import learning.scorer.DefaultScorer;
 import learning.Trainer;
 import learning.scorer.DefaultScorer;
 import learning.scorer.Scorer;
@@ -45,7 +48,7 @@ import templates.AbstractTemplate;
 public class BIREMain {
 	private static Logger log = LogManager.getFormatterLogger();
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		Configuration config = ctx.getConfiguration();
 		LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
@@ -62,18 +65,19 @@ public class BIREMain {
 		 * Load the index API.
 		 */
 		log.info("Load Index...");
-		CandidateRetriever index = new CandidateRetrieverOnLucene(true, "dbpediaIndex", "anchorIndex");
+//		CandidateRetriever index = new CandidateRetrieverOnLucene(false,"mergedIndex");
+                CandidateRetriever index = new CandidateRetrieverOnMemory();
 
 		// Search index = new SearchCache(false, "dbpediaIndexAll");
 		/*
 		 * Load training and test data.
 		 */
 		log.info("Load Corpus...");
-		CorpusLoader loader = new CorpusLoader();
+		CorpusLoader loader = new CorpusLoader(false);
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLL);
 		List<Document> documents = corpus.getDocuments();
 
-		documents = documents.subList(0, 10);
+//		documents = documents.subList(0, 20);
 
 		/*
 		 * Some code for n-fold cross validation
@@ -85,8 +89,12 @@ public class BIREMain {
 		int n = 2;
 		double step = ((float) N) / n;
 		double k = 0;
-                PageRankTemplate pTemplate = new PageRankTemplate();
-                LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
+                
+                AllScoresExplorer exp1 = new AllScoresExplorer(index);
+                
+//                PageRankTemplate pTemplate = new PageRankTemplate();
+//                LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
+//                TopicSpecificPageRankTemplate topicSpecificPRTemplate = new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile);
 //                IndexRankTemplate rankTemplate = new IndexRankTemplate();
 		for (int i = 0; i < n; i++) {
 			log.info("Cross-Validation Fold %s/%s", i + 1, n);
@@ -125,11 +133,11 @@ public class BIREMain {
                         
 			try {
 //                            templates.add(rankTemplate);
-                            templates.add(pTemplate);
-                            
-                            templates.add(lTemplate);
-				 templates.add(new EditDistanceTemplate());
-//				templates.add(new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile));
+//                            templates.add(pTemplate);
+//                            
+                            templates.add(new LuceneScoreTemplate(index));
+//				 templates.add(new EditDistanceTemplate());
+//				templates.add(topicSpecificPRTemplate);
 				// templates.add(new DocumentSimilarityTemplate(indexFile,
 				// tfidfFile, dfFile, true));
 			} catch (Exception e1) {
@@ -153,7 +161,7 @@ public class BIREMain {
 			 * Create an Initializer that is responsible for providing an
 			 * initial state for the sampling chain given a sentence.
 			 */
-			Initializer<Document, State> initializer = new EmptyURIInitializer();
+			Initializer<Document, State> initializer = new DisambiguationInitializer(index, true);
 
 			/*
 			 * Define the explorers that will provide "neighboring" states given
@@ -161,7 +169,8 @@ public class BIREMain {
 			 * a successor state and, thus, perform the sampling procedure.
 			 */
 			List<Explorer<State>> explorers = new ArrayList<>();
-			explorers.add(new DisambiguationExplorer(index));
+//			explorers.add(new DisambiguationExplorer(index));
+                        explorers.add(exp1);
 			/*
 			 * Create a sampler that generates sampling chains with which it
 			 * will trigger weight updates during training.

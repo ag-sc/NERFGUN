@@ -59,15 +59,13 @@ public class RetrievalPerformance {
         // topKs.add(2000);
 
         List<String> datasets = new ArrayList<>();
-        datasets.add("tweets");
-//        datasets.add("news");
+//        datasets.add("tweets");
+        datasets.add("news");
         // datasets.add("small");
 
         boolean compareAll = false;
 
         List<String> indexType = new ArrayList<>();
-         indexType.add("dbpedia");
-        indexType.add("anchors");
         indexType.add("all");
 
         List<String> dbindexPaths = new ArrayList<>();
@@ -82,14 +80,14 @@ public class RetrievalPerformance {
         CorpusLoader loader = new CorpusLoader(false);
 
         String overallResult = "";
-        long start = System.currentTimeMillis();
-
-        //indexSearch = new CandidateRetrieverOnMemory();
-        long end = System.currentTimeMillis();
-        System.out.println((end - start) + " ms loading the index ");
 
         for (Boolean m : useMemory) {
-            indexSearch = new CandidateRetrieverOnLucene(m, "dbpediaIndex", "anchorIndex");
+//            indexSearch = new CandidateRetrieverOnLucene(m, "mergedIndex");
+            long start = System.currentTimeMillis();
+            indexSearch = new CandidateRetrieverOnMemory();
+            long end = System.currentTimeMillis();
+            
+
             for (String indexT : indexType) {
                 for (Integer t : topKs) {
                     for (String dataset : datasets) {
@@ -152,8 +150,8 @@ public class RetrievalPerformance {
                                             }
                                         }
                                     } else {
-                                        if(!matches.isEmpty()){
-                                            if(matches.get(0).getUri().equals(link)){
+                                        if (!matches.isEmpty()) {
+                                            if (matches.get(0).getUri().equals(link)) {
                                                 contains = true;
                                             }
                                         }
@@ -223,9 +221,11 @@ public class RetrievalPerformance {
                     }
                 }
             }
+            System.out.println((end - start) + " ms loading the index ");
+            overallResult += (end - start) + " ms loading the index ";
         }
 
-        writeListToFile("overallResult_compareAll_"+compareAll+".txt", overallResult);
+        writeListToFile("overallResult_compareAll_" + compareAll + ".txt", overallResult);
     }
 
     public static void writeListToFile(String fileName, String content) {
@@ -250,21 +250,11 @@ public class RetrievalPerformance {
 
         Set<String> queryTerms = new LinkedHashSet<>();
         queryTerms.add(word);
-        queryTerms.add(word + "~");
 
         List<Instance> temp = new ArrayList<>();
-        boolean lemmatize = true;
-        boolean useWordNet = false;
         // retrieve matches
         for (String q : queryTerms) {
             long start = System.nanoTime();
-            if (index.contains("dbpedia")) {
-
-                temp.addAll(indexSearch.getResourcesFromDBpedia(q, topK));
-            }
-            if (index.equals("anchors")) {
-                temp.addAll(indexSearch.getResourcesFromAnchors(q, topK));
-            }
             if (index.equals("all")) {
                 temp.addAll(indexSearch.getAllResources(q, topK));
             }

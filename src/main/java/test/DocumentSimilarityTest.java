@@ -58,7 +58,7 @@ public class DocumentSimilarityTest {
 		// NUMBER_OF_WIKI_DOCUMENTS =
 		// WikipediaTFIDFVector.countLines(tfidfFile);
 
-		CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
+		CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "mergedIndex");
 
 		CorpusLoader loader = new CorpusLoader();
 		DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);

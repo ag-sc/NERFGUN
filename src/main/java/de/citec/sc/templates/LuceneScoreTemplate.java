@@ -66,9 +66,14 @@ public class LuceneScoreTemplate extends templates.AbstractTemplate<State> {
 
             Vector featureVector = new Vector();
 
-            String pageRankPrefix = "Relative TF (URI, label)";
-
-            featureVector.set(pageRankPrefix, entity.getIndexScore());
+            featureVector.set("Relative_TF", entity.getRelativeTermFrequencyScore());
+            featureVector.set("Relative_PR", entity.getPageRankScore());
+            featureVector.set("Relative String Similarity", entity.getStringSimilarity());
+            
+            //bins
+////            for(double i=0.01; i<1.0; i=i+0.01){
+////                featureVector.set("Relative_String_Similarity_HIGHER_THAN_"+i, entity.getStringSimilarity() > i ? 1.0 : 0);
+////            }
 
             factor.setFeatures(featureVector);
         }

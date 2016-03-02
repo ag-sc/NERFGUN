@@ -92,7 +92,7 @@ public class RetrievalPerformancePageRank {
         datasets.add("news");
         // datasets.add("small");
 
-        boolean compareAll = false;
+        boolean compareAll = true;
 
         List<String> indexType = new ArrayList<>();
 //         indexType.add("dbpedia");
@@ -118,7 +118,7 @@ public class RetrievalPerformancePageRank {
         System.out.println((end - start) + " ms loading the index ");
 
         for (Boolean m : useMemory) {
-            indexSearch = new CandidateRetrieverOnLucene(m, "dbpediaIndex", "anchorIndex");
+            indexSearch = new CandidateRetrieverOnLucene(m, "mergedIndex");
             for (String indexT : indexType) {
                 for (Integer t : topKs) {
                     for (String dataset : datasets) {

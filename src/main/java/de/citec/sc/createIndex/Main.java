@@ -6,7 +6,9 @@
 package de.citec.sc.createIndex;
 
 import de.citec.sc.BIREMain;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import test.TestSearch;
 
 /**
  *
@@ -14,9 +16,10 @@ import java.io.UnsupportedEncodingException;
  */
 public class Main {
 
-    public static void main(String[] args) throws UnsupportedEncodingException {
+    public static void main(String[] args) throws UnsupportedEncodingException, IOException {
         //TestOnMemory.main(args);
 
+        long start = System.currentTimeMillis();
 //        CandidateRetrieverOnMemory indexQuery = new CandidateRetrieverOnMemory();
 //        System.out.println(indexQuery.getAllResources("obama", 100));
 //        RetrievalPerformanceOnMemoryIndex.run();
@@ -24,7 +27,9 @@ public class Main {
 //        RetrievalPerformance.run();
 //        RetrievalPerformancePageRank.run();
         BIREMain.main(args);
+//        TestSearch.main(args);
 
+        long end = System.currentTimeMillis();
         int mb = 1024 * 1024;
 
         //Getting the runtime reference from system
@@ -45,5 +50,7 @@ public class Main {
 
         //Print Maximum available memory
         System.out.println("Max Memory:" + runtime.maxMemory() / mb);
+        
+        System.out.println((end-start) + " ms");
     }
 }

@@ -4,6 +4,10 @@
 *.jar
 *.war
 *.ear
+/emptyIndex
+/mergedIndex
+pagerank.csv
+
 
 .DS_Store
 /nbproject

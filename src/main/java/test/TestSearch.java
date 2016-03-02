@@ -39,6 +39,7 @@ import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
+import de.citec.sc.query.CandidateRetrieverOnMemory;
 import java.io.File;
 
 /**
@@ -50,7 +51,8 @@ public class TestSearch {
     public static void main(String[] args) throws UnsupportedEncodingException {
 
        
-        CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "dbpediaIndex", "anchorIndex");
+//        CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "mergedIndex");
+        CandidateRetriever indexSearch = new CandidateRetrieverOnMemory();
 
 //        CorpusLoader loader = new CorpusLoader();
 //        DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
@@ -88,15 +90,11 @@ public class TestSearch {
 //        }
 
         List<String> terms = new ArrayList<>();
-        terms.add("syria");
+        terms.add("obama");
 
         for (String term : terms) {
-            List<Instance> anchor = indexSearch.getResourcesFromAnchors(term, 100);
-            List<Instance> dbpedia = indexSearch.getResourcesFromDBpedia(term, 100);
             List<Instance> all = indexSearch.getAllResources(term, 100);
             System.out.println("---------------------------");
-            System.out.println(String.format("%s: #%s:\n%s\n", "anchor", anchor.size(), anchor));
-            System.out.println(String.format("%s: #%s:\n%s\n", "dbpedia", dbpedia.size(), dbpedia));
             System.out.println(String.format("%s: #%s:\n%s\n", "all", all.size(), all));
         }
         System.out.println();
