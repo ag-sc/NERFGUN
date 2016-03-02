@@ -5,7 +5,6 @@
  */
 package de.citec.sc.templates;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,12 +12,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.Document;
 import de.citec.sc.similarity.measures.SimilarityMeasures;
 import de.citec.sc.variables.State;
-import factors.AbstractFactor;
-import factors.impl.SingleVariableFactor;
+import factors.Factor;
+import factors.patterns.SingleVariablePattern;
 import learning.Vector;
-import utility.VariableID;
 
 /**
  * 
@@ -30,42 +29,38 @@ import utility.VariableID;
  *
  *         Feb 18, 2016
  */
-public class EditDistanceTemplate extends templates.AbstractTemplate<State> {
+public class EditDistanceTemplate
+		extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
 	private static Logger log = LogManager.getFormatterLogger();
 
 	@Override
-	protected Collection<AbstractFactor> generateFactors(State state) {
-		Set<AbstractFactor> factors = new HashSet<>();
-		for (VariableID entityID : state.getEntityIDs()) {
-			factors.add(new SingleVariableFactor(this, entityID));
+	public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
+		Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
+		for (Annotation a : state.getEntities()) {
+			factors.add(new SingleVariablePattern<>(this, a));
 		}
-		log.info("Generate %s factors for state %s.", factors.size(), state.getID());
+		log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
 		return factors;
 	}
 
 	@Override
-	protected void computeFactor(State state, AbstractFactor absFactor) {
-		if (absFactor instanceof SingleVariableFactor) {
-			SingleVariableFactor factor = (SingleVariableFactor) absFactor;
-			Annotation entity = state.getEntity(factor.entityID);
-			log.debug("Compute DocumentSimilarity factor for state %s and variable %s", state.getID(), entity);
-			Vector featureVector = new Vector();
+	public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
+		Annotation entity = factor.getFactorPattern().getVariable();
+		log.debug("Compute %s factor for variable %s", EditDistanceTemplate.class.getSimpleName(), entity);
+		Vector featureVector = factor.getFeatureVector();
 
-			log.debug("Retrieve text for query link %s...", entity.getLink());
+		log.debug("Retrieve text for query link %s...", entity.getLink());
 
-			final String link = entity.getLink().replaceAll("_", " ").toLowerCase();
-			final String word = entity.getWord().toLowerCase();
+		final String link = entity.getLink().replaceAll("_", " ").toLowerCase();
+		final String word = entity.getWord().toLowerCase();
 
-			final int levenDist = SimilarityMeasures.levenshteinDistance(link, word);
+		final int levenDist = SimilarityMeasures.levenshteinDistance(link, word);
 
-			final int max = Math.max(link.length(), word.length());
+		final int max = Math.max(link.length(), word.length());
 
-			final double weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
+		final double weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
 
-			featureVector.set("WeightedEditSimilarity", weightedEditSimilarity);
-
-			factor.setFeatures(featureVector);
-		}
+		featureVector.set("WeightedEditSimilarity", weightedEditSimilarity);
 	}
 
 }

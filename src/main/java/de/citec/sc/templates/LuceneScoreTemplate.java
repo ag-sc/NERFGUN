@@ -5,78 +5,64 @@
  */
 package de.citec.sc.templates;
 
-import de.citec.sc.corpus.Annotation;
-import de.citec.sc.query.CandidateRetriever;
-import de.citec.sc.query.CandidateRetrieverOnLucene;
-import de.citec.sc.query.Instance;
-import de.citec.sc.variables.State;
-import factors.AbstractFactor;
-import factors.impl.SingleVariableFactor;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-import learning.Vector;
+
 import org.apache.logging.log4j.LogManager;
-import test.TestSearch;
-import utility.VariableID;
+
+import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.Document;
+import de.citec.sc.query.CandidateRetriever;
+import de.citec.sc.variables.State;
+import factors.Factor;
+import factors.patterns.SingleVariablePattern;
+import learning.Vector;
 
 /**
  *
  * @author sherzod
  */
-public class LuceneScoreTemplate extends templates.AbstractTemplate<State> {
+public class LuceneScoreTemplate
+		extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
 
-    private static org.apache.logging.log4j.Logger log = LogManager.getFormatterLogger();
+	private static org.apache.logging.log4j.Logger log = LogManager.getFormatterLogger();
 
-    CandidateRetriever indexSearch;
+	CandidateRetriever indexSearch;
 
-    public LuceneScoreTemplate(CandidateRetriever i) {
-        indexSearch = i;
-    }
+	public LuceneScoreTemplate(CandidateRetriever i) {
+		indexSearch = i;
+	}
 
-    @Override
-    protected Collection<AbstractFactor> generateFactors(State state) {
-        Set<AbstractFactor> factors = new HashSet<>();
-        for (VariableID entityID : state.getEntityIDs()) {
-            factors.add(new SingleVariableFactor(this, entityID));
-        }
-        log.info("Generate %s factors for state %s.", factors.size(), state.getID());
-        return factors;
-    }
+	@Override
+	public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
+		Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
+		for (Annotation a : state.getEntities()) {
+			factors.add(new SingleVariablePattern<>(this, a));
+		}
+		log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
+		return factors;
+	}
 
-    @Override
-    protected void computeFactor(State state, AbstractFactor absFactor) {
-        if (absFactor instanceof SingleVariableFactor) {
+	@Override
+	public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
+		Annotation entity = factor.getFactorPattern().getVariable();
+		log.debug("Compute %s factor for variable %s", LuceneScoreTemplate.class.getSimpleName(), entity);
+		Vector featureVector = factor.getFeatureVector();
 
-            SingleVariableFactor factor = (SingleVariableFactor) absFactor;
-            Annotation entity = state.getEntity(factor.entityID);
+		// String luceneScorePrefix = "Relative TF (URI, label)";
 
-            Vector featureVector = new Vector();
+		// featureVector.set(luceneScorePrefix, entity.getIndexScore());
 
-            featureVector.set("Relative_TF", entity.getRelativeTermFrequencyScore());
-            featureVector.set("Relative_PR", entity.getPageRankScore());
-            featureVector.set("Relative String Similarity", entity.getStringSimilarity());
-            
-            //bins
-////            for(double i=0.01; i<1.0; i=i+0.01){
-////                featureVector.set("Relative_String_Similarity_HIGHER_THAN_"+i, entity.getStringSimilarity() > i ? 1.0 : 0);
-////            }
+		featureVector.set("Relative_TF", entity.getRelativeTermFrequencyScore());
+		featureVector.set("Relative_PR", entity.getPageRankScore());
+		featureVector.set("Relative String Similarity", entity.getStringSimilarity());
 
-            factor.setFeatures(featureVector);
-        }
-    }
+		// bins
+		//// for(double i=0.01; i<1.0; i=i+0.01){
+		//// featureVector.set("Relative_String_Similarity_HIGHER_THAN_"+i,
+		//// entity.getStringSimilarity() > i ? 1.0 : 0);
+		//// }
+
+	}
 
 }

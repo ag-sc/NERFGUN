@@ -57,7 +57,17 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="sampling.DefaultSampler" level="WARN"
+		<Logger name="sampling.DefaultSampler" level="INFO"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+		<Logger name="templates.AbstractTemplate" level="WARN"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+		<Logger name="learning.Model" level="INFO"
 			additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />

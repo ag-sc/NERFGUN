@@ -2,6 +2,8 @@ package de.citec.sc.sampling;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +36,7 @@ public class DisambiguationExplorer implements Explorer<State> {
 
 	@Override
 	public List<State> getNextStates(State currentState) {
-		log.debug("Generate successor states for state:\n%s", currentState);
+		log.info("Generate successor states for state:\n%s", currentState);
 		List<State> generatedStates = new ArrayList<>();
 		for (Annotation a : currentState.getEntities()) {
 			log.debug("Generate successor states for annotation:\n%s", a);
@@ -42,6 +44,7 @@ public class DisambiguationExplorer implements Explorer<State> {
 			// String annotationText =
 			// currentState.getDocument().getDocumentContent().substring(a.getStartIndex(),a.getEndIndex());
 			List<Instance> candidateURIs = index.getAllResources(annotationText, maxNumberOfCandidateURIs);
+
 			log.debug("%s candidates retreived.", candidateURIs.size());
 			for (int i = 0; i < candidateURIs.size(); i++) {
 				Instance candidateURI = candidateURIs.get(i);// .replace("http://dbpedia.org/resource/",
@@ -50,11 +53,12 @@ public class DisambiguationExplorer implements Explorer<State> {
 				Annotation modifiedAnntation = generatedState.getEntity(a.getID());
 				modifiedAnntation.setLink(candidateURI.getUri());
 				modifiedAnntation.setIndexRank(i);
-                                modifiedAnntation.setRelativeTermFrequencyScore(candidateURI.getScore());
+				modifiedAnntation.setRelativeTermFrequencyScore(candidateURI.getScore());
 				generatedStates.add(generatedState);
 			}
 		}
-		log.debug("Total number of %s states generated.", generatedStates.size());
+		log.info("Total number of %s states generated.", generatedStates.size());
+
 		return generatedStates;
 	}
 

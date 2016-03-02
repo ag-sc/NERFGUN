@@ -2,17 +2,19 @@ package de.citec.sc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.List;
 import java.util.Map;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.CorpusLoader;
@@ -23,12 +25,8 @@ import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
-import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
-import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
-import de.citec.sc.sampling.EmptyURIInitializer;
-import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
@@ -41,6 +39,8 @@ import learning.scorer.Scorer;
 import sampling.DefaultSampler;
 import sampling.Explorer;
 import sampling.Initializer;
+import sampling.samplingstrategies.AcceptStrategies;
+import sampling.samplingstrategies.SamplingStrategies;
 import sampling.stoppingcriterion.StoppingCriterion;
 import templates.AbstractTemplate;
 
@@ -59,11 +59,12 @@ public class BIREMain {
 	private static Logger log = LogManager.getFormatterLogger();
 
 	public static void main(String[] args) throws IOException {
-		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-		Configuration config = ctx.getConfiguration();
-		LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-		loggerConfig.setLevel(Level.INFO);
-		ctx.updateLoggers();
+		// LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		// Configuration config = ctx.getConfiguration();
+		// LoggerConfig loggerConfig =
+		// config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+		// loggerConfig.setLevel(Level.INFO);
+		// ctx.updateLoggers();
 
 		String indexFile = "tfidf.bin";
 		String dfFile = "en_wiki_large_abstracts.docfrequency";
@@ -71,26 +72,28 @@ public class BIREMain {
 		String tsprFile = "tspr.gold";
 		String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 
+		log.info("Init TopicSpecificPageRankTemplate ...");
 		TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
-		DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
+		log.info("Init DocumentSimilarityTemplate ...");
+		// DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
 		/*
 		 * Load the index API.
 		 */
 		log.info("Load Index...");
-                CandidateRetriever index = new CandidateRetrieverOnLucene(false,"mergedIndex");
-//                CandidateRetriever index = new CandidateRetrieverOnMemory();
+		CandidateRetriever index = new CandidateRetrieverOnLucene(false, "mergedIndex");
+		// CandidateRetriever index = new CandidateRetrieverOnMemory();
 
 		// Search index = new SearchCache(false, "dbpediaIndexAll");
 		/*
 		 * Load training and test data.
 		 */
 		log.info("Load Corpus...");
-		CorpusLoader loader = new CorpusLoader(false);
+		CorpusLoader loader = new CorpusLoader();
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLL);
 		List<Document> documents = corpus.getDocuments();
 
-//		documents = documents.subList(0, 20);
-
+		documents = documents.subList(0, 10);
+		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 20).collect(Collectors.toList());
 		/*
 		 * Some code for n-fold cross validation
 		 */
@@ -101,13 +104,9 @@ public class BIREMain {
 		int n = 2;
 		double step = ((float) N) / n;
 		double k = 0;
-                
-                AllScoresExplorer exp1 = new AllScoresExplorer(index);
-                
-//                PageRankTemplate pTemplate = new PageRankTemplate();
-//                LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
-//                TopicSpecificPageRankTemplate topicSpecificPRTemplate = new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile);
-//                IndexRankTemplate rankTemplate = new IndexRankTemplate();
+
+		AllScoresExplorer exp1 = new AllScoresExplorer(index);
+
 		for (int i = 0; i < n; i++) {
 			log.info("Cross-Validation Fold %s/%s", i + 1, n);
 			double j = k;
@@ -140,8 +139,23 @@ public class BIREMain {
 			 * Define templates that are responsible to generate
 			 * factors/features to score intermediate, generated states.
 			 */
-			List<AbstractTemplate<State>> templates = new ArrayList<>();
+			List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
+			// templates.add(new IndexRankTemplate());
+			TopicSpecificPageRankTemplate tpTemplate = null;
 			try {
+				// LuceneScoreTemplate lTemplate = new
+				// LuceneScoreTemplate(index);
+				// PageRankTemplate pTemplate = new PageRankTemplate();
+				// IndexRankTemplate rankTemplate = new IndexRankTemplate();
+				// templates.add(rankTemplate);
+				// templates.add(pTemplate);
+
+				// templates.add(lTemplate);
+				// templates.add(new EditDistanceTemplate());
+				tpTemplate = new TopicSpecificPageRankTemplate();
+				templates.add(tpTemplate);
+				// templates.add(new DocumentSimilarityTemplate(indexFile,
+				// tfidfFile, dfFile, true));
 			} catch (Exception e1) {
 				e1.printStackTrace();
 				System.exit(1);
@@ -152,12 +166,13 @@ public class BIREMain {
 			/*
 			 * Define a model and provide it with the necessary templates.
 			 */
-			Model<State> model = new Model<>(templates);
+			Model<Document, State> model = new Model<>(templates);
+			model.setMultiThreaded(true);
 			/*
 			 * Create the scorer object that computes a score from the features
 			 * of a factor and the weight vectors of the templates.
 			 */
-			Scorer<State> scorer = new DefaultScorer<>();
+			Scorer scorer = new DefaultScorer();
 
 			/*
 			 * Create an Initializer that is responsible for providing an
@@ -171,8 +186,8 @@ public class BIREMain {
 			 * a successor state and, thus, perform the sampling procedure.
 			 */
 			List<Explorer<State>> explorers = new ArrayList<>();
-//			explorers.add(new DisambiguationExplorer(index));
-                        explorers.add(exp1);
+			// explorers.add(new DisambiguationExplorer(index));
+			explorers.add(exp1);
 			/*
 			 * Create a sampler that generates sampling chains with which it
 			 * will trigger weight updates during training.
@@ -188,20 +203,35 @@ public class BIREMain {
 			/*
 			 * Stop sampling if objective score is equal to 1.
 			 */
-			StoppingCriterion<State> objectiveOne = new StoppingCriterion<State>() {
+			StoppingCriterion<State> objectiveOneCriterion = new StoppingCriterion<State>() {
 
 				@Override
 				public boolean checkCondition(List<State> chain, int step) {
-					return !chain.isEmpty() && chain.get(chain.size() - 1).getObjectiveScore() >= 1
-							|| step >= numberOfSamplingSteps;
+					if (chain.isEmpty())
+						return false;
+
+					double maxScore = chain.get(chain.size() - 1).getModelScore();
+					if (maxScore >= 1)
+						return true;
+					int count = 0;
+					final int maxCount = 5;
+
+					for (int i = 0; i < chain.size(); i++) {
+						if (chain.get(i).getModelScore() >= maxScore) {
+							count++;
+						}
+					}
+					return count >= maxCount || step >= numberOfSamplingSteps;
+
 				}
 			};
 
 			// StoppingCriterion<State> stoppingCriterion = new
 			// StepLimitCriterion<>(numberOfSamplingSteps);
-			DefaultSampler<State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective, explorers,
-					objectiveOne);
-
+			DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
+					explorers, objectiveOneCriterion);
+			sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
+			sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
 			/*
 			 * Define a learning strategy. The learner will receive state pairs
 			 * which can be used to update the models parameters.
@@ -254,7 +284,7 @@ public class BIREMain {
 			 * Give the final annotations to the Document for the Evaluator
 			 */
 			for (State state : trainResults) {
-				state.getDocument().setAnnotations(new ArrayList<>(state.getEntities()));
+				state.getInstance().setAnnotations(new ArrayList<>(state.getEntities()));
 			}
 			/*
 			 * Evaluate train and test predictions
@@ -281,7 +311,7 @@ public class BIREMain {
 
 			List<State> testResults = trainer.test(sampler, initializer, test);
 			for (State state : testResults) {
-				state.getDocument().setAnnotations(new ArrayList<>(state.getEntities()));
+				state.getInstance().setAnnotations(new ArrayList<>(state.getEntities()));
 			}
 			Map<String, Double> testEvaluation = Evaluator.evaluateAll(test);
 			log.info("Evaluation on test data:");

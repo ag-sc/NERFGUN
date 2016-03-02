@@ -48,147 +48,155 @@ import java.io.File;
  */
 public class TestSearch {
 
-    public static void main(String[] args) throws UnsupportedEncodingException {
+	public static void main(String[] args) throws UnsupportedEncodingException {
 
-       
-//        CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "mergedIndex");
-        CandidateRetriever indexSearch = new CandidateRetrieverOnMemory();
+		// CandidateRetriever indexSearch = new
+		// CandidateRetrieverOnLucene(false, "mergedIndex");
+		CandidateRetriever indexSearch = new CandidateRetrieverOnMemory();
 
-//        CorpusLoader loader = new CorpusLoader();
-//        DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
-//        for (Document d : c.getDocuments()) {
-//
-//            for (Annotation a : d.getGoldResult()) {
-//                List<Instance> ins = indexSearch.getResourcesFromAnchors(a.getWord(), 100);
-//                for (Instance i1 : ins) {
-//                    String z = i1.getUri();
-//
-//                    String y = URLDecoder.decode(z, "UTF-8");
-//                    if (!z.equals(y)) {
-//                        System.out.println("Anchors: " + a.getWord());
-//                        System.out.println(z);
-//                        System.out.println(y);
-//                        System.out.println(a.getLink());
-//                        System.out.println("\n\n");
-//                    }
-//                }
-//
-//                ins = indexSearch.getResourcesFromDBpedia(a.getWord(), 100);
-//                for (Instance i1 : ins) {
-//                    String z = i1.getUri();
-//
-//                    String y = URLDecoder.decode(z, "UTF-8");
-//                    if (!z.equals(y)) {
-//                        System.out.println("DBpedia " + a.getWord());
-//                        System.out.println(z);
-//                        System.out.println(y);
-//                        System.out.println(a.getLink());
-//                        System.out.println("\n\n");
-//                    }
-//                }
-//            }
-//        }
+		// CorpusLoader loader = new CorpusLoader();
+		// DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
+		// for (Document d : c.getDocuments()) {
+		//
+		// for (Annotation a : d.getGoldResult()) {
+		// List<Instance> ins = indexSearch.getResourcesFromAnchors(a.getWord(),
+		// 100);
+		// for (Instance i1 : ins) {
+		// String z = i1.getUri();
+		//
+		// String y = URLDecoder.decode(z, "UTF-8");
+		// if (!z.equals(y)) {
+		// System.out.println("Anchors: " + a.getWord());
+		// System.out.println(z);
+		// System.out.println(y);
+		// System.out.println(a.getLink());
+		// System.out.println("\n\n");
+		// }
+		// }
+		//
+		// ins = indexSearch.getResourcesFromDBpedia(a.getWord(), 100);
+		// for (Instance i1 : ins) {
+		// String z = i1.getUri();
+		//
+		// String y = URLDecoder.decode(z, "UTF-8");
+		// if (!z.equals(y)) {
+		// System.out.println("DBpedia " + a.getWord());
+		// System.out.println(z);
+		// System.out.println(y);
+		// System.out.println(a.getLink());
+		// System.out.println("\n\n");
+		// }
+		// }
+		// }
+		// }
 
-        List<String> terms = new ArrayList<>();
-        terms.add("obama");
+		List<String> terms = new ArrayList<>();
+		terms.add("obama");
+		terms.add("Opel");
 
-        for (String term : terms) {
-            List<Instance> all = indexSearch.getAllResources(term, 100);
-            System.out.println("---------------------------");
-            System.out.println(String.format("%s: #%s:\n%s\n", "all", all.size(), all));
-        }
-        System.out.println();
-//        System.out.println();
-//        CorpusLoader loader = new CorpusLoader();
-//        DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
-//
-//        String path = "dbpediaFiles/pageranks.ttl";
-//
-//        // read file into stream, try-with-resources
-//        ConcurrentHashMap<String, Double> map = new ConcurrentHashMap<>(19500000);
-//
-//        String patternString = "<http://dbpedia.org/resource/(.*?)>.*\"(.*?)\"";
-//        Pattern pattern1 = Pattern.compile(patternString);
-//
-//        Set<String> uris = new HashSet<>();
-//        for (Document d : c.getDocuments()) {
-//            for (Annotation a : d.getGoldResult()) {
-//                String uri = a.getLink().replace("http://en.wikipedia.org/wiki/", "");
-//                uris.add(uri);
-//            }
-//        }
-//
-//        try (Stream<String> stream = Files.lines(Paths.get(path))) {
-//            stream.parallel().forEach(item -> {
-//
-//                String line = item.toString();
-//
-//                Matcher m = pattern1.matcher(line);
-//                while (m.find()) {
-//                    String uri = m.group(1);
-//
-//                    String r = m.group(2);
-//                    Double v = Double.parseDouble(r);
-//
-//                    if (!(uri.contains("Category:") || uri.contains("(disambiguation)"))) {
-//                        try {
-//                            // counter.incrementAndGet();
-//                            uri = URLDecoder.decode(uri, "UTF-8");
-//                        } catch (UnsupportedEncodingException ex) {
-//                            Logger.getLogger(TestSearch.class.getName()).log(Level.SEVERE, null, ex);
-//                        }
-//                        map.put(uri, v);
-//
-//                    }
-//
-//                }
-//
-//            });
-//            System.out.println(map.keySet().size());
-//            for (String uri : uris) {
-//                if (!map.keySet().contains(uri)) {
-//                    System.out.println(uri);
-//                }
-//
-//            }
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        TreeMap<Integer, Double> ranges = new TreeMap<>();
-//
-//        TreeSet<Double> values = new TreeSet<>();
-//
-//        System.out.println(uris.size());
-//        for (String uri : uris) {
-//            if (map.containsKey(uri)) {
-//                Double v1 = map.get(uri);
-//                values.add(v1);
-//                // int v = (int)
-//                // ranges.put(v1, ranges.getOrDefault(v, 0) + 1);
-//            }
-//        }
-//        System.out.println(values.size());
-//
-//        List<Double> valuesAsList = new ArrayList<>();
-//        valuesAsList.addAll(values);
-//
-//        for (int i = 0; i < 10; i = i + 1) {
-//            double s1 = (((double) values.size()) / 10);
-//            int k = (int) (i * s1);
-//
-//            System.out.println(valuesAsList.get(k));
-//        }
-//
-//        ////
-//        // int sum = 0;
-//        // for(Integer k : ranges.keySet()){
-//        // sum +=ranges.get(k);
-//        // System.out.println(k + "\t" + ranges.get(k) + " \t" + sum);
-//        // }
-//        //
-//        // ranges.entrySet().forEach(s -> System.out.println(s.getKey() + "\t" +
-//        //// s.getValue()));
-    }
+		for (String term : terms) {
+			List<Instance> all = indexSearch.getAllResources(term, 100);
+			System.out.println("---------------------------");
+			System.out.println(String.format("%s: #%s:\n%s\n", "all", all.size(), all));
+		}
+		System.out.println();
+		// System.out.println();
+		// CorpusLoader loader = new CorpusLoader();
+		// DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
+		//
+		// String path = "dbpediaFiles/pageranks.ttl";
+		//
+		// // read file into stream, try-with-resources
+		// ConcurrentHashMap<String, Double> map = new
+		// ConcurrentHashMap<>(19500000);
+		//
+		// String patternString =
+		// "<http://dbpedia.org/resource/(.*?)>.*\"(.*?)\"";
+		// Pattern pattern1 = Pattern.compile(patternString);
+		//
+		// Set<String> uris = new HashSet<>();
+		// for (Document d : c.getDocuments()) {
+		// for (Annotation a : d.getGoldResult()) {
+		// String uri = a.getLink().replace("http://en.wikipedia.org/wiki/",
+		// "");
+		// uris.add(uri);
+		// }
+		// }
+		//
+		// try (Stream<String> stream = Files.lines(Paths.get(path))) {
+		// stream.parallel().forEach(item -> {
+		//
+		// String line = item.toString();
+		//
+		// Matcher m = pattern1.matcher(line);
+		// while (m.find()) {
+		// String uri = m.group(1);
+		//
+		// String r = m.group(2);
+		// Double v = Double.parseDouble(r);
+		//
+		// if (!(uri.contains("Category:") || uri.contains("(disambiguation)")))
+		// {
+		// try {
+		// // counter.incrementAndGet();
+		// uri = URLDecoder.decode(uri, "UTF-8");
+		// } catch (UnsupportedEncodingException ex) {
+		// Logger.getLogger(TestSearch.class.getName()).log(Level.SEVERE, null,
+		// ex);
+		// }
+		// map.put(uri, v);
+		//
+		// }
+		//
+		// }
+		//
+		// });
+		// System.out.println(map.keySet().size());
+		// for (String uri : uris) {
+		// if (!map.keySet().contains(uri)) {
+		// System.out.println(uri);
+		// }
+		//
+		// }
+		//
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		//
+		// TreeMap<Integer, Double> ranges = new TreeMap<>();
+		//
+		// TreeSet<Double> values = new TreeSet<>();
+		//
+		// System.out.println(uris.size());
+		// for (String uri : uris) {
+		// if (map.containsKey(uri)) {
+		// Double v1 = map.get(uri);
+		// values.add(v1);
+		// // int v = (int)
+		// // ranges.put(v1, ranges.getOrDefault(v, 0) + 1);
+		// }
+		// }
+		// System.out.println(values.size());
+		//
+		// List<Double> valuesAsList = new ArrayList<>();
+		// valuesAsList.addAll(values);
+		//
+		// for (int i = 0; i < 10; i = i + 1) {
+		// double s1 = (((double) values.size()) / 10);
+		// int k = (int) (i * s1);
+		//
+		// System.out.println(valuesAsList.get(k));
+		// }
+		//
+		// ////
+		// // int sum = 0;
+		// // for(Integer k : ranges.keySet()){
+		// // sum +=ranges.get(k);
+		// // System.out.println(k + "\t" + ranges.get(k) + " \t" + sum);
+		// // }
+		// //
+		// // ranges.entrySet().forEach(s -> System.out.println(s.getKey() +
+		// "\t" +
+		// //// s.getValue()));
+	}
 }

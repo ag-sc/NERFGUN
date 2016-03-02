@@ -16,43 +16,23 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.Document;
-import factors.FactorGraph;
 import utility.VariableID;
 import variables.AbstractState;
 
-public class State extends AbstractState implements Serializable {
+public class State extends AbstractState<Document>implements Serializable {
 
 	private static Logger log = LogManager.getFormatterLogger();
 
 	private static final String GENERATED_ENTITY_ID_PREFIX = "G";
 	private static final DecimalFormat scoreFormat = new DecimalFormat("0.00000");
 
-	/**
-	 * Since Entities only hold weak pointer via references to one another,
-	 * using a Map is sensible to enable an efficient access to the entities.
-	 */
 	private Map<VariableID, Annotation> entities = new HashMap<>();
-
-	private AtomicInteger entityIDIndex = new AtomicInteger();
-	/**
-	 * The state needs to keep track of the changes that were made to its
-	 * entities in order to allow for efficient computation of factors and their
-	 * features. Note: The changes are not stored in the Entity object since it
-	 * is more efficient to just clear this map instead of iterating over all
-	 * entities and reset a field in order to mark all entities as unchanged.
-	 */
-	private Document document;
-
-	private State() {
-		super();
-	}
 
 	/**
 	 * This Copy Constructor creates an exact copy of itself including all
@@ -61,25 +41,15 @@ public class State extends AbstractState implements Serializable {
 	 * @param state
 	 */
 	public State(State state) {
-		this();
-		this.entityIDIndex = new AtomicInteger(state.entityIDIndex.get());
-		this.document = state.document;
-		this.factorGraph = new FactorGraph(state.factorGraph);
+		super(state);
 		for (Annotation e : state.entities.values()) {
 			this.entities.put(e.getID(), e.clone());
 		}
 
-		this.modelScore = state.modelScore;
-		this.objectiveScore = state.objectiveScore;
 	}
 
 	public State(Document document) {
-		this();
-		this.document = document;
-	}
-
-	public Document getDocument() {
-		return document;
+		super(document);
 	}
 
 	public void addEntity(Annotation entity) {
@@ -130,12 +100,6 @@ public class State extends AbstractState implements Serializable {
 		return entities.get(id);
 	}
 
-	public VariableID generateEntityID() {
-		int currentID = entityIDIndex.getAndIncrement();
-		String id = GENERATED_ENTITY_ID_PREFIX + currentID;
-		return new VariableID(id);
-	}
-
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("ID:");
@@ -146,8 +110,15 @@ public class State extends AbstractState implements Serializable {
 		builder.append(" [");
 		builder.append(scoreFormat.format(objectiveScore));
 		builder.append("]: ");
-		builder.append(getDocument().toString() + "\n\n");
+		// builder.append(getInstance().toString() + "\n\n");
 
+		builder.append("\n\n");
+		builder.append("GOLD (#" + getInstance().getGoldResult().size() + "):\n");
+		for (Annotation a : getInstance().getGoldResult()) {
+			builder.append(a.toString() + "\n");
+		}
+		builder.append("\n");
+		builder.append("PREDICTED (#" + entities.size() + "):\n");
 		for (Annotation a : sortByValue(entities).values()) {
 			builder.append(a.toString() + "\n");
 		}

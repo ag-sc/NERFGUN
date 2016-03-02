@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,11 +19,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.citec.sc.corpus.Annotation;
-import de.citec.sc.factors.DoubleVariableFactor;
+import de.citec.sc.corpus.Document;
 import de.citec.sc.variables.State;
-import factors.AbstractFactor;
+import factors.Factor;
+import factors.patterns.VariablePairPattern;
 import learning.Vector;
-import utility.VariableID;
 
 /**
  * 
@@ -35,7 +34,8 @@ import utility.VariableID;
  *
  *         Feb 18, 2016
  */
-public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<State> {
+public class TopicSpecificPageRankTemplate
+		extends templates.AbstractTemplate<Document, State, VariablePairPattern<Annotation>> {
 
 	/*
 	 * Handmade
@@ -129,88 +129,85 @@ public class TopicSpecificPageRankTemplate extends templates.AbstractTemplate<St
 	}
 
 	@Override
-	protected Collection<AbstractFactor> generateFactors(State state) {
-
-		Set<AbstractFactor> factors = new HashSet<>();
-		for (VariableID firstEntityID : state.getEntityIDs()) {
-			for (VariableID secondEntityID : state.getEntityIDs()) {
-				if (!firstEntityID.equals(secondEntityID))
-					factors.add(new DoubleVariableFactor(this, firstEntityID, secondEntityID));
+	public Set<VariablePairPattern<Annotation>> generateFactorPatterns(State state) {
+		Set<VariablePairPattern<Annotation>> factors = new HashSet<>();
+		for (Annotation firstAnnotation : state.getEntities()) {
+			for (Annotation secondAnnotation : state.getEntities()) {
+				if (!firstAnnotation.equals(secondAnnotation))
+					factors.add(new VariablePairPattern<>(this, firstAnnotation, secondAnnotation));
 			}
 		}
 
-		log.debug("Generate %s factors for state %s.", factors.size(), state.getID());
+		log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
 		return factors;
 	}
 
 	@Override
-	protected void computeFactor(State state, AbstractFactor absFactor) {
-		if (absFactor instanceof DoubleVariableFactor) {
-			DoubleVariableFactor factor = (DoubleVariableFactor) absFactor;
-			log.debug("Compute Topic Specific Page Rank factor for state %s", state.getID());
-			Vector featureVector = new Vector();
+	public void computeFactor(Document instance, Factor<VariablePairPattern<Annotation>> factor) {
+		Annotation firstAnnotation = factor.getFactorPattern().getVariable1();
+		Annotation secondAnnotation = factor.getFactorPattern().getVariable2();
+		log.debug("Compute %s factor for variables %s and %s", TopicSpecificPageRankTemplate.class.getSimpleName(),
+				firstAnnotation, secondAnnotation);
 
-			double score = 0;
+		Vector featureVector = factor.getFeatureVector();
 
-			Annotation firstAnnotation = state.getEntity(factor.firstEntityID);
-			Annotation secondAnnotation = state.getEntity(factor.secondEntityID);
+		double score = 0;
 
-			final String link = firstAnnotation.getLink().trim();
-			final String link2 = secondAnnotation.getLink().trim();
-			calcScore: {
+		final String link = firstAnnotation.getLink().trim();
+		final String link2 = secondAnnotation.getLink().trim();
+		calcScore: {
 
-				if (link.equals(Annotation.DEFAULT_ID))
-					break calcScore;
+			if (link.equals(Annotation.DEFAULT_ID))
+				break calcScore;
 
-				if (!indexMappings.containsKey(link)) {
-					// log.warn("Unknown link node detected for link: " + link);
-					break calcScore;
-				}
-
-				/*
-				 * If node is known
-				 */
-				final int linkNodeIndex = indexMappings.get(link);
-
-				if (!tspr.containsKey(linkNodeIndex))
-					break calcScore;
-
-				if (link2.equals(Annotation.DEFAULT_ID))
-					break calcScore;
-
-				if (!indexMappings.containsKey(link2)) {
-					// log.warn("Unknown link node detected for link: " +
-					// link2);
-					break calcScore;
-				}
-
-				/*
-				 * If other link is known
-				 */
-				final int linkNodeIndex2 = indexMappings.get(link2);
-
-				if (!tspr.get(linkNodeIndex).containsKey(linkNodeIndex2))
-					break calcScore;
-
-				/*
-				 * If tspr of startnode contains node
-				 */
-				score += tspr.get(linkNodeIndex).get(linkNodeIndex2);
-
-				/*
-				 * Normalize by number of additions.
-				 */
+			if (!indexMappings.containsKey(link)) {
+				// log.warn("Unknown link node detected for link: " + link);
+				break calcScore;
 			}
 
-			// featureVector.set("TopicSpecificPageRankFor_" + link + "_to_" +
-			// link2, score);
+			/*
+			 * If node is known
+			 */
+			final int linkNodeIndex = indexMappings.get(link);
+
+			if (!tspr.containsKey(linkNodeIndex))
+				break calcScore;
+
+			if (link2.equals(Annotation.DEFAULT_ID))
+				break calcScore;
+
+			if (!indexMappings.containsKey(link2)) {
+				// log.warn("Unknown link node detected for link: " +
+				// link2);
+				break calcScore;
+			}
+
+			/*
+			 * If other link is known
+			 */
+			final int linkNodeIndex2 = indexMappings.get(link2);
+
+			if (!tspr.get(linkNodeIndex).containsKey(linkNodeIndex2))
+				break calcScore;
+
+			/*
+			 * If tspr of startnode contains node
+			 */
+			score += tspr.get(linkNodeIndex).get(linkNodeIndex2);
+
+			/*
+			 * Normalize by number of additions.
+			 */
 
 			// featureVector.set("TopicSpecificPageRank", score);
 			final int bin = getBin(score);
 			featureVector.set("TopicSpecificPageRankInBin_" + bin, score);
 
-			factor.setFeatures(featureVector);
 		}
+
+		// featureVector.set("TopicSpecificPageRankFor_" + link + "_to_" +
+		// link2, score);
+		featureVector.set("TopicSpecificPageRank", score);
 	}
 
 	private int getBin(final double score) {

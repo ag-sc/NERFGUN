@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.Document;
 import de.citec.sc.exceptions.EmptyIndexException;
 import de.citec.sc.helper.StanfordLemmatizer;
 import de.citec.sc.helper.Stopwords;
@@ -27,8 +28,8 @@ import de.citec.sc.similarity.tfidf.IDFProvider;
 import de.citec.sc.similarity.tfidf.TFIDF;
 import de.citec.sc.variables.State;
 import de.citec.sc.wikipedia.preprocess.WikipediaTFIDFVector;
-import factors.AbstractFactor;
-import factors.impl.SingleVariableFactor;
+import factors.Factor;
+import factors.patterns.SingleVariablePattern;
 import learning.Vector;
 import utility.VariableID;
 
@@ -38,7 +39,8 @@ import utility.VariableID;
  *
  *         Feb 18, 2016
  */
-public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State> {
+public class DocumentSimilarityTemplate
+		extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
 
 	private static Logger log = LogManager.getFormatterLogger();
 	private static StanfordLemmatizer lemmatizer;
@@ -83,50 +85,46 @@ public class DocumentSimilarityTemplate extends templates.AbstractTemplate<State
 	}
 
 	@Override
-	protected Collection<AbstractFactor> generateFactors(State state) {
-		Set<AbstractFactor> factors = new HashSet<>();
-		for (VariableID entityID : state.getEntityIDs()) {
-			factors.add(new SingleVariableFactor(this, entityID));
+	public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
+		Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
+		for (Annotation a : state.getEntities()) {
+			factors.add(new SingleVariablePattern<>(this, a));
 		}
-		log.info("Generate %s factors for state %s.", factors.size(), state.getID());
+		log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
 		return factors;
 	}
 
 	@Override
-	protected void computeFactor(State state, AbstractFactor absFactor) {
-		if (absFactor instanceof SingleVariableFactor) {
-			SingleVariableFactor factor = (SingleVariableFactor) absFactor;
-			Annotation entity = state.getEntity(factor.entityID);
-			log.debug("Compute DocumentSimilarity factor for state %s and variable %s", state.getID(), entity);
-			Vector featureVector = new Vector();
+	public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
+		Annotation entity = factor.getFactorPattern().getVariable();
+		log.debug("Compute %s factor for variable %s", DocumentSimilarityTemplate.class.getSimpleName(), entity);
+		Vector featureVector = factor.getFeatureVector();
 
-			try {
-				log.debug("Retrieve text for query link %s...", entity.getLink());
-				String queryResult = FileDB.query(entity.getLink());
-				double cosineSimilarity = 0;
-				if (queryResult != null) {
-					log.debug("Convert retrieved abstract to vector...");
-					Map<String, Double> candidateVector = lineToVector(queryResult);
+		try {
+			log.debug("Retrieve text for query link %s...", entity.getLink());
+			String queryResult = FileDB.query(entity.getLink());
+			double cosineSimilarity = 0;
+			if (queryResult != null) {
+				log.debug("Convert retrieved abstract to vector...");
+				Map<String, Double> candidateVector = lineToVector(queryResult);
 
-					final String document = state.getDocument().getDocumentContent();
+				final String document = instance.getDocumentContent();
 
-					log.debug("Convert document to vector...");
-					Map<String, Double> currentDocumentVector = convertDocumentToVector(document,
-							state.getDocument().getDocumentContent());
+				log.debug("Convert document to vector...");
+				Map<String, Double> currentDocumentVector = convertDocumentToVector(document,
+						instance.getDocumentContent());
 
-					log.debug("Compute cosine similarity...");
-					cosineSimilarity = SimilarityMeasures.cosineDistance(candidateVector, currentDocumentVector);
-					log.debug("Cosine similarity: %s", cosineSimilarity);
+				log.debug("Compute cosine similarity...");
+				cosineSimilarity = SimilarityMeasures.cosineDistance(candidateVector, currentDocumentVector);
+				log.debug("Cosine similarity: %s", cosineSimilarity);
 
-				} else {
-					cosineSimilarity = 0;
-				}
-				featureVector.set("Document_Cosine_Similarity", cosineSimilarity);
-			} catch (IOException | EmptyIndexException e) {
-				System.exit(1);
-				e.printStackTrace();
+			} else {
+				cosineSimilarity = 0;
 			}
-			factor.setFeatures(featureVector);
+			featureVector.set("Document_Cosine_Similarity", cosineSimilarity);
+		} catch (IOException | EmptyIndexException e) {
+			System.exit(1);
+			e.printStackTrace();
 		}
 	}
 

@@ -5,7 +5,6 @@
  */
 package de.citec.sc.templates;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,17 +12,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.Document;
 import de.citec.sc.variables.State;
-import factors.AbstractFactor;
-import factors.impl.SingleVariableFactor;
+import factors.Factor;
+import factors.patterns.SingleVariablePattern;
 import learning.Vector;
-import utility.VariableID;
 
 /**
  *
  * @author sherzod
  */
-public class IndexRankTemplate extends templates.AbstractTemplate<State> {
+public class IndexRankTemplate extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
 
 	private static Logger log = LogManager.getFormatterLogger();
 
@@ -33,33 +32,29 @@ public class IndexRankTemplate extends templates.AbstractTemplate<State> {
 	}
 
 	@Override
-	protected Collection<AbstractFactor> generateFactors(State state) {
-		Set<AbstractFactor> factors = new HashSet<>();
-		for (VariableID entityID : state.getEntityIDs()) {
-			factors.add(new SingleVariableFactor(this, entityID));
+	public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
+		Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
+		for (Annotation a : state.getEntities()) {
+			factors.add(new SingleVariablePattern<>(this, a));
 		}
+		log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
 		return factors;
 	}
 
 	@Override
-	protected void computeFactor(State state, AbstractFactor absFactor) {
-		if (absFactor instanceof SingleVariableFactor) {
-			SingleVariableFactor factor = (SingleVariableFactor) absFactor;
-			Annotation entity = state.getEntity(factor.entityID);
-			log.info("Compute IndexRank factor for state %s and variable %s", state.getID(), entity);
+	public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
+		Annotation entity = factor.getFactorPattern().getVariable();
+		log.debug("Compute %s factor for variable %s", IndexRankTemplate.class.getSimpleName(), entity);
+		Vector featureVector = factor.getFeatureVector();
+		int rank = entity.getIndexRank();
 
-			Vector featureVector = new Vector();
-			int rank = entity.getIndexRank();
-
-			if (rank != -1) {
-				featureVector.set("IndexRank", (double) rank);
-				for (int rankBin : rankBins) {
-					featureVector.set("IndexRank < " + rankBin, rank < rankBin);
-				}
-				int lastBin = rankBins[rankBins.length - 1];
-				featureVector.set("IndexRank >= " + lastBin, rank >= lastBin);
+		if (rank != -1) {
+			featureVector.set("IndexRank", (double) rank);
+			for (int rankBin : rankBins) {
+				featureVector.set("IndexRank < " + rankBin, rank < rankBin);
 			}
-			factor.setFeatures(featureVector);
+			int lastBin = rankBins[rankBins.length - 1];
+			featureVector.set("IndexRank >= " + lastBin, rank >= lastBin);
 		}
 	}
 

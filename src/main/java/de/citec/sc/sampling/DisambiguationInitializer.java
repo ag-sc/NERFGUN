@@ -59,10 +59,12 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 					candidateRank = 0;
 				}
 
-				String initialLink = candidateURIs.get(candidateRank).getUri();
+				Instance candidate = candidateURIs.get(candidateRank);
+				String initialLink = candidate.getUri();
 				Annotation newAnnotation = new Annotation(annotation.getWord(), initialLink, annotation.getStartIndex(),
-						annotation.getEndIndex(), state.generateEntityID());
+						annotation.getEndIndex());
 				newAnnotation.setIndexRank(candidateRank);
+				newAnnotation.setRelativeTermFrequencyScore(candidate.getScore());;
 				state.addEntity(newAnnotation);
 			}
 			// initialLink = initialLink.replace("http://dbpedia.org/resource/",
