@@ -6,11 +6,10 @@
 package de.citec.sc.createIndex;
 
 import java.io.IOException;
-
-import de.citec.sc.BIREMain;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import test.TestSearch;
+
+import de.citec.sc.BIREMain;
 
 /**
  *

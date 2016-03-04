@@ -63,6 +63,7 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 				String initialLink = candidate.getUri();
 				Annotation newAnnotation = new Annotation(annotation.getWord(), initialLink, annotation.getStartIndex(),
 						annotation.getEndIndex());
+				
 				newAnnotation.setIndexRank(candidateRank);
 				newAnnotation.setRelativeTermFrequencyScore(candidate.getScore());;
 				state.addEntity(newAnnotation);

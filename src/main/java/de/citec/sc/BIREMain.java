@@ -1,5 +1,6 @@
 package de.citec.sc;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.List;
 import java.util.Map;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -27,9 +29,15 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
+import de.citec.sc.templates.DocumentSimilarityTemplate;
+import de.citec.sc.templates.EditDistanceTemplate;
+import de.citec.sc.templates.IndexRankTemplate;
+import de.citec.sc.templates.LuceneScoreTemplate;
+import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
+import exceptions.UnkownTemplateRequestedException;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
@@ -43,6 +51,7 @@ import sampling.samplingstrategies.AcceptStrategies;
 import sampling.samplingstrategies.SamplingStrategies;
 import sampling.stoppingcriterion.StoppingCriterion;
 import templates.AbstractTemplate;
+import templates.TemplateFactory;
 
 /*
  * 	templates.add(new EditDistanceTemplate());
@@ -59,6 +68,11 @@ public class BIREMain {
 	private static Logger log = LogManager.getFormatterLogger();
 
 	public static void main(String[] args) throws IOException {
+		BIREMain bire = new BIREMain();
+		bire.run();
+	}
+
+	public void run() throws IOException {
 		// LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		// Configuration config = ctx.getConfiguration();
 		// LoggerConfig loggerConfig =
@@ -93,7 +107,7 @@ public class BIREMain {
 		List<Document> documents = corpus.getDocuments();
 
 		documents = documents.subList(0, 10);
-		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 20).collect(Collectors.toList());
+		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 10).collect(Collectors.toList());
 		/*
 		 * Some code for n-fold cross validation
 		 */
@@ -140,18 +154,19 @@ public class BIREMain {
 			 * factors/features to score intermediate, generated states.
 			 */
 			List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
-			// templates.add(new IndexRankTemplate());
 			TopicSpecificPageRankTemplate tpTemplate = null;
 			try {
-				// LuceneScoreTemplate lTemplate = new
-				// LuceneScoreTemplate(index);
+				LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
+				templates.add(lTemplate);
+
 				// PageRankTemplate pTemplate = new PageRankTemplate();
 				// IndexRankTemplate rankTemplate = new IndexRankTemplate();
 				// templates.add(rankTemplate);
 				// templates.add(pTemplate);
 
-				// templates.add(lTemplate);
-				// templates.add(new EditDistanceTemplate());
+				EditDistanceTemplate eTemplate = new EditDistanceTemplate();
+				templates.add(eTemplate);
+
 				tpTemplate = new TopicSpecificPageRankTemplate();
 				templates.add(tpTemplate);
 				// templates.add(new DocumentSimilarityTemplate(indexFile,
@@ -322,6 +337,8 @@ public class BIREMain {
 			log.info("Model weights:");
 			EvaluationUtil.printWeights(model, 0);
 			avrgTest = Evaluator.add(avrgTest, testEvaluation);
+
+			model.saveModelToFile("src/main/resources/models", "model1Test");
 		}
 		/*
 		 * Compute avrg. scores from sum of scores
@@ -334,5 +351,6 @@ public class BIREMain {
 
 		log.info("%s-fold cross validation on TEST:", n);
 		avrgTest.entrySet().forEach(e -> log.info(e));
+
 	}
 }

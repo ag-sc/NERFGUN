@@ -28,6 +28,11 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
+		<Logger name="test" level="DEBUG"
+			additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
 		<Logger name="de.citec.sc.templates" level="WARN"
 			additivity="false">
 			<AppenderRef ref="Console" />
@@ -57,7 +62,7 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="sampling.DefaultSampler" level="INFO"
+		<Logger name="sampling.DefaultSampler" level="WARN"
 			additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />

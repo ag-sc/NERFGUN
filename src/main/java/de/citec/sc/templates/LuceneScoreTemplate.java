@@ -54,8 +54,8 @@ public class LuceneScoreTemplate
 		// featureVector.set(luceneScorePrefix, entity.getIndexScore());
 
 		featureVector.set("Relative_TF", entity.getRelativeTermFrequencyScore());
-		featureVector.set("Relative_PR", entity.getPageRankScore());
-		featureVector.set("Relative String Similarity", entity.getStringSimilarity());
+//		featureVector.set("Relative_PR", entity.getPageRankScore());
+//		featureVector.set("Relative String Similarity", entity.getStringSimilarity());
 
 		// bins
 		//// for(double i=0.01; i<1.0; i=i+0.01){
