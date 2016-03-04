@@ -29,6 +29,7 @@ import de.citec.sc.sampling.DisambiguationExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.sampling.EmptyURIInitializer;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
+import de.citec.sc.templates.LuceneScoreTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
@@ -77,8 +78,8 @@ public class BIREMain {
 		 * Load the index API.
 		 */
 		log.info("Load Index...");
-                CandidateRetriever index = new CandidateRetrieverOnLucene(false,"mergedIndex");
-//                CandidateRetriever index = new CandidateRetrieverOnMemory();
+//                CandidateRetriever index = new CandidateRetrieverOnLucene(false,"mergedIndex");
+                CandidateRetriever index = new CandidateRetrieverOnMemory();
 
 		// Search index = new SearchCache(false, "dbpediaIndexAll");
 		/*
@@ -86,10 +87,10 @@ public class BIREMain {
 		 */
 		log.info("Load Corpus...");
 		CorpusLoader loader = new CorpusLoader(false);
-		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLL);
+		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLLTraining);
 		List<Document> documents = corpus.getDocuments();
 
-//		documents = documents.subList(0, 20);
+		documents = documents.subList(0, 50);
 
 		/*
 		 * Some code for n-fold cross validation
@@ -142,6 +143,8 @@ public class BIREMain {
 			 */
 			List<AbstractTemplate<State>> templates = new ArrayList<>();
 			try {
+//                            templates.add(new TopicSpecificPageRankTemplate());
+                            templates.add(new LuceneScoreTemplate(index));
 			} catch (Exception e1) {
 				e1.printStackTrace();
 				System.exit(1);

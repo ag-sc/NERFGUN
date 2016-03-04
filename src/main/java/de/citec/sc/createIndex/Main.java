@@ -47,6 +47,8 @@ public class Main {
 
         // Print total available memory
         System.out.println("Total Memory:" + runtime.totalMemory() / mb);
+        
+        System.out.println((end-start) + " ms");
 
     }
 }

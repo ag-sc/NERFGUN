@@ -51,8 +51,8 @@ public class TestSearch {
     public static void main(String[] args) throws UnsupportedEncodingException {
 
        
-//        CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "mergedIndex");
-        CandidateRetriever indexSearch = new CandidateRetrieverOnMemory();
+        CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "mergedIndex");
+//        CandidateRetriever indexSearch = new CandidateRetrieverOnMemory();
 
 //        CorpusLoader loader = new CorpusLoader();
 //        DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
@@ -90,7 +90,7 @@ public class TestSearch {
 //        }
 
         List<String> terms = new ArrayList<>();
-        terms.add("obama");
+        terms.add("laptop");
 
         for (String term : terms) {
             List<Instance> all = indexSearch.getAllResources(term, 100);

@@ -5,7 +5,6 @@
  */
 package de.citec.sc.corpus;
 
-
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -26,19 +25,18 @@ import utility.VariableID;
 public class CorpusLoader {
 
     private String datasetsPath = "";
-    
+
     public CorpusLoader() {
-        datasetsPath+="src/main/resources/";
+        datasetsPath += "src/main/resources/";
     }
 
     public CorpusLoader(boolean isRun) {
-        
+
     }
-    
-    
+
     public enum CorpusName {
 
-        CoNLL, SmallCorpus, MicroTagging;
+        CoNLLTraining, MicroTagging, CoNLLTesta, CoNLLTestb;
     }
 
     public DefaultCorpus loadCorpus(CorpusName corpusName) {
@@ -47,14 +45,17 @@ public class CorpusLoader {
         List<Document> documents = new ArrayList<>();
 
         switch (corpusName) {
-            case CoNLL:
-                documents = getCONLLDocs();
+            case CoNLLTraining:
+                documents = getCONLLDocs("training");
+                break;
+            case CoNLLTesta:
+                documents = getCONLLDocs("testa");
+                break;
+            case CoNLLTestb:
+                documents = getCONLLDocs("testb");
                 break;
             case MicroTagging:
                 documents = getMicroTaggingDocs();
-                break;
-            case SmallCorpus:
-                documents = getCONLLDocs().subList(0, 10);
                 break;
         }
 
@@ -82,7 +83,7 @@ public class CorpusLoader {
         return content;
     }
 
-    private List<Document> getCONLLDocs() {
+    private List<Document> getCONLLDocs(String dataset) {
         String file = datasetsPath + "dataset/conll/dataset.tsv";
 
         List<String> list = readFileAsList(new File(file));
@@ -108,10 +109,25 @@ public class CorpusLoader {
                     }
                     d1.setGoldStandard(annotations);
 
-                    if(!d1.getGoldStandard().isEmpty()){
-                        docs.add(d1);
+                    if (dataset.equals("training")) {
+                        if (!d1.getDocumentName().contains("testa") && !d1.getDocumentName().contains("testb")) {
+                            if (!d1.getGoldStandard().isEmpty()) {
+                                docs.add(d1);
+                            }
+                        }
+                    } else if (dataset.equals("testa")) {
+                        if (d1.getDocumentName().contains("testa")) {
+                            if (!d1.getGoldStandard().isEmpty()) {
+                                docs.add(d1);
+                            }
+                        }
+                    } else if (dataset.equals("testb")) {
+                        if (d1.getDocumentName().contains("testb")) {
+                            if (!d1.getGoldStandard().isEmpty()) {
+                                docs.add(d1);
+                            }
+                        }
                     }
-                    
 
                     goldSet.clear();
                     s = "";
@@ -127,7 +143,26 @@ public class CorpusLoader {
 
                         int startIndex = s.length();
                         int endIndex = s.length() + content[2].length();
-                        Annotation a1 = new Annotation(content[2], content[4].replace("http://en.wikipedia.org/wiki/", ""),startIndex, endIndex, new VariableID("A"+goldSet.size()));
+
+                        String label = content[2];
+
+                        String uri = content[4].replace("http://en.wikipedia.org/wiki/", "");
+
+                        label = StringEscapeUtils.unescapeJava(label);
+
+                        try {
+                            label = URLDecoder.decode(label, "UTF-8");
+                        } catch (Exception e) {
+                        }
+
+                        uri = StringEscapeUtils.unescapeJava(uri);
+
+                        try {
+                            uri = URLDecoder.decode(uri, "UTF-8");
+                        } catch (Exception e) {
+                        }
+
+                        Annotation a1 = new Annotation(label, uri, startIndex, endIndex, new VariableID("A" + goldSet.size()));
                         goldSet.add(a1);
                         s += content[0] + " ";
                     } else {
@@ -151,15 +186,35 @@ public class CorpusLoader {
         if (goldSet.size() > 0 && !s.equals("")) {
 
             //last doc
-            Document d1 =  new Document(s, docName);
-            
+            Document d1 = new Document(s, docName);
+
             List<Annotation> annotations = new ArrayList<>();
             for (Annotation ann : goldSet) {
                 annotations.add(ann.clone());
             }
             d1.setGoldStandard(annotations);
 
-            docs.add(d1);
+            if (dataset.equals("training")) {
+                if (!d1.getDocumentName().contains("testa") && !d1.getDocumentName().contains("testb")) {
+                    if (!d1.getGoldStandard().isEmpty()) {
+                        docs.add(d1);
+                    }
+                }
+            } else if (dataset.equals("testa")) {
+                if (d1.getDocumentName().contains("testa")) {
+                    if (!d1.getGoldStandard().isEmpty()) {
+                        docs.add(d1);
+                    }
+                }
+            } else if (dataset.equals("testb")) {
+                if (d1.getDocumentName().contains("testb")) {
+                    if (!d1.getGoldStandard().isEmpty()) {
+                        docs.add(d1);
+                    }
+                }
+            }
+
+            //docs.add(d1);
 
             goldSet.clear();
             s = "";
@@ -171,7 +226,7 @@ public class CorpusLoader {
     private List<Document> getMicroTaggingDocs() {
         List<Document> docs = new ArrayList<>();
 
-        List<String> annotations = readFileAsList(new File(datasetsPath+ "dataset/microtag/dataset.in"));
+        List<String> annotations = readFileAsList(new File(datasetsPath + "dataset/microtag/dataset.in"));
         List<String> tweetDocs = readFileAsList(new File(datasetsPath + "dataset/microtag/dataset_tweets.out"));
 
         HashMap<String, Document> tweetsHashMap = new HashMap();
@@ -197,25 +252,23 @@ public class CorpusLoader {
                 List<Annotation> goldSet = new ArrayList<>();
 
                 for (int i = 0; i < arrayOfAnnotations.length; i = i + 2) {
-                    
+
                     String label = arrayOfAnnotations[i];
-                    String uri = arrayOfAnnotations[i+1].replace("http://dbpedia.org/resource/", "");
+                    String uri = arrayOfAnnotations[i + 1].replace("http://dbpedia.org/resource/", "");
                     label = StringEscapeUtils.unescapeJava(label);
                     uri = StringEscapeUtils.unescapeJava(uri);
-                    try{
+                    try {
                         uri = URLDecoder.decode(uri, "UTF-8");
+                    } catch (Exception e) {
+
                     }
-                    catch(Exception e){
-                    
-                    }
-                    
-                    try{
+
+                    try {
                         label = URLDecoder.decode(label, "UTF-8");
+                    } catch (Exception e) {
+
                     }
-                    catch(Exception e){
-                    
-                    }
-                    Annotation a1 = new Annotation(label, uri, 0, 0, new VariableID("S"+goldSet.size()));
+                    Annotation a1 = new Annotation(label, uri, 0, 0, new VariableID("S" + goldSet.size()));
                     goldSet.add(a1);
                 }
 
@@ -230,7 +283,6 @@ public class CorpusLoader {
 
         }
 
-        
         return docs;
     }
 }

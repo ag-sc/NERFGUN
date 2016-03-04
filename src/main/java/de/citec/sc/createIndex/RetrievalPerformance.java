@@ -104,10 +104,7 @@ public class RetrievalPerformance {
                                 c = loader.loadCorpus(CorpusLoader.CorpusName.MicroTagging);
                             }
                             if (dataset.equals("news")) {
-                                c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
-                            }
-                            if (dataset.equals("small")) {
-                                c = loader.loadCorpus(CorpusLoader.CorpusName.SmallCorpus);
+                                c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTesta);
                             }
 
                             HashMap<String, Set<String>> notFound = new HashMap<String, Set<String>>();

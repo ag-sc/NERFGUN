@@ -135,11 +135,9 @@ public class RetrievalPerformancePageRank {
                                 c = loader.loadCorpus(CorpusLoader.CorpusName.MicroTagging);
                             }
                             if (dataset.equals("news")) {
-                                c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
+                                c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTesta);
                             }
-                            if (dataset.equals("small")) {
-                                c = loader.loadCorpus(CorpusLoader.CorpusName.SmallCorpus);
-                            }
+    
 
                             HashMap<String, Set<String>> notFound = new HashMap<String, Set<String>>();
 

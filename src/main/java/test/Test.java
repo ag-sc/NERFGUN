@@ -35,7 +35,10 @@ public class Test {
 
     public static void main(String[] args) {
         CorpusLoader loader = new CorpusLoader();
-        DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
+        DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTestb);
+        
+        System.out.println(c.getDocuments().size());
+        
 
         String path = "dbpediaFiles/pageranks.ttl";
 
