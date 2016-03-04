@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,7 +17,6 @@ import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.CorpusLoader.CorpusName;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
-import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
@@ -115,7 +115,7 @@ public class BIREMain {
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLLTraining);
 		List<Document> documents = corpus.getDocuments();
 
-		documents = documents.subList(0, 100);
+		// documents = documents.subList(0, 100);
 		// documents = documents.stream().filter(d -> d.getGoldStandard().size()
 		// <= 20).collect(Collectors.toList());
 
@@ -126,227 +126,237 @@ public class BIREMain {
 		 */
 		Map<String, Double> avrgTrain = new LinkedHashMap<>();
 		Map<String, Double> avrgTest = new LinkedHashMap<>();
-		Collections.shuffle(documents);
-		// Collections.shuffle(documents, new Random(100l));
-		int N = documents.size();
-		int n = 2;
-		double step = ((float) N) / n;
-		double k = 0;
+		// Collections.shuffle(documents);
+		Collections.shuffle(documents, new Random(100l));
 
-		for (int i = 0; i < n; i++)
+		// int N = documents.size();
+		// int n = 2;
+		// double step = ((float) N) / n;
+		// double k = 0;
 
-		{
-			log.info("Cross-Validation Fold %s/%s", i + 1, n);
-			double j = k;
-			k = j + step;
+		// for (int i = 0; i < n; i++) {
+		System.out.println("Train");
+		// log.info("Cross-Validation Fold %s/%s", i + 1, n);
+		// double j = k;
+		// k = j + step;
 
-			// List<Document> test = documents;(IOException e1) {
-			// e1.printStackTrace();
-			// System.exit(1);
-			// }
-			// List<Document> train = documents;
-			List<Document> test = documents.subList((int) Math.floor(j), (int) Math.floor(k));
-			List<Document> train = new ArrayList<>(documents);
-			train.removeAll(test);
+		// List<Document> test = documents;(IOException e1) {
+		// e1.printStackTrace();
+		// System.exit(1);
+		// }
+		List<Document> train = documents;
+		// List<Document> test = documents.subList((int) Math.floor(j), (int)
+		// Math.floor(k));
+		// List<Document> train = new ArrayList<>(documents);
+		// train.removeAll(test);
 
-			log.info("Train data:");
-			train.forEach(s -> log.info("%s", s));
+		log.info("Train data:");
+		train.forEach(s -> log.info("%s", s));
 
-			log.info("Test data:");
-			test.forEach(s -> log.info("%s", s));
-			/*
-			 * In the following, we setup all necessary components for training
-			 * and testing.
-			 */
-			/*
-			 * Define an objective function that guides the training procedure.
-			 */
-			ObjectiveFunction<State, List<Annotation>> objective = new DisambiguationObjectiveFunction();
+		// log.info("Test data:");
+		// test.forEach(s -> log.info("%s", s));
+		/*
+		 * In the following, we setup all necessary components for training and
+		 * testing.
+		 */
+		/*
+		 * Define an objective function that guides the training procedure.
+		 */
+		ObjectiveFunction<State, List<Annotation>> objective = new DisambiguationObjectiveFunction();
 
-			/*
-			 * Define templates that are responsible to generate
-			 * factors/features to score intermediate, generated states.
-			 */
-			List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
+		/*
+		 * Define templates that are responsible to generate factors/features to
+		 * score intermediate, generated states.
+		 */
+		List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
 
-			addTemplatesFromSetting(templates);
+		addTemplatesFromSetting(templates);
 
-			// templates.add(new PageRankTemplate());
+		// templates.add(new PageRankTemplate());
 
-			/*
-			 * Define a model and provide it with the necessary templates.
-			 */
-			Model<Document, State> model = new Model<>(templates);
-			model.setMultiThreaded(true);
-			/*
-			 * Create the scorer object that computes a score from the features
-			 * of a factor and the weight vectors of the templates.
-			 */
-			Scorer scorer = new DefaultScorer();
+		/*
+		 * Define a model and provide it with the necessary templates.
+		 */
+		Model<Document, State> model = new Model<>(templates);
+		model.setMultiThreaded(true);
+		/*
+		 * Create the scorer object that computes a score from the features of a
+		 * factor and the weight vectors of the templates.
+		 */
+		Scorer scorer = new DefaultScorer();
 
-			/*
-			 * Create an Initializer that is responsible for providing an
-			 * initial state for the sampling chain given a sentence.
-			 */
-			Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index, true);
+		/*
+		 * Create an Initializer that is responsible for providing an initial
+		 * state for the sampling chain given a sentence.
+		 */
+		Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index, true);
 
-			/*
-			 * Define the explorers that will provide "neighboring" states given
-			 * a starting state. The sampler will select one of these states as
-			 * a successor state and, thus, perform the sampling procedure.
-			 */
-			List<Explorer<State>> explorers = new ArrayList<>();
-			// explorers.add(new DisambiguationExplorer(index));
-			explorers.add(explorer);
-			/*
-			 * Create a sampler that generates sampling chains with which it
-			 * will trigger weight updates during training.
-			 */
+		/*
+		 * Define the explorers that will provide "neighboring" states given a
+		 * starting state. The sampler will select one of these states as a
+		 * successor state and, thus, perform the sampling procedure.
+		 */
+		List<Explorer<State>> explorers = new ArrayList<>();
+		// explorers.add(new DisambiguationExplorer(index));
+		explorers.add(explorer);
+		/*
+		 * Create a sampler that generates sampling chains with which it will
+		 * trigger weight updates during training.
+		 */
 
-			/*
-			 * If you set this value too small, the sampler can not reach the
-			 * optimal solution. Large values, however, increase computation
-			 * time.
-			 */
-			int numberOfSamplingSteps = 200;
+		/*
+		 * If you set this value too small, the sampler can not reach the
+		 * optimal solution. Large values, however, increase computation time.
+		 */
+		int numberOfSamplingSteps = 200;
 
-			/*
-			 * Stop sampling if objective score is equal to 1.
-			 */
-			StoppingCriterion<State> objectiveOneCriterion = new StoppingCriterion<State>() {
+		/*
+		 * Stop sampling if objective score is equal to 1.
+		 */
+		StoppingCriterion<State> objectiveOneCriterion = new StoppingCriterion<State>() {
 
-				@Override
-				public boolean checkCondition(List<State> chain, int step) {
-					if (chain.isEmpty())
-						return false;
+			@Override
+			public boolean checkCondition(List<State> chain, int step) {
+				if (chain.isEmpty())
+					return false;
 
-					double maxScore = chain.get(chain.size() - 1).getObjectiveScore();
-					if (maxScore >= 1)
-						return true;
-					int count = 0;
-					final int maxCount = 5;
+				double maxScore = chain.get(chain.size() - 1).getObjectiveScore();
+				if (maxScore >= 1)
+					return true;
+				int count = 0;
+				final int maxCount = 5;
 
-					for (int i = 0; i < chain.size(); i++) {
-						if (chain.get(i).getObjectiveScore() >= maxScore) {
-							count++;
-						}
+				for (int i = 0; i < chain.size(); i++) {
+					if (chain.get(i).getObjectiveScore() >= maxScore) {
+						count++;
 					}
-					return count >= maxCount || step >= numberOfSamplingSteps;
-
 				}
-			};
+				return count >= maxCount || step >= numberOfSamplingSteps;
 
-			// StoppingCriterion<State> stoppingCriterion = new
-			// StepLimitCriterion<>(numberOfSamplingSteps);
-			DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
-					explorers, objectiveOneCriterion);
-			sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
-			sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
-			/*
-			 * Define a learning strategy. The learner will receive state pairs
-			 * which can be used to update the models parameters.
-			 */
-			DefaultLearner<State> learner = new DefaultLearner<>(model, 0.1);
-
-			log.info("####################");
-			log.info("Start training");
-
-			/*
-			 * The trainer will loop over the data and invoke sampling and
-			 * learning. Additionally, it can invoke predictions on new data.
-			 */
-			Trainer trainer = new Trainer();
-			trainer.train(sampler, trainInitializer, learner, train, numberOfEpochs);
-
-			/*
-			 * Stop sampling if model score does not increase for 5 iterations.
-			 */
-			StoppingCriterion<State> stopAtMaxModelScore = new StoppingCriterion<State>() {
-
-				@Override
-				public boolean checkCondition(List<State> chain, int step) {
-
-					if (chain.isEmpty())
-						return false;
-
-					double maxScore = chain.get(chain.size() - 1).getModelScore();
-					int count = 0;
-					final int maxCount = 5;
-
-					for (int i = 0; i < chain.size(); i++) {
-						if (chain.get(i).getModelScore() >= maxScore) {
-							count++;
-						}
-					}
-					return count >= maxCount || step >= numberOfSamplingSteps;
-				}
-			};
-
-			sampler.setStoppingCriterion(stopAtMaxModelScore);
-
-			// Initializer<Document, State> testInitializer = new
-			// DisambiguationInitializer(index, false);
-			// List<State> testResults = trainer.test(sampler, testInitializer,
-			// test);
-
-			List<State> testResults = trainer.test(sampler, trainInitializer, test);
-			for (State state : testResults) {
-				state.getInstance().setAnnotations(new ArrayList<>(state.getEntities()));
 			}
-			Map<String, Double> testEvaluation = Evaluator.evaluateAll(test);
-			log.info("Evaluation on test data:");
-			testEvaluation.entrySet().forEach(e -> log.info(e));
-			/*
-			 * Finally, print the models weights.
-			 */
-			log.info("Model weights:");
-			EvaluationUtil.printWeights(model, -1);
-			avrgTest = Evaluator.add(avrgTest, testEvaluation);
+		};
 
-			// /*
-			// * Perform prediction on training and test data.
-			// */
-			// List<State> trainResults = trainer.test(sampler, initializer,
-			// train);
-			//
-			// /*
-			// * Give the final annotations to the Document for the Evaluator
-			// */
-			// for (State state : trainResults) {
-			// state.getInstance().setAnnotations(new
-			// ArrayList<>(state.getEntities()));
-			// }
-			// /*
-			// * Evaluate train and test predictions
-			// */
-			// Map<String, Double> trainEvaluation =
-			// Evaluator.evaluateAll(train);
-			//
-			// /*
-			// * Print evaluation
-			// */
-			// log.info("Evaluation on training data:");
-			// trainEvaluation.entrySet().forEach(e -> log.info(e));
-			//
-			// /*
-			// * Finally, print the models weights.
-			// */
-			// log.info("Model weights:");
-			// EvaluationUtil.printWeights(model, 0);
-			//
-			// avrgTrain = Evaluator.add(avrgTrain, trainEvaluation);
-			//
-			// /*
-			// * Same for testdata
-			// */
+		// StoppingCriterion<State> stoppingCriterion = new
+		// StepLimitCriterion<>(numberOfSamplingSteps);
+		DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
+				explorers, objectiveOneCriterion);
+		sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
+		sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
+		/*
+		 * Define a learning strategy. The learner will receive state pairs
+		 * which can be used to update the models parameters.
+		 */
+		DefaultLearner<State> learner = new DefaultLearner<>(model, 0.1);
 
-		}
+		log.info("####################");
+		log.info("Start training");
+
+		/*
+		 * The trainer will loop over the data and invoke sampling and learning.
+		 * Additionally, it can invoke predictions on new data.
+		 */
+		Trainer trainer = new Trainer();
+		trainer.train(sampler, trainInitializer, learner, train, numberOfEpochs);
+
+		/*
+		 * Stop sampling if model score does not increase for 5 iterations.
+		 */
+		StoppingCriterion<State> stopAtMaxModelScore = new StoppingCriterion<State>() {
+
+			@Override
+			public boolean checkCondition(List<State> chain, int step) {
+
+				if (chain.isEmpty())
+					return false;
+
+				double maxScore = chain.get(chain.size() - 1).getModelScore();
+				int count = 0;
+				final int maxCount = 5;
+
+				for (int i = 0; i < chain.size(); i++) {
+					if (chain.get(i).getModelScore() >= maxScore) {
+						count++;
+					}
+				}
+				return count >= maxCount || step >= numberOfSamplingSteps;
+			}
+		};
+
+		sampler.setStoppingCriterion(stopAtMaxModelScore);
+
+		// Initializer<Document, State> testInitializer = new
+		// DisambiguationInitializer(index, false);
+		// List<State> testResults = trainer.test(sampler, testInitializer,
+		// test);
+
+		// List<State> testResults = trainer.test(sampler, trainInitializer,
+		// test);
+		// for (State state : testResults) {
+		// state.getInstance().setAnnotations(new
+		// ArrayList<>(state.getEntities()));
+		// }
+
+		// Map<String, Double> testEvaluation = Evaluator.evaluateAll(test);
+		// log.info("Evaluation on test data:");
+		// testEvaluation.entrySet().forEach(e -> log.info(e));
+
+		/*
+		 * Finally, print the models weights.
+		 */
+		log.info("Model weights:");
+		EvaluationUtil.printWeights(model, -1);
+
+		System.out.println("Write model:");
+		/*
+		 * TODO: Write Model...
+		 */
+
+		// avrgTest = Evaluator.add(avrgTest, testEvaluation);
+
+		// /*
+		// * Perform prediction on training and test data.
+		// */
+		// List<State> trainResults = trainer.test(sampler, initializer,
+		// train);
+		//
+		// /*
+		// * Give the final annotations to the Document for the Evaluator
+		// */
+		// for (State state : trainResults) {
+		// state.getInstance().setAnnotations(new
+		// ArrayList<>(state.getEntities()));
+		// }
+		// /*
+		// * Evaluate train and test predictions
+		// */
+		// Map<String, Double> trainEvaluation =
+		// Evaluator.evaluateAll(train);
+		//
+		// /*
+		// * Print evaluation
+		// */
+		// log.info("Evaluation on training data:");
+		// trainEvaluation.entrySet().forEach(e -> log.info(e));
+		//
+		// /*
+		// * Finally, print the models weights.
+		// */
+		// log.info("Model weights:");
+		// EvaluationUtil.printWeights(model, 0);
+		//
+		// avrgTrain = Evaluator.add(avrgTrain, trainEvaluation);
+		//
+		// /*
+		// * Same for testdata
+		// */
+
+		// }
 		/*
 		 * Compute avrg. scores from sum of scores
 		 */
-		avrgTest.entrySet().forEach(e -> e.setValue(e.getValue() / n));
-		log.info("%s-fold cross validation on TEST:", n);
-		avrgTest.entrySet().forEach(e -> log.info(e));
+		// avrgTest.entrySet().forEach(e -> e.setValue(e.getValue() / n));
+		// log.info("%s-fold cross validation on TEST:", n);
+		// avrgTest.entrySet().forEach(e -> log.info(e));
 
 		// avrgTrain.entrySet().forEach(e -> e.setValue(e.getValue() / n));
 		// log.info("%s-fold cross validation on TRAIN:", n);

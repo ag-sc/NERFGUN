@@ -6,8 +6,8 @@
 			<!-- PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} 
 				- %msg%n" / -->
 		</Console>
-		<File name="LogFile" fileName="src/main/resources/all.log" immediateFlush="false"
-			append="false">
+		<File name="LogFile" fileName="src/main/resources/all.log"
+			immediateFlush="false" append="false">
 			<!-- <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level 
 				- %msg%n" /> -->
 			<PatternLayout
@@ -23,23 +23,19 @@
 		<!-- ++++++++++++++++++++++++ -->
 		<!-- Loggers for this project -->
 		<!-- ++++++++++++++++++++++++ -->
-		<Logger name="de.citec.sc.BIREMain" level="DEBUG"
-			additivity="false">
+		<Logger name="de.citec.sc.BIREMain" level="DEBUG" additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="de.citec.sc.templates" level="WARN"
-			additivity="false">
+		<Logger name="de.citec.sc.templates" level="WARN" additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="de.citec.sc.variables" level="WARN"
-			additivity="false">
+		<Logger name="de.citec.sc.variables" level="WARN" additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="de.citec.sc.sampling" level="WARN"
-			additivity="false">
+		<Logger name="de.citec.sc.sampling" level="WARN" additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
@@ -57,8 +53,7 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="sampling.DefaultSampler" level="INFO"
-			additivity="false">
+		<Logger name="sampling.DefaultSampler" level="INFO" additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
@@ -67,8 +62,7 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="learning.Model" level="INFO"
-			additivity="false">
+		<Logger name="learning.Model" level="INFO" additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
