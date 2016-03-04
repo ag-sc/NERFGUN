@@ -22,6 +22,7 @@ import learning.Vector;
  *
  * @author sherzod
  */
+@Deprecated
 public class IndexRankTemplate extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
 
 	private static Logger log = LogManager.getFormatterLogger();

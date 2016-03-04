@@ -1,6 +1,7 @@
 package de.citec.sc.sampling;
 
 import java.util.List;
+import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +19,8 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 	private CandidateRetriever index;
 	private boolean assignRandomURI;
 
+	private Random random;
+
 	/**
 	 * This constructor creates an Initializer that either assigns the topmost
 	 * candidate uri or a random uri of the respective candidate uris to each
@@ -30,6 +33,7 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 		super();
 		this.index = index;
 		this.assignRandomURI = assignRandomURI;
+		this.random = new Random(100l);
 	}
 
 	/**
@@ -54,7 +58,7 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 			} else {
 				int candidateRank;
 				if (assignRandomURI) {
-					candidateRank = (int) (Math.random() * candidateURIs.size());
+					candidateRank = (int) (random.nextDouble() * candidateURIs.size());
 				} else {
 					candidateRank = 0;
 				}
@@ -64,7 +68,8 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 				Annotation newAnnotation = new Annotation(annotation.getWord(), initialLink, annotation.getStartIndex(),
 						annotation.getEndIndex());
 				newAnnotation.setIndexRank(candidateRank);
-				newAnnotation.setRelativeTermFrequencyScore(candidate.getScore());;
+				newAnnotation.setRelativeTermFrequencyScore(candidate.getScore());
+				;
 				state.addEntity(newAnnotation);
 			}
 			// initialLink = initialLink.replace("http://dbpedia.org/resource/",

@@ -57,15 +57,15 @@ public class RetrievalPerformance {
 		// topKs.add(1000);
 		// topKs.add(2000);
 
-        List<String> datasets = new ArrayList<>();
-//        datasets.add("tweets");
-        datasets.add("news");
-        // datasets.add("small");
+		List<String> datasets = new ArrayList<>();
+		// datasets.add("tweets");
+		datasets.add("news");
+		// datasets.add("small");
 
 		boolean compareAll = false;
 
-        List<String> indexType = new ArrayList<>();
-        indexType.add("all");
+		List<String> indexType = new ArrayList<>();
+		indexType.add("all");
 
 		List<String> dbindexPaths = new ArrayList<>();
 		// dbindexPaths.add("dbpediaIndexOnlyLabels");
@@ -78,19 +78,18 @@ public class RetrievalPerformance {
 
 		CorpusLoader loader = new CorpusLoader(false);
 
-        String overallResult = "";
+		String overallResult = "";
 
-        for (Boolean m : useMemory) {
-//            indexSearch = new CandidateRetrieverOnLucene(m, "mergedIndex");
-            long start = System.currentTimeMillis();
-            indexSearch = new CandidateRetrieverOnMemory();
-            long end = System.currentTimeMillis();
-            
+		for (Boolean m : useMemory) {
+			// indexSearch = new CandidateRetrieverOnLucene(m, "mergedIndex");
+			long start = System.currentTimeMillis();
+			indexSearch = new CandidateRetrieverOnMemory();
+			long end = System.currentTimeMillis();
 
-            for (String indexT : indexType) {
-                for (Integer t : topKs) {
-                    for (String dataset : datasets) {
-                        for (String dbpediaIndexPath : dbindexPaths) {
+			for (String indexT : indexType) {
+				for (Integer t : topKs) {
+					for (String dataset : datasets) {
+						for (String dbpediaIndexPath : dbindexPaths) {
 
 							topK = t;
 							time = 0;
@@ -103,10 +102,10 @@ public class RetrievalPerformance {
 								c = loader.loadCorpus(CorpusLoader.CorpusName.MicroTagging);
 							}
 							if (dataset.equals("news")) {
-								c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLL);
+								c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTraining);
 							}
 							if (dataset.equals("small")) {
-								c = loader.loadCorpus(CorpusLoader.CorpusName.SmallCorpus);
+								c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTraining);
 							}
 
 							HashMap<String, Set<String>> notFound = new HashMap<String, Set<String>>();
@@ -141,20 +140,20 @@ public class RetrievalPerformance {
 									// the index contains the annotation
 									boolean contains = false;
 
-                                    if (compareAll) {
-                                        for (Instance i1 : matches) {
-                                            if (i1.getUri().equals(link)) {
-                                                contains = true;
-                                                break;
-                                            }
-                                        }
-                                    } else {
-                                        if (!matches.isEmpty()) {
-                                            if (matches.get(0).getUri().equals(link)) {
-                                                contains = true;
-                                            }
-                                        }
-                                    }
+									if (compareAll) {
+										for (Instance i1 : matches) {
+											if (i1.getUri().equals(link)) {
+												contains = true;
+												break;
+											}
+										}
+									} else {
+										if (!matches.isEmpty()) {
+											if (matches.get(0).getUri().equals(link)) {
+												contains = true;
+											}
+										}
+									}
 
 									if (contains) {
 										Annotation newOne = a.clone();
@@ -214,18 +213,18 @@ public class RetrievalPerformance {
 							writeListToFile("retrieval/results_memory_" + m + "_top_" + topK + "_" + dataset + "_index_"
 									+ index + "_property_" + dbpediaIndexPath + ".txt", s1);
 
-                            overallResult += "memory_" + m + "_top_" + topK + "_" + dataset + "_index_" + index
-                                    + "_property_" + dbpediaIndexPath + "" + "\n\n" + s1 + "\n\n\n";
-                        }
-                    }
-                }
-            }
-            System.out.println((end - start) + " ms loading the index ");
-            overallResult += (end - start) + " ms loading the index ";
-        }
+							overallResult += "memory_" + m + "_top_" + topK + "_" + dataset + "_index_" + index
+									+ "_property_" + dbpediaIndexPath + "" + "\n\n" + s1 + "\n\n\n";
+						}
+					}
+				}
+			}
+			System.out.println((end - start) + " ms loading the index ");
+			overallResult += (end - start) + " ms loading the index ";
+		}
 
-        writeListToFile("overallResult_compareAll_" + compareAll + ".txt", overallResult);
-    }
+		writeListToFile("overallResult_compareAll_" + compareAll + ".txt", overallResult);
+	}
 
 	public static void writeListToFile(String fileName, String content) {
 		try {
@@ -247,16 +246,16 @@ public class RetrievalPerformance {
 
 	private static List<Instance> getMatches(String word) {
 
-        Set<String> queryTerms = new LinkedHashSet<>();
-        queryTerms.add(word);
+		Set<String> queryTerms = new LinkedHashSet<>();
+		queryTerms.add(word);
 
-        List<Instance> temp = new ArrayList<>();
-        // retrieve matches
-        for (String q : queryTerms) {
-            long start = System.nanoTime();
-            if (index.equals("all")) {
-                temp.addAll(indexSearch.getAllResources(q, topK));
-            }
+		List<Instance> temp = new ArrayList<>();
+		// retrieve matches
+		for (String q : queryTerms) {
+			long start = System.nanoTime();
+			if (index.equals("all")) {
+				temp.addAll(indexSearch.getAllResources(q, topK));
+			}
 
 			long end = System.nanoTime();
 

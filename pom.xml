@@ -33,7 +33,7 @@
 			<artifactId>stanford-corenlp</artifactId>
 			<version>3.5.2</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>edu.stanford.nlp</groupId>
 			<artifactId>stanford-corenlp</artifactId>
@@ -47,11 +47,11 @@
 			<version>3.5.2</version>
 			<classifier>models</classifier>
 		</dependency>
-	 <dependency>
-	  <groupId>org.apache.commons</groupId>
-	  <artifactId>commons-lang3</artifactId>
-	  <version>3.4</version>
-	 </dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.4</version>
+		</dependency>
 	</dependencies>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
