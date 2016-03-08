@@ -198,16 +198,18 @@ public class TopicSpecificPageRankTemplate
 			/*
 			 * Normalize by number of additions.
 			 */
-
-			// featureVector.set("TopicSpecificPageRank", score);
 			final int bin = getBin(score);
-			featureVector.set("TopicSpecificPageRankInBin_" + bin, score);
+
+			featureVector.set("TopicSpecificPageRank", score);
+
+			for (int i = 0; i < bin; i++) {
+				featureVector.set("TopicSpecificPageRank >= " + i, score);
+			}
+			featureVector.set("1TopicSpecificPageRankInBin_" + bin, 1d);
+			featureVector.set("ScoreTopicSpecificPageRankInBin_" + bin, score);
 
 		}
 
-		// featureVector.set("TopicSpecificPageRankFor_" + link + "_to_" +
-		// link2, score);
-		featureVector.set("TopicSpecificPageRank", score);
 	}
 
 	private int getBin(final double score) {
@@ -307,3 +309,10 @@ public class TopicSpecificPageRankTemplate
 	// }
 
 }
+
+// 13:43:21.863 [main] INFO - Micro-average Precision=0.6225
+// 13:43:21.863 [main] INFO - Micro-average Recall=0.6125
+// 13:43:21.863 [main] INFO - F1 Micro-average=0.6174999999999999
+// 13:43:21.863 [main] INFO - Macro-average Precision=0.6214999999999999
+// 13:43:21.863 [main] INFO - Macro-average Recall=0.6145
+// 13:43:21.863 [main] INFO - F1 Macro-average=0.618

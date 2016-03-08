@@ -60,7 +60,13 @@ public class EditDistanceTemplate
 
 		final double weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
 
-		featureVector.set("WeightedEditSimilarity", weightedEditSimilarity);
+		featureVector.set("-0.5_LevenshteinEditSimilarity", weightedEditSimilarity - 0.5);
+		featureVector.set("Positive_LevenshteinEditSimilarity", weightedEditSimilarity);
+
+		for (double i = 0.01; i < 1.0; i = i + 0.01) {
+			featureVector.set("LevenshteinEditSimilarity_bin_" + i, weightedEditSimilarity > i ? 1.0 : 0);
+		}
+
 	}
 
 }

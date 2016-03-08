@@ -15,16 +15,15 @@ import variables.AbstractVariable;
  */
 public class Annotation extends AbstractVariable {
 
-private static DecimalFormat LUCENE_SCORE_FORMAT = new DecimalFormat("0.0000");
-    public final static String DEFAULT_ID = "<EMPTY-URI>";
-    private String word;
-    private String link;
-    private int startIndex, endIndex;
-    private int indexRank = -1;
-    private double relativeTermFrequencyScore;
-    private double pageRankScore;
-    private double stringSimilarity;
-    
+	private static DecimalFormat LUCENE_SCORE_FORMAT = new DecimalFormat("0.0000");
+	public final static String DEFAULT_ID = "<EMPTY-URI>";
+	private String word;
+	private String link;
+	private int startIndex, endIndex;
+	private int indexRank = -1;
+	private double relativeTermFrequencyScore;
+	private double pageRankScore = 0;
+	private double stringSimilarity;
 
 	public Annotation(String word, String link, int startIndex, int endIndex) {
 		this.word = word;
@@ -115,48 +114,41 @@ private static DecimalFormat LUCENE_SCORE_FORMAT = new DecimalFormat("0.0000");
 		return true;
 	}
 
-   
-
 	public String toString() {
-		return "[" + indexRank + ".) " + link + "] \"" + word + "\" ("
-				+ startIndex + " - " + endIndex + ")";
+		return "[" + indexRank + ".) " + link + "] \"" + word + "\" (" + startIndex + " - " + endIndex + ")";
 	}
 
-    public Annotation clone() {
-        Annotation a = new Annotation(word, link, startIndex, endIndex);
-        a.setIndexRank(indexRank);
-        a.setStringSimilarity(stringSimilarity);
-        a.setPageRankScore(pageRankScore);
-        a.setRelativeTermFrequencyScore(relativeTermFrequencyScore);
-        return a;
-    }
+	public Annotation clone() {
+		Annotation a = new Annotation(word, link, startIndex, endIndex);
+		a.setIndexRank(indexRank);
+		a.setStringSimilarity(stringSimilarity);
+		a.setPageRankScore(pageRankScore);
+		a.setRelativeTermFrequencyScore(relativeTermFrequencyScore);
+		return a;
+	}
 
-    public double getRelativeTermFrequencyScore() {
-        return relativeTermFrequencyScore;
-    }
+	public double getRelativeTermFrequencyScore() {
+		return relativeTermFrequencyScore;
+	}
 
-    public void setRelativeTermFrequencyScore(double relativeTermFrequencyScore) {
-        this.relativeTermFrequencyScore = relativeTermFrequencyScore;
-    }
+	public void setRelativeTermFrequencyScore(double relativeTermFrequencyScore) {
+		this.relativeTermFrequencyScore = relativeTermFrequencyScore;
+	}
 
-    public double getPageRankScore() {
-        return pageRankScore;
-    }
+	public double getPageRankScore() {
+		return pageRankScore;
+	}
 
-    public void setPageRankScore(double pageRankScore) {
-        this.pageRankScore = pageRankScore;
-    }
+	public void setPageRankScore(double pageRankScore) {
+		this.pageRankScore = pageRankScore;
+	}
 
-    public double getStringSimilarity() {
-        return stringSimilarity;
-    }
+	public double getStringSimilarity() {
+		return stringSimilarity;
+	}
 
-    public void setStringSimilarity(double stringSimilarity) {
-        this.stringSimilarity = stringSimilarity;
-    }
-
-    
-    
-    
+	public void setStringSimilarity(double stringSimilarity) {
+		this.stringSimilarity = stringSimilarity;
+	}
 
 }

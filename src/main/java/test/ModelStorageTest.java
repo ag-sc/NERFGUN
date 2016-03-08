@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +27,9 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
-import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
-import de.citec.sc.templates.IndexRankTemplate;
-import de.citec.sc.templates.LuceneScoreTemplate;
 import de.citec.sc.templates.NEDTemplateFactory;
-import de.citec.sc.templates.PageRankTemplate;
+import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
@@ -45,7 +40,6 @@ import learning.ObjectiveFunction;
 import learning.Trainer;
 import learning.scorer.DefaultScorer;
 import learning.scorer.Scorer;
-import learning.scorer.SoftplusScorer;
 import sampling.DefaultSampler;
 import sampling.Explorer;
 import sampling.Initializer;
@@ -73,8 +67,8 @@ public class ModelStorageTest {
 		ModelStorageTest bire = new ModelStorageTest();
 		// bire.run();
 		try {
-			// bire.testModelStorage();
-			bire.testModelLoading();
+			 bire.testModelStorage();
+//			bire.testModelLoading();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -105,20 +99,14 @@ public class ModelStorageTest {
 		 */
 		log.info("Load Corpus...");
 		CorpusLoader loader = new CorpusLoader();
-		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLL);
-		List<Document> documents = corpus.getDocuments();
-
-		Collections.shuffle(documents, new Random(1));
-		documents = documents.subList(0, 20);
-		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 10).collect(Collectors.toList());
-
-		int N = documents.size();
+		DefaultCorpus trainingCorpus = loader.loadCorpus(CorpusName.CoNLLTraining);
+		DefaultCorpus testaCorpus = loader.loadCorpus(CorpusName.CoNLLTesta);
+		List<Document> documents = trainingCorpus.getDocuments();
 
 		AllScoresExplorer exp1 = new AllScoresExplorer(index);
 
-		List<Document> test = documents.subList(0, N / 2);
-		List<Document> train = new ArrayList<>(documents);
-		train.removeAll(test);
+		List<Document> train = trainingCorpus.getDocuments();
+		List<Document> test = testaCorpus.getDocuments();
 
 		log.info("Train data:");
 		train.forEach(s -> log.info("%s", s));
@@ -139,9 +127,8 @@ public class ModelStorageTest {
 		 * score intermediate, generated states.
 		 */
 		List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
-		LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
+		TermFrequencyTemplate lTemplate = new TermFrequencyTemplate();
 		// PageRankTemplate pTemplate = new PageRankTemplate();
-		IndexRankTemplate rankTemplate = new IndexRankTemplate();
 		EditDistanceTemplate eTemplate = new EditDistanceTemplate();
 		TopicSpecificPageRankTemplate tpTemplate = new TopicSpecificPageRankTemplate();
 		// DocumentSimilarityTemplate dTemplate = new
@@ -339,20 +326,14 @@ public class ModelStorageTest {
 		 */
 		log.info("Load Corpus...");
 		CorpusLoader loader = new CorpusLoader();
-		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLL);
-		List<Document> documents = corpus.getDocuments();
-
-		Collections.shuffle(documents, new Random(1));
-		documents = documents.subList(0, 20);
-		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 10).collect(Collectors.toList());
-
-		int N = documents.size();
+		DefaultCorpus trainingCorpus = loader.loadCorpus(CorpusName.CoNLLTraining);
+		DefaultCorpus testaCorpus = loader.loadCorpus(CorpusName.CoNLLTesta);
+		List<Document> documents = trainingCorpus.getDocuments();
 
 		AllScoresExplorer exp1 = new AllScoresExplorer(index);
 
-		List<Document> test = documents.subList(0, N / 2);
-		List<Document> train = new ArrayList<>(documents);
-		train.removeAll(test);
+		List<Document> train = trainingCorpus.getDocuments();
+		List<Document> test = testaCorpus.getDocuments();
 
 		log.info("Train data:");
 		train.forEach(s -> log.info("%s", s));
@@ -372,27 +353,12 @@ public class ModelStorageTest {
 		 * Define templates that are responsible to generate factors/features to
 		 * score intermediate, generated states.
 		 */
-		List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
-		LuceneScoreTemplate lTemplate = new LuceneScoreTemplate(index);
-		// PageRankTemplate pTemplate = new PageRankTemplate();
-		// IndexRankTemplate rankTemplate = new IndexRankTemplate();
-		EditDistanceTemplate eTemplate = new EditDistanceTemplate();
-		TopicSpecificPageRankTemplate tpTemplate = new TopicSpecificPageRankTemplate();
-		// DocumentSimilarityTemplate dTemplate = new
-		// DocumentSimilarityTemplate();
 
-		templates.add(lTemplate);
-		// templates.add(pTemplate);
-		// templates.add(rankTemplate);
-		templates.add(eTemplate);
-		templates.add(tpTemplate);
-		// templates.add(dTemplate);
-
-		TemplateFactory<Document, State> templateFactory = new NEDTemplateFactory(index);
+		TemplateFactory<Document, State> templateFactory = new NEDTemplateFactory();
 		/*
 		 * Define a model and provide it with the necessary templates.
 		 */
-		Model<Document, State> model = new Model<>(templates);
+		Model<Document, State> model = new Model<>();
 		model.setMultiThreaded(true);
 		model.loadModelFromDir(new File("src/main/resources/models", "model1Test"), templateFactory);
 		/*

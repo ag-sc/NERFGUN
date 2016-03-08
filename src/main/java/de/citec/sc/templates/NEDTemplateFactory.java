@@ -9,20 +9,14 @@ import templates.TemplateFactory;
 
 public class NEDTemplateFactory implements TemplateFactory<Document, State> {
 
-	private CandidateRetriever index;
-	public NEDTemplateFactory(CandidateRetriever index) {
-		this.index = index;
-	}
 	@Override
 	public AbstractTemplate<Document, State, ?> newInstance(String templateName)
 			throws UnkownTemplateRequestedException {
 		switch (templateName) {
-		case "LuceneScoreTemplate":
-			return new LuceneScoreTemplate(index);
+		case "TermFrequencyTemplate":
+			return new TermFrequencyTemplate();
 		case "PageRankTemplate":
 			return new PageRankTemplate();
-		case "IndexRankTemplate":
-			return new IndexRankTemplate();
 		case "EditDistanceTemplate":
 			return new EditDistanceTemplate();
 		case "TopicSpecificPageRankTemplate":
