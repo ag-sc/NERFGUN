@@ -28,6 +28,7 @@ import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.templates.EditDistanceTemplate;
+import de.citec.sc.templates.InitializationException;
 import de.citec.sc.templates.NEDTemplateFactory;
 import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
@@ -67,14 +68,14 @@ public class ModelStorageTest {
 		ModelStorageTest bire = new ModelStorageTest();
 		// bire.run();
 		try {
-			 bire.testModelStorage();
-//			bire.testModelLoading();
+			bire.testModelStorage();
+			// bire.testModelLoading();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void testModelStorage() throws IOException {
+	public void testModelStorage() throws IOException, InitializationException {
 
 		String indexFile = "tfidf.bin";
 		String dfFile = "en_wiki_large_abstracts.docfrequency";
@@ -360,7 +361,11 @@ public class ModelStorageTest {
 		 */
 		Model<Document, State> model = new Model<>();
 		model.setMultiThreaded(true);
-		model.loadModelFromDir(new File("src/main/resources/models", "model1Test"), templateFactory);
+		try {
+			model.loadModelFromDir(new File("src/main/resources/models", "model1Test"), templateFactory);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		/*
 		 * Create the scorer object that computes a score from the features of a
 		 * factor and the weight vectors of the templates.

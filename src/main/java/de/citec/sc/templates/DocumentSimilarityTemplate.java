@@ -76,11 +76,12 @@ public class DocumentSimilarityTemplate
 
 	}
 
-	public DocumentSimilarityTemplate() {
+	public DocumentSimilarityTemplate() throws InitializationException {
 		if (!isInitialized) {
 			log.warn("DocumentSimilarityTemplate is NOT initialized correctly!");
 			log.warn("Call DocumentSimilarityTemplate.init() for proper initlialization.");
-			System.exit(1);
+			throw new InitializationException(
+					"DocumentSimilarityTemplate is NOT initialized correctly! Call DocumentSimilarityTemplate.init() for proper initlialization.");
 		}
 	}
 

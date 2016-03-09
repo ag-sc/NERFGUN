@@ -21,6 +21,7 @@ import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
+import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
@@ -28,6 +29,7 @@ import de.citec.sc.settings.BIRESettings;
 import de.citec.sc.settings.Setting;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
+import de.citec.sc.templates.InitializationException;
 import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
@@ -98,7 +100,7 @@ public class BIREMain {
 		/*
 		 * TODO: Just for testing !!!! Remove before Jar export.
 		 */
-//		 args = new String[] { "-s", "1" };
+		// args = new String[] { "-s", "1" };
 
 		// LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		// Configuration config = ctx.getConfiguration();
@@ -116,11 +118,11 @@ public class BIREMain {
 		 * Load training and test data.
 		 */
 		log.info("Load Corpus...");
-		CorpusLoader loader = new CorpusLoader(false);
+		CorpusLoader loader = new CorpusLoader();
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLLTraining);
 		List<Document> documents = corpus.getDocuments();
 
-//		documents = documents.subList(0, 3);
+		documents = documents.subList(0, 1);
 		// documents = documents.stream().filter(d -> d.getGoldStandard().size()
 		// <= 20).collect(Collectors.toList());
 
@@ -312,9 +314,6 @@ public class BIREMain {
 		EvaluationUtil.printWeights(model, -1);
 
 		System.out.println("Write model:");
-		/*
-		 * TODO: Write Model...
-		 */
 		model.saveModelToFile(modelsDir, generateNameFromTemplates(templates));
 		// avrgTest = Evaluator.add(avrgTest, testEvaluation);
 
@@ -369,6 +368,7 @@ public class BIREMain {
 
 	}
 
+	
 	private static String generateNameFromTemplates(Collection<?> templates) {
 		String name = "";
 		String dash = "";
@@ -402,8 +402,8 @@ public class BIREMain {
 		 * Load the index API.
 		 */
 		log.info("Load Index...");
-//		index = new CandidateRetrieverOnLucene(true, "mergedIndex");
-		 index = new CandidateRetrieverOnMemory();
+		index = new CandidateRetrieverOnLucene(true, "mergedIndex");
+		// index = new CandidateRetrieverOnMemory();
 
 		explorer = new AllScoresExplorer(index);
 
@@ -465,7 +465,12 @@ public class BIREMain {
 				log.info("Add tempalte: " + template.getSimpleName());
 			}
 			if (template.equals(TopicSpecificPageRankTemplate.class)) {
-				templates.add(new TopicSpecificPageRankTemplate());
+				try {
+					templates.add(new TopicSpecificPageRankTemplate());
+				} catch (InitializationException e) {
+					e.printStackTrace();
+					System.exit(0);
+				}
 				log.info("Add tempalte: " + template.getSimpleName());
 			}
 			if (template.equals(TermFrequencyTemplate.class)) {
@@ -473,7 +478,12 @@ public class BIREMain {
 				log.info("Add tempalte: " + template.getSimpleName());
 			}
 			if (template.equals(DocumentSimilarityTemplate.class)) {
-				templates.add(new DocumentSimilarityTemplate());
+				try {
+					templates.add(new DocumentSimilarityTemplate());
+				} catch (InitializationException e) {
+					e.printStackTrace();
+					System.exit(0);
+				}
 				log.info("Add tempalte: " + template.getSimpleName());
 			}
 		}

@@ -1,7 +1,6 @@
 package de.citec.sc.templates;
 
 import de.citec.sc.corpus.Document;
-import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.variables.State;
 import exceptions.UnkownTemplateRequestedException;
 import templates.AbstractTemplate;
@@ -11,7 +10,7 @@ public class NEDTemplateFactory implements TemplateFactory<Document, State> {
 
 	@Override
 	public AbstractTemplate<Document, State, ?> newInstance(String templateName)
-			throws UnkownTemplateRequestedException {
+			throws UnkownTemplateRequestedException, Exception {
 		switch (templateName) {
 		case "TermFrequencyTemplate":
 			return new TermFrequencyTemplate();

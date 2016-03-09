@@ -81,11 +81,12 @@ public class TopicSpecificPageRankTemplate
 
 	}
 
-	public TopicSpecificPageRankTemplate() {
+	public TopicSpecificPageRankTemplate() throws InitializationException {
 		if (!isInitialized) {
 			log.warn("TopicSpecificPageRankTemplate is NOT initialized correctly!");
 			log.warn("Call TopicSpecificPageRankTemplate.init() for proper initlialization.");
-			System.exit(1);
+			throw new InitializationException(
+					"TopicSpecificPageRankTemplate is NOT initialized correctly! Call TopicSpecificPageRankTemplate.init() for proper initlialization.");
 		}
 	}
 
