@@ -68,7 +68,7 @@ public class CorpusLoader {
 		try {
 			FileInputStream fstream = new FileInputStream(file);
 			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 			String strLine;
 
 			while ((strLine = br.readLine()) != null) {
