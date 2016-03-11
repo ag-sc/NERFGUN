@@ -20,53 +20,63 @@ import factors.patterns.SingleVariablePattern;
 import learning.Vector;
 
 /**
- * 
+ *
  * Computes a similarity score given the distance of two strings weighted by
  * their length. The longer the strings and the lower the edit distance the
  * higher the similarity.
- * 
+ *
  * @author hterhors
  *
- *         Feb 18, 2016
+ * Feb 18, 2016
  */
 public class EditDistanceTemplate
-		extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
-	private static Logger log = LogManager.getFormatterLogger();
+        extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
 
-	@Override
-	public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
-		Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
-		for (Annotation a : state.getEntities()) {
-			factors.add(new SingleVariablePattern<>(this, a));
-		}
-		log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
-		return factors;
-	}
+    private static Logger log = LogManager.getFormatterLogger();
 
-	@Override
-	public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
-		Annotation entity = factor.getFactorPattern().getVariable();
-		log.debug("Compute %s factor for variable %s", EditDistanceTemplate.class.getSimpleName(), entity);
-		Vector featureVector = factor.getFeatureVector();
+    @Override
+    public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
+        Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
+        for (Annotation a : state.getEntities()) {
+            factors.add(new SingleVariablePattern<>(this, a));
+        }
+        log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
+        return factors;
+    }
 
-		log.debug("Retrieve text for query link %s...", entity.getLink());
+    @Override
+    public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
+        Annotation entity = factor.getFactorPattern().getVariable();
+        log.debug("Compute %s factor for variable %s", EditDistanceTemplate.class.getSimpleName(), entity);
+        Vector featureVector = factor.getFeatureVector();
 
-		final String link = entity.getLink().replaceAll("_", " ").toLowerCase();
-		final String word = entity.getWord().toLowerCase();
+        log.debug("Retrieve text for query link %s...", entity.getLink());
 
-		final int levenDist = SimilarityMeasures.levenshteinDistance(link, word);
+        double weightedEditSimilarity = 0;
 
-		final int max = Math.max(link.length(), word.length());
+        try {
+            final String link = entity.getLink().replaceAll("_", " ").toLowerCase();
+            final String word = entity.getWord().toLowerCase();
 
-		final double weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
+            final int levenDist = SimilarityMeasures.levenshteinDistance(link, word);
 
-		featureVector.set("-0.5_LevenshteinEditSimilarity", weightedEditSimilarity - 0.5);
-		featureVector.set("Positive_LevenshteinEditSimilarity", weightedEditSimilarity);
+            final int max = Math.max(link.length(), word.length());
 
-		for (double i = 0.01; i < 1.0; i = i + 0.01) {
-			featureVector.set("LevenshteinEditSimilarity_bin_" + i, weightedEditSimilarity > i ? 1.0 : 0);
-		}
+            weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
 
-	}
+        } catch (Exception e) {
+            log.info("Link "+entity.getLink()+"\n");
+            log.info("Word "+entity.getWord()+"\n");
+            log.info(e.getMessage() + "\n");
+        }
+
+        featureVector.set("-0.5_LevenshteinEditSimilarity", weightedEditSimilarity - 0.5);
+        featureVector.set("Positive_LevenshteinEditSimilarity", weightedEditSimilarity);
+
+        for (double i = 0.01; i < 1.0; i = i + 0.01) {
+            featureVector.set("LevenshteinEditSimilarity_bin_" + i, weightedEditSimilarity > i ? 1.0 : 0);
+        }
+
+    }
 
 }
