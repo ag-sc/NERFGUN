@@ -6,7 +6,6 @@
 package de.citec.sc.corpus;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -64,19 +63,20 @@ public class CorpusLoader {
 	}
 
 	private List<String> readFileAsList(File file) {
+
 		List<String> content = new ArrayList<>();
 		try {
 			FileInputStream fstream = new FileInputStream(file);
-			DataInputStream in = new DataInputStream(fstream);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+			BufferedReader br = new BufferedReader(new InputStreamReader(fstream, "UTF-8"));
 			String strLine;
 
 			while ((strLine = br.readLine()) != null) {
 				content.add(strLine);
 			}
-			in.close();
+			br.close();
 		} catch (Exception e) {
-			System.err.println("Error reading the file: " + file.getPath() + "\n" + e.getMessage());
+			throw new RuntimeException("Error reading the file: " + file.getPath() + "\n" + e.getMessage());
+		} finally {
 		}
 
 		return content;
