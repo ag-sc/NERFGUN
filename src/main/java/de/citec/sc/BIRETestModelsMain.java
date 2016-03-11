@@ -47,7 +47,10 @@ public class BIRETestModelsMain {
 
 	public static void main(String[] args) throws UnkownTemplateRequestedException, Exception {
 
-		args = new String[] { "src/main/resources/models/PR", "CoNLLTesta" };
+		/*
+		 * Only for local runs.
+		 */
+		// args = new String[] { "src/main/resources/models/PR", "CoNLLTesta" };
 		String modelDirPath = args[0];
 
 		String corpusName = args[1];
