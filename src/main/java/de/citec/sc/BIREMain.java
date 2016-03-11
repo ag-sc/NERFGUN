@@ -1,7 +1,10 @@
 package de.citec.sc;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,7 +25,6 @@ import de.citec.sc.corpus.Document;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
-import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.settings.BIRESettings;
@@ -49,17 +51,6 @@ import sampling.samplingstrategies.SamplingStrategies;
 import sampling.stoppingcriterion.StoppingCriterion;
 import templates.AbstractTemplate;
 
-/*
- * 	templates.add(new EditDistanceTemplate());
- *	templates.add(new TopicSpecificPageRankTemplate(tsprIndexMappingFile, tsprFile));
- *
- */
-//02:52:23.144 [main] INFO  - Micro-average Precision=0.5445
-//02:52:23.144 [main] INFO  - Micro-average Recall=0.5445
-//02:52:23.144 [main] INFO  - F1 Micro-average=0.5445
-//02:52:23.144 [main] INFO  - Macro-average Precision=0.5525
-//02:52:23.145 [main] INFO  - Macro-average Recall=0.5525
-//02:52:23.145 [main] INFO  - F1 Macro-average=0.5525
 public class BIREMain {
 
 	private static final String PARAM_SETTING_IDENTIFIER = "-s";
@@ -96,6 +87,22 @@ public class BIREMain {
 	}
 
 	public static void main(String[] args) throws IOException {
+
+		CorpusLoader l = new CorpusLoader();
+
+		DefaultCorpus d = l.loadCorpus(CorpusName.CoNLLTraining);
+
+		FileOutputStream w = new FileOutputStream(new File("src/main/resouces/testlog"));
+
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(w, "UTF-8"));
+
+		for (Document string : d.getDocuments()) {
+			bw.write(string.toString() + "\n");
+		}
+
+		bw.close();
+
+		System.exit(1);
 
 		/*
 		 * TODO: Just for testing !!!! Remove before Jar export.
@@ -368,7 +375,6 @@ public class BIREMain {
 
 	}
 
-	
 	private static String generateNameFromTemplates(Collection<?> templates) {
 		String name = "";
 		String dash = "";

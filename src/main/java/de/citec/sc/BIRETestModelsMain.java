@@ -1,7 +1,6 @@
 package de.citec.sc;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,6 @@ import de.citec.sc.corpus.Document;
 import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
-import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
@@ -49,13 +47,13 @@ public class BIRETestModelsMain {
 
 	public static void main(String[] args) throws UnkownTemplateRequestedException, Exception {
 
-		args = new String[] { "src/main/resources/models/TF", "CoNLLTesta" };
+		args = new String[] { "src/main/resources/models/PR", "CoNLLTesta" };
 		String modelDirPath = args[0];
 
 		String corpusName = args[1];
 		log.info("Load Corpus...");
-//		CorpusLoader loader = new CorpusLoader();
-		 CorpusLoader loader = new CorpusLoader(false);
+		// CorpusLoader loader = new CorpusLoader();
+		CorpusLoader loader = new CorpusLoader(false);
 		DefaultCorpus corpus = null;
 		switch (corpusName) {
 		case "CoNLLTesta":
@@ -70,7 +68,7 @@ public class BIRETestModelsMain {
 		}
 		log.info("Test model in dir %s on dataset %s.", modelDirPath, corpusName);
 		List<Document> documents = corpus.getDocuments();
-//		documents = documents.subList(0, 2);
+		// documents = documents.subList(0, 2);
 		testModel(modelDirPath, documents);
 	}
 
@@ -85,8 +83,9 @@ public class BIRETestModelsMain {
 		test.forEach(s -> log.info("%s", s));
 
 		log.info("Load Index...");
-		 CandidateRetriever index = new CandidateRetrieverOnMemory();
-//		CandidateRetriever index = new CandidateRetrieverOnLucene(true, "mergedIndex");
+		CandidateRetriever index = new CandidateRetrieverOnMemory();
+		// CandidateRetriever index = new CandidateRetrieverOnLucene(true,
+		// "mergedIndex");
 
 		ObjectiveFunction<State, List<Annotation>> objective = new DisambiguationObjectiveFunction();
 
