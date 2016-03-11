@@ -22,4 +22,7 @@ for model in $modelsFilePath;
 		echo "Excecute Command "$command""
 		`$command`
 	
+        mv src/main/resources/all.log src/main/resources/all_test_$model.log
+
+
 	done
