@@ -15,6 +15,6 @@ for i in {0..14}
  		echo "Setting : $i" 
 		echo "########## LOGGING FROM `date` ##########"
 
-		java -Xmx32g -jar NERFGUN.jar -s $i
+		java -Xmx32g -classpath ./log4j2.xml -jar NERFGUN.jar -s $i
 	
 	done
