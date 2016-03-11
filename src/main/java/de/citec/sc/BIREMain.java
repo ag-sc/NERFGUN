@@ -88,22 +88,6 @@ public class BIREMain {
 
 	public static void main(String[] args) throws IOException {
 
-		CorpusLoader l = new CorpusLoader();
-
-		DefaultCorpus d = l.loadCorpus(CorpusName.CoNLLTraining);
-
-		FileOutputStream w = new FileOutputStream(new File("src/main/resouces/testlog"));
-
-		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(w, "UTF-8"));
-
-		for (Document string : d.getDocuments()) {
-			bw.write(string.toString() + "\n");
-		}
-
-		bw.close();
-
-		System.exit(1);
-
 		/*
 		 * TODO: Just for testing !!!! Remove before Jar export.
 		 */

@@ -6,10 +6,11 @@
 package de.citec.sc.createIndex;
 
 import java.io.IOException;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import de.citec.sc.BIREMain;
+import de.citec.sc.BIRETestModelsMain;
+import java.util.Arrays;
 
 /**
  *
@@ -27,7 +28,28 @@ public class Main {
 //        CreateIndexes.run();
 //        RetrievalPerformance.run();
 //        RetrievalPerformancePageRank.run();
-        BIREMain.main(args);
+
+        
+        if(args[2].equals("test")){
+            try
+            {
+                BIRETestModelsMain.main(args);
+            }
+            catch(Exception e){
+            
+            }
+        }
+        
+        if(args[2].equals("train")){
+            try
+            {
+                BIREMain.main(args);
+            }
+            catch(Exception e){
+            
+            }
+        }
+        
 //        TestSearch.main(args);
 
         long end = System.currentTimeMillis();
