@@ -13,7 +13,7 @@ modelsFilePath="src/main/resources/models/*"
 echo "Seach for models in $modelsFilePath"
 testset="CoNLLTesta"
 
-command="java -Xmx32g -classpath ./log4j2.xml -jar NERFGUN_Test.jar -s $i"
+command="java -Xmx32g -classpath ./log4j2.xml -jar NERFGUN_Test.jar $model $testset"
 for model in $modelsFilePath;
 	do
 		echo "########## LOGGING FROM `date` ##########"
