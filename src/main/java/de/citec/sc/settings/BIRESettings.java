@@ -58,7 +58,11 @@ public class BIRESettings {
 	}
 
 	public static void main(String[] args) {
-		settings.forEach(System.out::println);
+            
+            for(int i =0; i<settings.size(); i++){
+                System.out.println(i + "\t" +settings.get(i));
+            }
+		
 	}
 
 }

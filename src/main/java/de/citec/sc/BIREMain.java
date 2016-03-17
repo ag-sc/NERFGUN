@@ -1,10 +1,7 @@
 package de.citec.sc;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,11 +34,12 @@ import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
+import java.util.stream.Collectors;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
-import learning.scorer.DefaultScorer;
+import learning.scorer.LinearScorer;
 import learning.scorer.Scorer;
 import sampling.DefaultSampler;
 import sampling.Explorer;
@@ -113,9 +111,9 @@ public class BIREMain {
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLLTraining);
 		List<Document> documents = corpus.getDocuments();
 
-		documents = documents.subList(0, 1);
-		// documents = documents.stream().filter(d -> d.getGoldStandard().size()
-		// <= 20).collect(Collectors.toList());
+//		documents = documents.subList(0, 1);
+                
+		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
 
 		int numberOfEpochs = 1;
 
@@ -126,6 +124,7 @@ public class BIREMain {
 		Map<String, Double> avrgTest = new LinkedHashMap<>();
 		// Collections.shuffle(documents);
 		Collections.shuffle(documents, new Random(100l));
+                
 
 		// int N = documents.size();
 		// int n = 2;
@@ -133,7 +132,7 @@ public class BIREMain {
 		// double k = 0;
 
 		// for (int i = 0; i < n; i++) {
-		System.out.println("Train");
+//		System.out.println("Train");
 		// log.info("Cross-Validation Fold %s/%s", i + 1, n);
 		// double j = k;
 		// k = j + step;
@@ -181,7 +180,7 @@ public class BIREMain {
 		 * Create the scorer object that computes a score from the features of a
 		 * factor and the weight vectors of the templates.
 		 */
-		Scorer scorer = new DefaultScorer();
+		Scorer scorer = new LinearScorer();
 
 		/*
 		 * Create an Initializer that is responsible for providing an initial

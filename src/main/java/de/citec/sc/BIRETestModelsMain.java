@@ -29,6 +29,7 @@ import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
 import learning.scorer.DefaultScorer;
+import learning.scorer.LinearScorer;
 import learning.scorer.Scorer;
 import sampling.DefaultSampler;
 import sampling.Explorer;
@@ -106,7 +107,7 @@ public class BIRETestModelsMain {
 		model.setMultiThreaded(true);
 		model.loadModelFromDir(modelDir, factory);
 
-		Scorer scorer = new DefaultScorer();
+		Scorer scorer = new LinearScorer();
 
 		Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index, true);
 
