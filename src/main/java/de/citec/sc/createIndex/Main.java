@@ -5,12 +5,22 @@
  */
 package de.citec.sc.createIndex;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
 import de.citec.sc.BIREMain;
 import de.citec.sc.BIRETestModelsMain;
+import de.citec.sc.corpus.CorpusLoader;
+import de.citec.sc.corpus.DefaultCorpus;
+import de.citec.sc.corpus.Document;
+import de.citec.sc.query.CandidateRetriever;
+import de.citec.sc.query.CandidateRetrieverOnLucene;
+import de.citec.sc.query.CandidateRetrieverOnMemory;
+import de.citec.sc.sampling.AllScoresExplorer;
+import de.citec.sc.templates.IndexMapping;
+import de.citec.sc.templates.TopicSpecificPageRankTemplate;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -19,39 +29,26 @@ import java.util.Arrays;
 public class Main {
 
     public static void main(String[] args) throws UnsupportedEncodingException, IOException {
-        //TestOnMemory.main(args);
-
-        long start = System.currentTimeMillis();
-//        CandidateRetrieverOnMemory indexQuery = new CandidateRetrieverOnMemory();
-//        System.out.println(indexQuery.getAllResources("obama", 100));
-//        RetrievalPerformanceOnMemoryIndex.run();
-//        CreateIndexes.run();
+        
 //        RetrievalPerformance.run();
 //        RetrievalPerformancePageRank.run();
-
-        
-        if(args[2].equals("test")){
-            try
-            {
+        if (args[2].equals("test")) {
+            try {
                 BIRETestModelsMain.main(args);
-            }
-            catch(Exception e){
-            
-            }
-        }
-        
-        if(args[2].equals("train")){
-            try
-            {
-                BIREMain.main(args);
-            }
-            catch(Exception e){
-            
-            }
-        }
-        
-//        TestSearch.main(args);
+            } catch (Exception e) {
 
+            }
+        }
+
+        if (args[2].equals("train")) {
+            try {
+                BIREMain.main(args);
+            } catch (Exception e) {
+
+            }
+        }
+
+//        TestSearch.main(args);
         long end = System.currentTimeMillis();
         int mb = 1024 * 1024;
 

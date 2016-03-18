@@ -28,6 +28,7 @@ import de.citec.sc.settings.BIRESettings;
 import de.citec.sc.settings.Setting;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
+import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.templates.InitializationException;
 import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.TermFrequencyTemplate;
@@ -410,6 +411,7 @@ public class BIREMain {
 				if (template.equals(TopicSpecificPageRankTemplate.class)) {
 					log.info("Init TopicSpecificPageRankTemplate ...");
 					TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
+                                        IndexMapping.init(tsprIndexMappingFile);
 				}
 				if (template.equals(DocumentSimilarityTemplate.class)) {
 					log.info("Init DocumentSimilarityTemplate ...");

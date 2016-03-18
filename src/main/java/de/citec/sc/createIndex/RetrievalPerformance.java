@@ -31,6 +31,7 @@ import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.query.Instance;
+import de.citec.sc.templates.IndexMapping;
 
 /**
  *
@@ -49,7 +50,8 @@ public class RetrievalPerformance {
 	}
 
 	public static void run() throws UnsupportedEncodingException {
-		List<Integer> topKs = new ArrayList<>();
+            
+            List<Integer> topKs = new ArrayList<>();
 		// topKs.add(10);
 		topKs.add(100);
 		// topKs.add(200);
@@ -59,7 +61,7 @@ public class RetrievalPerformance {
 
 		List<String> datasets = new ArrayList<>();
 		// datasets.add("tweets");
-		datasets.add("news");
+		datasets.add("testa");
 		// datasets.add("small");
 
 		boolean compareAll = false;
@@ -104,8 +106,8 @@ public class RetrievalPerformance {
 							if (dataset.equals("news")) {
 								c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTraining);
 							}
-							if (dataset.equals("small")) {
-								c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTraining);
+							if (dataset.equals("testa")) {
+								c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTesta);
 							}
 
 							HashMap<String, Set<String>> notFound = new HashMap<String, Set<String>>();
