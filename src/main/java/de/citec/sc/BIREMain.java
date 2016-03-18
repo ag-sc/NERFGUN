@@ -1,6 +1,8 @@
 package de.citec.sc;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,17 +11,21 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import corpus.Instance;
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.CorpusLoader.CorpusName;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
+import de.citec.sc.learning.FeatureUtils;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.sampling.AllScoresExplorer;
@@ -35,11 +41,14 @@ import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
-import java.util.stream.Collectors;
+import exceptions.MissingFactorException;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
+import learning.Vector;
+import learning.callbacks.InstanceCallback;
+import learning.callbacks.StepCallback;
 import learning.scorer.LinearScorer;
 import learning.scorer.Scorer;
 import sampling.DefaultSampler;
@@ -49,6 +58,7 @@ import sampling.samplingstrategies.AcceptStrategies;
 import sampling.samplingstrategies.SamplingStrategies;
 import sampling.stoppingcriterion.StoppingCriterion;
 import templates.AbstractTemplate;
+import variables.AbstractState;
 
 public class BIREMain {
 
@@ -68,7 +78,7 @@ public class BIREMain {
 	private static CandidateRetriever index;
 	private static Setting setting;
 
-	private static Explorer explorer;
+	private static Explorer<State> explorer;
 
 	/**
 	 * Read the parameters from the command line.
@@ -90,7 +100,7 @@ public class BIREMain {
 		/*
 		 * TODO: Just for testing !!!! Remove before Jar export.
 		 */
-		// args = new String[] { "-s", "1" };
+		args = new String[] { "-s", "9" };
 
 		// LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		// Configuration config = ctx.getConfiguration();
@@ -101,6 +111,9 @@ public class BIREMain {
 
 		initializeBIRE(args);
 		File modelsDir = new File("src/main/resources/models");
+		File featuresFile = new File("src/main/resources/features.txt");
+		BufferedWriter featuresFileWriter = new BufferedWriter(new FileWriter(featuresFile));
+
 		if (!modelsDir.exists())
 			modelsDir.mkdirs();
 
@@ -112,9 +125,9 @@ public class BIREMain {
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLLTraining);
 		List<Document> documents = corpus.getDocuments();
 
-//		documents = documents.subList(0, 1);
-                
-		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
+		// documents = documents.subList(0, 1);
+
+		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 10).collect(Collectors.toList());
 
 		int numberOfEpochs = 1;
 
@@ -125,7 +138,6 @@ public class BIREMain {
 		Map<String, Double> avrgTest = new LinkedHashMap<>();
 		// Collections.shuffle(documents);
 		Collections.shuffle(documents, new Random(100l));
-                
 
 		// int N = documents.size();
 		// int n = 2;
@@ -133,7 +145,7 @@ public class BIREMain {
 		// double k = 0;
 
 		// for (int i = 0; i < n; i++) {
-//		System.out.println("Train");
+		// System.out.println("Train");
 		// log.info("Cross-Validation Fold %s/%s", i + 1, n);
 		// double j = k;
 		// k = j + step;
@@ -240,6 +252,31 @@ public class BIREMain {
 				explorers, objectiveOneCriterion);
 		sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
 		sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
+		sampler.addStepCallback(new StepCallback() {
+
+			public <InstanceT extends Instance, StateT extends AbstractState<InstanceT>> void onEndStep(
+					DefaultSampler<InstanceT, StateT, ?> defaultSampler, int step, int e, int size, StateT initialState,
+					StateT currentState) {
+				StringBuilder builder = new StringBuilder();
+				try {
+					Vector features = FeatureUtils.mergeFeatures(currentState.getFactorGraph().getFactors());
+					builder.append(currentState.getObjectiveScore());
+					builder.append("\t");
+					for (Entry<String, Double> feature : features.getFeatures().entrySet()) {
+						builder.append(feature.getKey());
+						builder.append("\t");
+						builder.append(feature.getValue());
+						builder.append("\t");
+					}
+					featuresFileWriter.write(builder.toString());
+					featuresFileWriter.newLine();
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				} catch (MissingFactorException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
 		/*
 		 * Define a learning strategy. The learner will receive state pairs
 		 * which can be used to update the models parameters.
@@ -254,8 +291,9 @@ public class BIREMain {
 		 * Additionally, it can invoke predictions on new data.
 		 */
 		Trainer trainer = new Trainer();
-		trainer.train(sampler, trainInitializer, learner, train, numberOfEpochs);
 
+		trainer.train(sampler, trainInitializer, learner, train, numberOfEpochs);
+		featuresFileWriter.close();
 		/*
 		 * Stop sampling if model score does not increase for 5 iterations.
 		 */
@@ -411,7 +449,7 @@ public class BIREMain {
 				if (template.equals(TopicSpecificPageRankTemplate.class)) {
 					log.info("Init TopicSpecificPageRankTemplate ...");
 					TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
-                                        IndexMapping.init(tsprIndexMappingFile);
+					IndexMapping.init(tsprIndexMappingFile);
 				}
 				if (template.equals(DocumentSimilarityTemplate.class)) {
 					log.info("Init DocumentSimilarityTemplate ...");
@@ -479,6 +517,7 @@ public class BIREMain {
 			}
 		}
 	}
+
 }
 
 // 15:41:50.191 [main] INFO - Micro-average Precision=0.524
