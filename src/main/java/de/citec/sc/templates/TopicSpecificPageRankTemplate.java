@@ -56,7 +56,6 @@ public class TopicSpecificPageRankTemplate
 
 	private static Logger log = LogManager.getFormatterLogger();
 
-	private static Map<String, Integer> indexMappings = new HashMap<>(NUM_OF_GOLD_INDICIES);
 	private static Map<Integer, Map<Integer, Double>> tspr = new HashMap<>();
 
 	private static boolean isInitialized = false;
@@ -74,7 +73,7 @@ public class TopicSpecificPageRankTemplate
 			log.info("Done, loading topic specific page rank index mapping file");
 
 			log.info("Load topic specific page rank index mapping file...");
-			loadIndexMapping(keyFiles, indicies);
+//			loadIndexMapping(keyFiles, indicies);
 			log.info("Done, loading topic specific page rank index mapping file");
 			isInitialized = true;
 		}
@@ -116,18 +115,18 @@ public class TopicSpecificPageRankTemplate
 		return goldIndicies;
 	}
 
-	private static void loadIndexMapping(final String keyFiles, Set<Integer> indicies)
-			throws FileNotFoundException, IOException {
-		BufferedReader indexMappingReader = new BufferedReader(new FileReader(new File(keyFiles)));
-		String line = "";
-		while ((line = indexMappingReader.readLine()) != null) {
-			String[] data = line.split("\t");
-			final int nodeIndex = Integer.parseInt(data[0]);
-			if (indicies.contains(nodeIndex))
-				indexMappings.put(data[1], nodeIndex);
-		}
-		indexMappingReader.close();
-	}
+//	private static void loadIndexMapping(final String keyFiles, Set<Integer> indicies)
+//			throws FileNotFoundException, IOException {
+//		BufferedReader indexMappingReader = new BufferedReader(new FileReader(new File(keyFiles)));
+//		String line = "";
+//		while ((line = indexMappingReader.readLine()) != null) {
+//			String[] data = line.split("\t");
+//			final int nodeIndex = Integer.parseInt(data[0]);
+//			if (indicies.contains(nodeIndex))
+//				indexMappings.put(data[1], nodeIndex);
+//		}
+//		indexMappingReader.close();
+//	}
 
 	@Override
 	public Set<VariablePairPattern<Annotation>> generateFactorPatterns(State state) {
@@ -161,7 +160,7 @@ public class TopicSpecificPageRankTemplate
 			if (link.equals(Annotation.DEFAULT_ID))
 				break calcScore;
 
-			if (!indexMappings.containsKey(link)) {
+			if (! IndexMapping.indexMappings.containsKey(link)) {
 				// log.warn("Unknown link node detected for link: " + link);
 				break calcScore;
 			}
@@ -169,7 +168,7 @@ public class TopicSpecificPageRankTemplate
 			/*
 			 * If node is known
 			 */
-			final int linkNodeIndex = indexMappings.get(link);
+			final int linkNodeIndex = IndexMapping.indexMappings.get(link);
 
 			if (!tspr.containsKey(linkNodeIndex))
 				break calcScore;
@@ -177,7 +176,7 @@ public class TopicSpecificPageRankTemplate
 			if (link2.equals(Annotation.DEFAULT_ID))
 				break calcScore;
 
-			if (!indexMappings.containsKey(link2)) {
+			if (!IndexMapping.indexMappings.containsKey(link2)) {
 				// log.warn("Unknown link node detected for link: " +
 				// link2);
 				break calcScore;
@@ -186,7 +185,7 @@ public class TopicSpecificPageRankTemplate
 			/*
 			 * If other link is known
 			 */
-			final int linkNodeIndex2 = indexMappings.get(link2);
+			final int linkNodeIndex2 = IndexMapping.indexMappings.get(link2);
 
 			if (!tspr.get(linkNodeIndex).containsKey(linkNodeIndex2))
 				break calcScore;

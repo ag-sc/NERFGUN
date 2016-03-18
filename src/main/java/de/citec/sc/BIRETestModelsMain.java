@@ -20,11 +20,13 @@ import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
+import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.templates.NEDTemplateFactory;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import exceptions.UnkownTemplateRequestedException;
+import java.util.stream.Collectors;
 import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
@@ -72,7 +74,8 @@ public class BIRETestModelsMain {
 		}
 		log.info("Test model in dir %s on dataset %s.", modelDirPath, corpusName);
 		List<Document> documents = corpus.getDocuments();
-		// documents = documents.subList(0, 2);
+//		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
+                
 		testModel(modelDirPath, documents);
 	}
 
@@ -95,6 +98,7 @@ public class BIRETestModelsMain {
 
 		log.info("Init TopicSpecificPageRankTemplate ...");
 		TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
+                IndexMapping.init(tsprIndexMappingFile);
 		log.info("Init DocumentSimilarityTemplate ...");
 		DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
 
@@ -104,6 +108,7 @@ public class BIRETestModelsMain {
 		 * Define a model and provide it with the necessary templates.
 		 */
 		Model<Document, State> model = new Model<>();
+                model.setForceFactorComputation(true);
 		model.setMultiThreaded(true);
 		model.loadModelFromDir(modelDir, factory);
 

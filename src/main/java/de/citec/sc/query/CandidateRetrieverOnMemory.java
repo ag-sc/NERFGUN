@@ -31,12 +31,11 @@ import java.util.stream.Stream;
  */
 public class CandidateRetrieverOnMemory implements CandidateRetriever {
 
-    private ConcurrentHashMap<String, HashMap<String, Integer>> dbpediSurfaceForms;
+    private final static ConcurrentHashMap<String, HashMap<String, Integer>> dbpediSurfaceForms = new ConcurrentHashMap<>(15000000);;
 
     public CandidateRetrieverOnMemory() {
         System.out.println("Loading dbpedia surface forms ...");
-        dbpediSurfaceForms = new ConcurrentHashMap<>(15000000);
-        loadFiles("anchorFiles/", dbpediSurfaceForms);
+        loadFiles("anchorFiles/");
 
     }
 
@@ -74,7 +73,7 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
     }
 
 
-    private void loadFiles(String directory, ConcurrentHashMap<String, HashMap<String, Integer>> map) {
+    private void loadFiles(String directory) {
 
         File indexFolder = new File(directory);
         File[] listOfFiles = indexFolder.listFiles();
@@ -101,21 +100,21 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
                                 String uri = c[1];
                                 int freq = Integer.parseInt(c[2]);
 
-                                if (map.containsKey(label)) {
+                                if (dbpediSurfaceForms.containsKey(label)) {
 
-                                    HashMap<String, Integer> m = map.get(label);
+                                    HashMap<String, Integer> m = dbpediSurfaceForms.get(label);
                                     if (m.containsKey(uri)) {
                                         m.put(uri, freq + m.get(uri));
                                     } else {
                                         m.put(uri, freq);
                                     }
 
-                                    map.put(label, m);
+                                    dbpediSurfaceForms.put(label, m);
                                 } else {
 
                                     HashMap<String, Integer> m = new HashMap<>();
                                     m.put(uri, freq);
-                                    map.put(label, m);
+                                    dbpediSurfaceForms.put(label, m);
                                 }
                             }
 
