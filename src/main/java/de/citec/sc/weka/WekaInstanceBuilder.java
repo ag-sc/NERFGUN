@@ -33,7 +33,11 @@ class WekaInstanceBuilder {
 		this.featureVectors = featureVectors;
 	}
 
-	private SparseInstance buildSparseInstance(final Map<String, Double> sortedFeatureVector) {
+	public SparseInstance buildSparseInstance(final BireDataLine dataPoint) {
+		return buildSparseInstance(dataPoint.featureVector);
+	}
+
+	public SparseInstance buildSparseInstance(final Map<String, Double> sortedFeatureVector) {
 
 		final List<Double> valueList = new LinkedList<Double>();
 		final List<Integer> indexList = new LinkedList<Integer>();
@@ -56,7 +60,7 @@ class WekaInstanceBuilder {
 		return new SparseInstance(1.0d, values, indices, vectorSize);
 	}
 
-	private Instances createInstanceWrapper(final String wrapperName) {
+	public Instances createInstanceWrapper(final String wrapperName) {
 		final FastVector v = new FastVector();
 
 		for (String featureName : allFeatureNames) {
