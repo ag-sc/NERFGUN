@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import de.citec.sc.formats.bire.BireDataLine;
+import java.util.ArrayList;
+import java.util.Collections;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
@@ -18,7 +20,7 @@ import weka.core.converters.ArffSaver;
 class WekaInstanceBuilder {
 
 	private final int vectorSize;
-	private final Set<String> allFeatureNames;
+	private final List<String> allFeatureNames;
 	private final List<BireDataLine> featureVectors;
 
 	/**
@@ -29,9 +31,23 @@ class WekaInstanceBuilder {
 	public WekaInstanceBuilder(final int vectorSize, final Set<String> allFeatureNames,
 			final List<BireDataLine> featureVectors) {
 		this.vectorSize = vectorSize;
-		this.allFeatureNames = allFeatureNames;
+		this.allFeatureNames = new ArrayList<>(allFeatureNames);
+                Collections.sort(this.allFeatureNames);
 		this.featureVectors = featureVectors;
 	}
+        
+        /**
+	 * 
+	 * @param vectorSize
+	 *            total number of features +1 for class
+	 */
+	public WekaInstanceBuilder(final int vectorSize, final Set<String> allFeatureNames) {
+		this.vectorSize = vectorSize;
+		this.allFeatureNames = new ArrayList<>(allFeatureNames);
+                Collections.sort(this.allFeatureNames);
+		this.featureVectors = null;
+	}
+        
 
 	public SparseInstance buildSparseInstance(final BireDataLine dataPoint) {
 		return buildSparseInstance(dataPoint.featureVector);

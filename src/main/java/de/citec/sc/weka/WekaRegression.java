@@ -3,79 +3,85 @@ package de.citec.sc.weka;
 import de.citec.sc.formats.bire.BireDataLine;
 import de.citec.sc.learning.FeatureUtils;
 import factors.Factor;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import learning.Vector;
 import learning.scorer.Scorer;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.LibSVM;
+import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.SparseInstance;
+import weka.core.converters.ArffLoader.ArffReader;
 
 public class WekaRegression extends Scorer {
 
     Classifier model;
-    
-    public WekaRegression(Classifier model) {
+    Set<String> featureNames;
+
+    public WekaRegression(String pathModel, String path) {
+        
+        try {
+            this.model = WekaModelLoader.loadLibSVMModel(pathModel);
+        } catch (Exception ex) {
+            Logger.getLogger(WekaRegression.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         if (!(model instanceof LibSVM)) {
             throw new IllegalArgumentException("Wrong model used for regression.");
         }
 
-        this.model = (LibSVM) model;
-    }
+        featureNames = new HashSet<>();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(path));
+            ArffReader arff = new ArffReader(reader);
 
-    public static void batchRegressionLibSVM(Classifier model, Map<String, BireDataLine> data)
-            throws IllegalArgumentException, Exception {
+            for (int att = 0; att < arff.getStructure().numAttributes(); att++) {
+                Attribute attribute = arff.getStructure().attribute(att);
+                
+                featureNames.add(attribute.name());
+            }
+        } catch (IOException e) {
 
-        if (!(model instanceof LibSVM)) {
-            throw new IllegalArgumentException("Wrong model used for regression.");
-        }
-
-        model = (LibSVM) model;
-
-        int vectorSize = BireDataLine.ALL_FEATURE_NAMES.size() + 1;
-        Set<String> allFeatureNames = BireDataLine.ALL_FEATURE_NAMES;
-        List<BireDataLine> featureVectors = new ArrayList<>(data.values());
-        WekaInstanceBuilder wIB = new WekaInstanceBuilder(vectorSize, allFeatureNames, featureVectors);
-
-        final Instances wrapper = wIB.createInstanceWrapper("BIRETestData");
-
-        for (Entry<String, BireDataLine> testData : data.entrySet()) {
-            final SparseInstance dataPoint = wIB.buildSparseInstance(testData.getValue().featureVector);
-            final double predictedScore;
-            dataPoint.setDataset(wrapper);
-            wrapper.add(dataPoint);
-            predictedScore = model.classifyInstance(dataPoint);
         }
 
     }
+
+  
 
     @Override
     public double score(Set<Factor<?>> factors) {
         Vector features = FeatureUtils.mergeFeatures(factors);
 
-        BireDataLine b1 = new BireDataLine(0.0, features.getFeatures());
-        
-        List<BireDataLine> featureVectors = new ArrayList<>();
-        featureVectors.add(b1);
-        
-        int vectorSize = BireDataLine.ALL_FEATURE_NAMES.size() + 1;
-        Set<String> allFeatureNames = BireDataLine.ALL_FEATURE_NAMES;
 
-        WekaInstanceBuilder wIB = new WekaInstanceBuilder(vectorSize, allFeatureNames, featureVectors);
+        //int vectorSize = BireDataLine.ALL_FEATURE_NAMES.size() + 1;
+        //Set<String> allFeatureNames = BireDataLine.ALL_FEATURE_NAMES;
 
-        final Instances wrapper = wIB.createInstanceWrapper("BIRETestData");
+        WekaInstanceBuilder wIB = new WekaInstanceBuilder(this.featureNames.size()+1, this.featureNames);
 
-        
-            final SparseInstance dataPoint = wIB.buildSparseInstance(testData.getValue().featureVector);
-            final double predictedScore;
-            dataPoint.setDataset(wrapper);
-            wrapper.add(dataPoint);
+        Instances wrapper = wIB.createInstanceWrapper("TestOnModel");
+
+        SparseInstance dataPoint = wIB.buildSparseInstance(features.getFeatures());
+        double predictedScore = 0.0;
+        dataPoint.setDataset(wrapper);
+        wrapper.add(dataPoint);
+        try {
             predictedScore = model.classifyInstance(dataPoint);
+        } catch (Exception ex) {
+            Logger.getLogger(WekaRegression.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
+        return predictedScore;
+
     }
 
 }

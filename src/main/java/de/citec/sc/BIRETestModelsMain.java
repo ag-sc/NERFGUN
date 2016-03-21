@@ -24,6 +24,7 @@ import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.templates.NEDTemplateFactory;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
+import de.citec.sc.weka.WekaRegression;
 import evaluation.EvaluationUtil;
 import exceptions.UnkownTemplateRequestedException;
 import java.util.stream.Collectors;
@@ -47,6 +48,8 @@ public class BIRETestModelsMain {
 	private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
 	private static String tsprFile = "tspr.gold";
 	private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
+        private static String wekaModel = "weka_model.model";
+        private static String wekaFile = "features_PR-TF-ED-TSPR-DS.arff";
 
 	public static void main(String[] args) throws UnkownTemplateRequestedException, Exception {
 
@@ -112,7 +115,8 @@ public class BIRETestModelsMain {
 		model.setMultiThreaded(true);
 		model.loadModelFromDir(modelDir, factory);
 
-		Scorer scorer = new LinearScorer();
+		//Scorer scorer = new LinearScorer();
+                Scorer scorer = new WekaRegression(wekaModel, wekaFile);
 
 		Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index, true);
 
