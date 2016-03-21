@@ -100,7 +100,7 @@ public class BIREMain {
 		/*
 		 * TODO: Just for testing !!!! Remove before Jar export.
 		 */
-		args = new String[] { "-s", "9" };
+		args = new String[] { "-s", "7" };
 
 		// LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		// Configuration config = ctx.getConfiguration();
