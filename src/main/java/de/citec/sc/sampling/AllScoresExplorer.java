@@ -31,6 +31,7 @@ public class AllScoresExplorer implements Explorer<State> {
     private static int maxNumberOfCandidateURIs;
     private static CandidateRetriever index;
     private final static Map<Integer, Float> pageRankMap = new ConcurrentHashMap<>(19500000);
+    private boolean isInitialized = false;
 
     public AllScoresExplorer(CandidateRetriever index) {
         this(index, 100);
@@ -41,7 +42,7 @@ public class AllScoresExplorer implements Explorer<State> {
         super();
         this.index = index;
         this.maxNumberOfCandidateURIs = maxNumberOfCandidateURIs;
-        if ((pageRankMap.isEmpty())) {
+        if (!isInitialized) {
             loadPageRanks();
         }
     }
@@ -58,7 +59,7 @@ public class AllScoresExplorer implements Explorer<State> {
             List<Instance> candidateURIs = index.getAllResources(annotationText, maxNumberOfCandidateURIs);
 
             log.debug("%s candidates retreived.", candidateURIs.size());
-            double sumPR = 0;
+            float sumPR = 0;
 
             for (Instance i : candidateURIs) {
 
@@ -147,6 +148,8 @@ public class AllScoresExplorer implements Explorer<State> {
         }
 
         System.out.println("  DONE");
+        
+        isInitialized = true;
     }
 
 }

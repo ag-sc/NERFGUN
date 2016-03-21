@@ -35,6 +35,12 @@ import de.citec.sc.corpus.Document;
 public class Test {
 
 	public static void main(String[] args) {
+            Float f1 = Float.parseFloat("1.7599116624144494E-6");
+            Float f2 = Float.parseFloat("0.7599116624144494E-6");
+            System.out.println((double)(f2/f1));
+            System.exit(1);
+            
+            
 		CorpusLoader loader = new CorpusLoader();
 		DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTesta);
 

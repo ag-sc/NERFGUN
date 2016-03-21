@@ -19,7 +19,9 @@ import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -28,11 +30,30 @@ import java.util.stream.Collectors;
  */
 public class Main {
 
+    private static final Map<String, String> PARAMETERS = new HashMap<>();
+
+    private static final String PARAMETER_PREFIX = "-";
+    private static final String PARAM_RUN = "-r";
+
     public static void main(String[] args) throws UnsupportedEncodingException, IOException {
         
+        
+        
+//        args = new String[8];
+//        args[0] = "-s";
+//        args[1] = "0";
+//        args[2] = "-r";
+//        args[3] = "train";
+//        args[4] = "-n";
+//        args[5] = "1";
+//        args[6] = "-d";
+//        args[7] = "CoNLLTraining";
+        
+        readParamsFromCommandLine(args);
+
 //        RetrievalPerformance.run();
 //        RetrievalPerformancePageRank.run();
-        if (args[2].equals("test")) {
+        if (PARAMETERS.get(PARAM_RUN).equals("test")) {
             try {
                 BIRETestModelsMain.main(args);
             } catch (Exception e) {
@@ -40,7 +61,7 @@ public class Main {
             }
         }
 
-        if (args[2].equals("train")) {
+        if (PARAMETERS.get(PARAM_RUN).equals("train")) {
             try {
                 BIREMain.main(args);
             } catch (Exception e) {
@@ -66,5 +87,15 @@ public class Main {
         // Print total available memory
         System.out.println("Total Memory:" + runtime.totalMemory() / mb);
 
+    }
+
+    private static void readParamsFromCommandLine(String[] args) {
+        if (args != null && args.length > 0) {
+            for (int i = 0; i < args.length; i++) {
+                if (args[i].startsWith(PARAMETER_PREFIX)) {
+                    PARAMETERS.put(args[i], args[i++ + 1]); // Skip value
+                }
+            }
+        }
     }
 }
