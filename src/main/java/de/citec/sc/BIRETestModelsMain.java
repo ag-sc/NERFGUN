@@ -26,11 +26,9 @@ import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import exceptions.UnkownTemplateRequestedException;
-import java.util.stream.Collectors;
 import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
-import learning.scorer.DefaultScorer;
 import learning.scorer.LinearScorer;
 import learning.scorer.Scorer;
 import sampling.DefaultSampler;
@@ -47,6 +45,7 @@ public class BIRETestModelsMain {
 	private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
 	private static String tsprFile = "tspr.gold";
 	private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
+	private static int MAX_CANDIDATES = 100;
 
 	public static void main(String[] args) throws UnkownTemplateRequestedException, Exception {
 
@@ -74,8 +73,9 @@ public class BIRETestModelsMain {
 		}
 		log.info("Test model in dir %s on dataset %s.", modelDirPath, corpusName);
 		List<Document> documents = corpus.getDocuments();
-//		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
-                
+		// documents = documents.stream().filter(d -> d.getGoldStandard().size()
+		// <= 50).collect(Collectors.toList());
+
 		testModel(modelDirPath, documents);
 	}
 
@@ -98,7 +98,7 @@ public class BIRETestModelsMain {
 
 		log.info("Init TopicSpecificPageRankTemplate ...");
 		TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
-                IndexMapping.init(tsprIndexMappingFile);
+		IndexMapping.init(tsprIndexMappingFile);
 		log.info("Init DocumentSimilarityTemplate ...");
 		DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
 
@@ -108,13 +108,13 @@ public class BIRETestModelsMain {
 		 * Define a model and provide it with the necessary templates.
 		 */
 		Model<Document, State> model = new Model<>();
-                model.setForceFactorComputation(true);
+		model.setForceFactorComputation(true);
 		model.setMultiThreaded(true);
 		model.loadModelFromDir(modelDir, factory);
 
 		Scorer scorer = new LinearScorer();
 
-		Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index, true);
+		Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
 
 		List<Explorer<State>> explorers = new ArrayList<>();
 		explorers.add(new AllScoresExplorer(index));

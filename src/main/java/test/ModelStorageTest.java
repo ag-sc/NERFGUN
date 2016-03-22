@@ -4,14 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Collections;
 import java.util.List;
 import java.util.List;
 import java.util.Map;
 import java.util.Map;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,6 +59,7 @@ import templates.TemplateFactory;
 //02:52:23.145 [main] INFO  - F1 Macro-average=0.5525
 public class ModelStorageTest {
 	private static Logger log = LogManager.getFormatterLogger();
+	private static int MAX_CANDIDATES = 100;
 
 	public static void main(String[] args) throws IOException {
 		ModelStorageTest bire = new ModelStorageTest();
@@ -157,7 +154,7 @@ public class ModelStorageTest {
 		 * Create an Initializer that is responsible for providing an initial
 		 * state for the sampling chain given a sentence.
 		 */
-		Initializer<Document, State> initializer = new DisambiguationInitializer(index, true);
+		Initializer<Document, State> initializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
 
 		/*
 		 * Define the explorers that will provide "neighboring" states given a
@@ -376,7 +373,7 @@ public class ModelStorageTest {
 		 * Create an Initializer that is responsible for providing an initial
 		 * state for the sampling chain given a sentence.
 		 */
-		Initializer<Document, State> initializer = new DisambiguationInitializer(index, true);
+		Initializer<Document, State> initializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
 
 		/*
 		 * Define the explorers that will provide "neighboring" states given a

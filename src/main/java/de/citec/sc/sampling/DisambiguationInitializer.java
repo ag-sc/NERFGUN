@@ -20,6 +20,7 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 	private boolean assignRandomURI;
 
 	private Random random;
+	private int topK;
 
 	/**
 	 * This constructor creates an Initializer that either assigns the topmost
@@ -29,11 +30,12 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 	 * @param index
 	 * @param assignRandomURI
 	 */
-	public DisambiguationInitializer(CandidateRetriever index, boolean assignRandomURI) {
+	public DisambiguationInitializer(CandidateRetriever index, int topK, boolean assignRandomURI) {
 		super();
 		this.index = index;
 		this.assignRandomURI = assignRandomURI;
 		this.random = new Random(100l);
+		this.topK = topK;
 	}
 
 	/**
@@ -42,8 +44,8 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 	 * 
 	 * @param index
 	 */
-	public DisambiguationInitializer(CandidateRetriever index) {
-		this(index, false);
+	public DisambiguationInitializer(CandidateRetriever index, int topK) {
+		this(index, topK, false);
 	}
 
 	@Override
@@ -52,9 +54,9 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 		State state = new State(document);
 		for (Annotation annotation : document.getGoldResult()) {
 			log.debug("Assign initial ID for Annotation:\n%s", annotation);
-			List<Instance> candidateURIs = index.getAllResources(annotation.getWord(), 10);
+			List<Instance> candidateURIs = index.getAllResources(annotation.getWord(), topK);
 			if (candidateURIs.isEmpty()) {
-				log.warn("No candidates found. Dropping annotation from state.", annotation);
+				log.warn("No candidates found for %s. Dropping annotation from state.", annotation);
 			} else {
 				int candidateRank;
 				if (assignRandomURI) {
@@ -67,10 +69,9 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 				String initialLink = candidate.getUri();
 				Annotation newAnnotation = new Annotation(annotation.getWord(), initialLink, annotation.getStartIndex(),
 						annotation.getEndIndex());
-				
+
 				newAnnotation.setIndexRank(candidateRank);
 				newAnnotation.setRelativeTermFrequencyScore(candidate.getScore());
-				;
 				state.addEntity(newAnnotation);
 			}
 			// initialLink = initialLink.replace("http://dbpedia.org/resource/",

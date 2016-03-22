@@ -24,6 +24,7 @@ import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.CorpusLoader.CorpusName;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
+import de.citec.sc.learning.ChangeSamplingStrategy;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.learning.FeatureUtils;
 import de.citec.sc.query.CandidateRetriever;
@@ -47,9 +48,8 @@ import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
 import learning.Vector;
-import learning.callbacks.InstanceCallback;
 import learning.callbacks.StepCallback;
-import learning.scorer.LinearScorer;
+import learning.scorer.DefaultScorer;
 import learning.scorer.Scorer;
 import sampling.DefaultSampler;
 import sampling.Explorer;
@@ -77,7 +77,7 @@ public class BIREMain {
 	private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 	private static CandidateRetriever index;
 	private static Setting setting;
-
+	private static final int MAX_CANDIDATES = 100;
 	private static Explorer<State> explorer;
 
 	/**
@@ -100,7 +100,7 @@ public class BIREMain {
 		/*
 		 * TODO: Just for testing !!!! Remove before Jar export.
 		 */
-		args = new String[] { "-s", "7" };
+		args = new String[] { "-s", "3" };
 
 		// LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		// Configuration config = ctx.getConfiguration();
@@ -127,7 +127,7 @@ public class BIREMain {
 
 		// documents = documents.subList(0, 1);
 
-		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 10).collect(Collectors.toList());
+		documents = documents.stream().filter(d -> d.getGoldStandard().size() == 3).collect(Collectors.toList());
 
 		int numberOfEpochs = 1;
 
@@ -188,18 +188,20 @@ public class BIREMain {
 		 * Define a model and provide it with the necessary templates.
 		 */
 		Model<Document, State> model = new Model<>(templates);
-		model.setMultiThreaded(true);
+		model.setMultiThreaded(false);
+		model.setForceFactorComputation(false);
 		/*
 		 * Create the scorer object that computes a score from the features of a
 		 * factor and the weight vectors of the templates.
 		 */
-		Scorer scorer = new LinearScorer();
+		Scorer scorer = new DefaultScorer();
+		// Scorer scorer = new LinearScorer();
 
 		/*
 		 * Create an Initializer that is responsible for providing an initial
 		 * state for the sampling chain given a sentence.
 		 */
-		Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index, true);
+		Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
 
 		/*
 		 * Define the explorers that will provide "neighboring" states given a
@@ -292,6 +294,7 @@ public class BIREMain {
 		 */
 		Trainer trainer = new Trainer();
 
+//		trainer.addInstanceCallback(new ChangeSamplingStrategy(sampler));
 		trainer.train(sampler, trainInitializer, learner, train, numberOfEpochs);
 		featuresFileWriter.close();
 		/*
@@ -433,7 +436,7 @@ public class BIREMain {
 		index = new CandidateRetrieverOnLucene(true, "mergedIndex");
 		// index = new CandidateRetrieverOnMemory();
 
-		explorer = new AllScoresExplorer(index);
+		explorer = new AllScoresExplorer(index, MAX_CANDIDATES);
 
 		initializeTempaltesFromSetting(setting);
 	}
