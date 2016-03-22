@@ -188,7 +188,7 @@ public class BIREMain {
 		 * Define a model and provide it with the necessary templates.
 		 */
 		Model<Document, State> model = new Model<>(templates);
-		model.setMultiThreaded(false);
+		model.setMultiThreaded(true);
 		model.setForceFactorComputation(false);
 		/*
 		 * Create the scorer object that computes a score from the features of a
