@@ -33,7 +33,7 @@ public class ChangeSamplingStrategy implements InstanceCallback {
 			sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
 		} else {
 			log.info("Set SamplingStrategy and AcceptStrategy to: SAMPLED MODEL");
-			sampler.setSamplingStrategy(SamplingStrategies.linearSamplingStrategy());
+			sampler.setSamplingStrategy(SamplingStrategies.linearModelSamplingStrategy());
 			sampler.setAcceptStrategy(AcceptStrategies.strictModelAccept());
 
 		}

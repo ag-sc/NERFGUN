@@ -100,7 +100,7 @@ public class BIREMain {
 		/*
 		 * TODO: Just for testing !!!! Remove before Jar export.
 		 */
-		args = new String[] { "-s", "3" };
+		args = new String[] { "-s", "2" };
 
 		// LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		// Configuration config = ctx.getConfiguration();
@@ -111,8 +111,6 @@ public class BIREMain {
 
 		initializeBIRE(args);
 		File modelsDir = new File("src/main/resources/models");
-		File featuresFile = new File("src/main/resources/features.txt");
-		BufferedWriter featuresFileWriter = new BufferedWriter(new FileWriter(featuresFile));
 
 		if (!modelsDir.exists())
 			modelsDir.mkdirs();
@@ -182,8 +180,6 @@ public class BIREMain {
 
 		addTemplatesFromSetting(templates);
 
-		// templates.add(new PageRankTemplate());
-
 		/*
 		 * Define a model and provide it with the necessary templates.
 		 */
@@ -209,7 +205,6 @@ public class BIREMain {
 		 * successor state and, thus, perform the sampling procedure.
 		 */
 		List<Explorer<State>> explorers = new ArrayList<>();
-		// explorers.add(new DisambiguationExplorer(index));
 		explorers.add(explorer);
 		/*
 		 * Create a sampler that generates sampling chains with which it will
@@ -254,31 +249,6 @@ public class BIREMain {
 				explorers, objectiveOneCriterion);
 		sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
 		sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
-		sampler.addStepCallback(new StepCallback() {
-
-			public <InstanceT extends Instance, StateT extends AbstractState<InstanceT>> void onEndStep(
-					DefaultSampler<InstanceT, StateT, ?> defaultSampler, int step, int e, int size, StateT initialState,
-					StateT currentState) {
-				StringBuilder builder = new StringBuilder();
-				try {
-					Vector features = FeatureUtils.mergeFeatures(currentState.getFactorGraph().getFactors());
-					builder.append(currentState.getObjectiveScore());
-					builder.append("\t");
-					for (Entry<String, Double> feature : features.getFeatures().entrySet()) {
-						builder.append(feature.getKey());
-						builder.append("\t");
-						builder.append(feature.getValue());
-						builder.append("\t");
-					}
-					featuresFileWriter.write(builder.toString());
-					featuresFileWriter.newLine();
-				} catch (IOException ex) {
-					ex.printStackTrace();
-				} catch (MissingFactorException ex) {
-					ex.printStackTrace();
-				}
-			}
-		});
 		/*
 		 * Define a learning strategy. The learner will receive state pairs
 		 * which can be used to update the models parameters.
@@ -294,9 +264,8 @@ public class BIREMain {
 		 */
 		Trainer trainer = new Trainer();
 
-//		trainer.addInstanceCallback(new ChangeSamplingStrategy(sampler));
+		// trainer.addInstanceCallback(new ChangeSamplingStrategy(sampler));
 		trainer.train(sampler, trainInitializer, learner, train, numberOfEpochs);
-		featuresFileWriter.close();
 		/*
 		 * Stop sampling if model score does not increase for 5 iterations.
 		 */

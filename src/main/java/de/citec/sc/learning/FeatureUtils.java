@@ -59,15 +59,16 @@ public class FeatureUtils {
 				} else {
 					min.set(minFeatureName, feature.getValue());
 				}
+				
 				if (max.getFeatureNames().contains(maxFeatureName)) {
 					max.set(maxFeatureName, Math.max(max.getValueOfFeature(maxFeatureName), feature.getValue()));
 				} else {
 					max.set(maxFeatureName, feature.getValue());
 				}
+				
 				sum.addToValue(sumFeatureName, feature.getValue());
 
 				avrg.addToValue(avrgFeatureName, feature.getValue());
-
 			}
 		}
 		for (Entry<String, Double> feature : avrg.getFeatures().entrySet()) {

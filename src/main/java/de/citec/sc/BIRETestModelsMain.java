@@ -143,7 +143,7 @@ public class BIRETestModelsMain {
 		DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
 				explorers, stopAtMaxModelScore);
 
-		sampler.setSamplingStrategy(SamplingStrategies.greedyStrategy());
+		sampler.setSamplingStrategy(SamplingStrategies.greedyModelStrategy());
 		sampler.setAcceptStrategy(AcceptStrategies.strictModelAccept());
 
 		log.info("####################");
