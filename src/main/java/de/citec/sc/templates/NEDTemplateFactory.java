@@ -7,6 +7,14 @@ import templates.AbstractTemplate;
 import templates.TemplateFactory;
 
 public class NEDTemplateFactory implements TemplateFactory<Document, State> {
+    
+    private boolean useBins = true;
+
+    public NEDTemplateFactory(boolean b) {
+        this.useBins = b;
+    }
+    
+    
 
 	@Override
 	public AbstractTemplate<Document, State, ?> newInstance(String templateName)
@@ -17,9 +25,9 @@ public class NEDTemplateFactory implements TemplateFactory<Document, State> {
 		case "PageRankTemplate":
 			return new PageRankTemplate();
 		case "EditDistanceTemplate":
-			return new EditDistanceTemplate();
+			return new EditDistanceTemplate(useBins);
 		case "TopicSpecificPageRankTemplate":
-			return new TopicSpecificPageRankTemplate();
+			return new TopicSpecificPageRankTemplate(useBins);
 		case "DocumentSimilarityTemplate":
 			return new DocumentSimilarityTemplate();
 		}

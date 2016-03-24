@@ -127,8 +127,8 @@ public class ModelStorageTest {
 		List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
 		TermFrequencyTemplate lTemplate = new TermFrequencyTemplate();
 		// PageRankTemplate pTemplate = new PageRankTemplate();
-		EditDistanceTemplate eTemplate = new EditDistanceTemplate();
-		TopicSpecificPageRankTemplate tpTemplate = new TopicSpecificPageRankTemplate();
+		EditDistanceTemplate eTemplate = new EditDistanceTemplate(true);
+		TopicSpecificPageRankTemplate tpTemplate = new TopicSpecificPageRankTemplate(true);
 		// DocumentSimilarityTemplate dTemplate = new
 		// DocumentSimilarityTemplate();
 
@@ -352,7 +352,7 @@ public class ModelStorageTest {
 		 * score intermediate, generated states.
 		 */
 
-		TemplateFactory<Document, State> templateFactory = new NEDTemplateFactory();
+		TemplateFactory<Document, State> templateFactory = new NEDTemplateFactory(true);
 		/*
 		 * Define a model and provide it with the necessary templates.
 		 */

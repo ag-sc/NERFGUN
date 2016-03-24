@@ -34,6 +34,15 @@ public class EditDistanceTemplate
 
     private static Logger log = LogManager.getFormatterLogger();
 
+    private boolean useBins = false;
+
+    public EditDistanceTemplate(boolean b) {
+        this.useBins = b;
+    }
+
+//    public EditDistanceTemplate() {
+//    }
+
     @Override
     public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
         Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
@@ -65,16 +74,18 @@ public class EditDistanceTemplate
             weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
 
         } catch (Exception e) {
-            log.info("Link "+entity.getLink()+"\n");
-            log.info("Word "+entity.getWord()+"\n");
+            log.info("Link " + entity.getLink() + "\n");
+            log.info("Word " + entity.getWord() + "\n");
             log.info(e.getMessage() + "\n");
         }
 
         featureVector.set("-0.5_LevenshteinEditSimilarity", weightedEditSimilarity - 0.5);
         featureVector.set("Positive_LevenshteinEditSimilarity", weightedEditSimilarity);
 
-        for (double i = 0.01; i < 1.0; i = i + 0.01) {
-            featureVector.set("LevenshteinEditSimilarity_bin_" + i, weightedEditSimilarity > i ? 1.0 : 0);
+        if (useBins) {
+            for (double i = 0.01; i < 1.0; i = i + 0.01) {
+                featureVector.set("LevenshteinEditSimilarity_bin_" + i, weightedEditSimilarity > i ? 1.0 : 0);
+            }
         }
 
     }

@@ -73,9 +73,11 @@ public class SVMTrain {
     private static final String PARAM_SETTING_DOCUMENTSIZE = "-n";
     private static final String PARAM_SETTING_DATASET = "-d";
 
+    private static final String PARAM_SETTING_BINS = "-z";
+
     private static final Map<String, String> PARAMETERS = new HashMap<>();
 
-	private static final int MAX_CANDIDATES = 100;
+    private static final int MAX_CANDIDATES = 100;
     private static final String PARAMETER_PREFIX = "-";
 
     private static Logger log = LogManager.getFormatterLogger();
@@ -186,7 +188,6 @@ public class SVMTrain {
 
 //        log.info("Train data:");
 //        train.forEach(s -> log.info("%s", s));
-
         // log.info("Test data:");
         // test.forEach(s -> log.info("%s", s));
 		/*
@@ -263,7 +264,7 @@ public class SVMTrain {
             }
         };
 
-        Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index,MAX_CANDIDATES, true);
+        Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
 
         // StoppingCriterion<State> stoppingCriterion = new
         // StepLimitCriterion<>(numberOfSamplingSteps);
@@ -294,13 +295,13 @@ public class SVMTrain {
                     State candidateState = nextStates.stream().max((s1, s2) -> -Double.compare(s1.getObjectiveScore(), s2.getObjectiveScore())).get();
 
                     currentState = candidateState.getObjectiveScore() > currentState.getObjectiveScore() ? candidateState : currentState;
-                    
+
                     chain.add(currentState);
-                    
+
                     model.applyToStates(Arrays.asList(currentState), currentState.getFactorGraph().getFactorPool(), currentState.getInstance());
-                    
+
                     writeFeatures(featuresFileWriter, currentState);
-                    
+
                     log.info("Sampled State:  %s", currentState);
                     step++;
                 }
@@ -329,7 +330,7 @@ public class SVMTrain {
             State currentState) {
         StringBuilder builder = new StringBuilder();
         try {
-            Vector features = FeatureUtils.mergeFeatures( currentState.getFactorGraph().getFactors());
+            Vector features = FeatureUtils.mergeFeatures((Set<Factor<?>>) currentState.getFactorGraph().getFactors());
             builder.append(currentState.getObjectiveScore());
             builder.append("\t");
             for (Entry<String, Double> feature : features.getFeatures().entrySet()) {
@@ -460,8 +461,15 @@ public class SVMTrain {
 
             if (template.equals(EditDistanceTemplate.class
             )) {
-                templates.add(
-                        new EditDistanceTemplate());
+                if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+                    if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+                        templates.add(new EditDistanceTemplate(false));
+                    } else {
+                        templates.add(new EditDistanceTemplate(true));
+                    }
+                } else {
+                    templates.add(new EditDistanceTemplate(true));
+                }
                 log.info(
                         "Add tempalte: " + template.getSimpleName());
             }
@@ -470,7 +478,15 @@ public class SVMTrain {
             )) {
 
                 try {
-                    templates.add(new TopicSpecificPageRankTemplate());
+                    if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+                        if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+                            templates.add(new TopicSpecificPageRankTemplate(false));
+                        } else {
+                            templates.add(new TopicSpecificPageRankTemplate(true));
+                        }
+                    } else {
+                        templates.add(new TopicSpecificPageRankTemplate(true));
+                    }
                 } catch (InitializationException e) {
                     e.printStackTrace();
                     System.exit(0);

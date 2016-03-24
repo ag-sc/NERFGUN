@@ -9,8 +9,8 @@ java=`which java`
 
 echo "Java = $java"
 
-modelsFilePath="src/main/resources/models/*"
-echo "Seach for models in $modelsFilePath"
+modelsFilePath="src/main/resources/*.model"
+echo "Search for models in $modelsFilePath"
 testset="CoNLLTesta"
 
 
@@ -21,7 +21,7 @@ for model in $modelsFilePath;
  		echo "Model = $model" 
 		echo "Testset = $testset"
 		 m=$(basename $model)
-		nohup java -Xmx150g -XX:-UseGCOverheadLimit -jar NERFGUN.jar  $model  $testset -r test -z true  > src/main/resources/all_test_run_$m.log
+		nohup java -Xmx150g -XX:-UseGCOverheadLimit -jar NERFGUN.jar  $model  $testset -r wekaTest -z true  > src/main/resources/all_test_run_$m.log
 
 		mv src/main/resources/all.log src/main/resources/all_test_$m.log	
       
