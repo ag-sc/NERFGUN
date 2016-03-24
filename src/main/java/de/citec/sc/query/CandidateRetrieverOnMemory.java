@@ -6,7 +6,11 @@
 package de.citec.sc.query;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
@@ -31,11 +35,14 @@ import java.util.stream.Stream;
  */
 public class CandidateRetrieverOnMemory implements CandidateRetriever {
 
-    private final static ConcurrentHashMap<String, HashMap<String, Integer>> dbpediSurfaceForms = new ConcurrentHashMap<>(15000000);;
+    private static Map<String, HashMap<String, Integer>> dbpediSurfaceForms;
+    private boolean isInitialized = false;
 
     public CandidateRetrieverOnMemory() {
-        System.out.println("Loading dbpedia surface forms ...");
-        loadFiles("anchorFiles/");
+        if (!isInitialized) {
+            System.out.println("Loading dbpedia surface forms ...");
+            loadFiles("anchorFiles/");
+        }
 
     }
 
@@ -72,63 +79,97 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
         return instances;
     }
 
-
     private void loadFiles(String directory) {
 
-        File indexFolder = new File(directory);
-        File[] listOfFiles = indexFolder.listFiles();
         
 
-        for (int d = 0; d < listOfFiles.length; d++) {
-            if (listOfFiles[d].isFile() && !listOfFiles[d].isHidden()) {
-                
-                String fileExtension = listOfFiles[d].getName().substring(listOfFiles[d].getName().lastIndexOf(".") + 1);
-                
-                if (fileExtension.equals("ttl")) {
+        if (this.dbpediSurfaceForms == null) {
+            
+            dbpediSurfaceForms = new ConcurrentHashMap<>(18000000);
+            
+            File indexFolder = new File(directory);
+            File[] listOfFiles = indexFolder.listFiles();
 
-                    String filePath = listOfFiles[d].getPath();
-                    
-                    System.out.println("Loading "+filePath);
+            for (int d = 0; d < listOfFiles.length; d++) {
+                if (listOfFiles[d].isFile() && !listOfFiles[d].isHidden()) {
 
-                    try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
-                        stream.parallel().forEach(item -> {
+                    String fileExtension = listOfFiles[d].getName().substring(listOfFiles[d].getName().lastIndexOf(".") + 1);
 
-                            String[] c = item.toString().split("\t");
-                            if (c.length == 3) {
+                    if (fileExtension.equals("ttl")) {
 
-                                String label = c[0].toLowerCase();
-                                String uri = c[1];
-                                int freq = Integer.parseInt(c[2]);
+                        String filePath = listOfFiles[d].getPath();
 
-                                if (dbpediSurfaceForms.containsKey(label)) {
+                        System.out.println("Loading " + filePath);
 
-                                    HashMap<String, Integer> m = dbpediSurfaceForms.get(label);
-                                    if (m.containsKey(uri)) {
-                                        m.put(uri, freq + m.get(uri));
-                                    } else {
-                                        m.put(uri, freq);
+                        try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
+                            stream.parallel().forEach(item -> {
+
+                                String[] c = item.toString().split("\t");
+                                if (c.length == 3) {
+
+                                    String label = c[0].toLowerCase();
+                                    String uri = c[1];
+                                    int freq = Integer.parseInt(c[2]);
+
+                                    if (!(uri.contains("Category:") || uri.contains("(disambiguation)") || uri.contains("File:"))) {
+                                        if (dbpediSurfaceForms.containsKey(label)) {
+
+                                            HashMap<String, Integer> m = dbpediSurfaceForms.get(label);
+                                            if (m.containsKey(uri)) {
+                                                m.put(uri, freq + m.get(uri));
+                                            } else {
+                                                m.put(uri, freq);
+                                            }
+
+                                            dbpediSurfaceForms.put(label, m);
+                                        } else {
+
+                                            HashMap<String, Integer> m = new HashMap<>();
+                                            m.put(uri, freq);
+                                            dbpediSurfaceForms.put(label, m);
+                                        }
                                     }
-
-                                    dbpediSurfaceForms.put(label, m);
-                                } else {
-
-                                    HashMap<String, Integer> m = new HashMap<>();
-                                    m.put(uri, freq);
-                                    dbpediSurfaceForms.put(label, m);
                                 }
-                            }
 
-                        });
+                            });
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
+            
         }
-        
-//        System.out.println(map.size());
+        isInitialized = true;
+    }
 
+    private void saveMap() {
+        try {
+
+            FileOutputStream fout = new FileOutputStream("serializedDBpediaData.bin");
+            ObjectOutputStream oos = new ObjectOutputStream(fout);
+            oos.writeObject(dbpediSurfaceForms);
+            oos.close();
+            System.out.println("Saved dbpedia map");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void readMap() {
+        try {
+
+            FileInputStream fin = new FileInputStream("serializedDBpediaData.bin");
+            ObjectInputStream ois = new ObjectInputStream(fin);
+            dbpediSurfaceForms = (Map<String, HashMap<String, Integer>>) ois.readObject();
+            ois.close();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("File not found serializedDBpediaData.bin");
+        }
     }
 
     private HashMap<String, Integer> sortByValue(Map<String, Integer> unsortMap) {

@@ -1,24 +1,24 @@
 package de.citec.sc.sampling;
 
-import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.Instance;
 import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.variables.State;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import sampling.Explorer;
 
 /**
@@ -30,7 +30,7 @@ public class AllScoresExplorer implements Explorer<State> {
     private static Logger log = LogManager.getFormatterLogger();
     private static int maxNumberOfCandidateURIs;
     private static CandidateRetriever index;
-    private final static Map<Integer, Float> pageRankMap = new ConcurrentHashMap<>(19500000);
+    public static Map<Integer, Double> pageRankMap;
     private boolean isInitialized = false;
 
     public AllScoresExplorer(CandidateRetriever index) {
@@ -59,22 +59,34 @@ public class AllScoresExplorer implements Explorer<State> {
             List<Instance> candidateURIs = index.getAllResources(annotationText, maxNumberOfCandidateURIs);
 
             log.debug("%s candidates retreived.", candidateURIs.size());
-            float sumPR = 0;
+            double sumPR = 0.0;
+
+            List<Instance> filteredCandidates = new ArrayList<>();
 
             for (Instance i : candidateURIs) {
 
-                Float d = 0f;
-                Integer pID = IndexMapping.indexMappings.get(i.getUri());
+                double d = 0.0;
+                try {
+                    Integer pID = IndexMapping.indexMappings.get(i.getUri());
 
-                if (pID != null) {
-                    Float d1 = pageRankMap.get(pID);
-                    if (d1 != null) {
-                        d = d1;
+                    if (pID != null) {
+                        Double d1 = pageRankMap.get(pID);
+                        if (d1 != null) {
+                            d = d1;
+                        }
+                    } else {
+                        filteredCandidates.add(i);
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
                 sumPR += d;
+
             }
+
+            //remove candidates with zero pagerank score
+            candidateURIs.removeAll(filteredCandidates);
 
             for (int i = 0; i < candidateURIs.size(); i++) {
                 Instance candidateURI = candidateURIs.get(i);// .replace("http://dbpedia.org/resource/",
@@ -88,18 +100,27 @@ public class AllScoresExplorer implements Explorer<State> {
                 modifiedAnntation.setRelativeTermFrequencyScore(candidateURI.getScore());
 
                 // PageRank Score
-                Float d = 0f;
-                Integer pID = IndexMapping.indexMappings.get(candidateURI.getUri());
+                double d = 0.0;
+                try {
+                    Integer pID = IndexMapping.indexMappings.get(candidateURI.getUri());
 
-                if (pID != null) {
-                    Float d1 = pageRankMap.get(pID);
-                    if (d1 != null) {
-                        d = d1;
+                    if (pID != null) {
+                        Double d1 = pageRankMap.get(pID);
+                        if (d1 != null) {
+                            d = d1;
+                        }
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
                 if (sumPR != 0) {
                     modifiedAnntation.setPageRankScore(d / sumPR);
+                    if (d == 0.0) {
+                        System.out.println("Sum Not Zero " + modifiedAnntation);
+                    }
+                } else {
+                    System.out.println("Sum Zero " + modifiedAnntation);
                 }
 
                 generatedStates.add(generatedState);
@@ -115,41 +136,111 @@ public class AllScoresExplorer implements Explorer<State> {
 
         System.out.print("Loading pagerank scores to memory ... ");
 
-        try (Stream<String> stream = Files.lines(Paths.get(path))) {
-            stream.parallel().forEach(item -> {
+        if (pageRankMap == null) {
+            
+            pageRankMap = new ConcurrentHashMap<>(19500000);
+            try {
+                FileInputStream fstream = new FileInputStream(path);
+                BufferedReader indexMappingReader = new BufferedReader(new InputStreamReader(fstream, "UTF-8"));
 
-                String line = item.toString();
+                //BufferedReader indexMappingReader = new BufferedReader(new FileReader(new File(keyFiles)));
+                String line = "";
+                while ((line = indexMappingReader.readLine()) != null) {
+                    String[] data = line.split("\t");
+                    String uri = data[1];
 
-                String[] data = line.split("\t");
-                String uri = data[1];
+                    Double v = Double.parseDouble(data[2]);
 
-                Float v = Float.parseFloat(data[2]);
+                    if (!(uri.contains("Category:") || uri.contains("(disambiguation)") || uri.contains("File:"))) {
 
-                if (!(uri.contains("Category:") || uri.contains("(disambiguation)") || uri.contains("File:"))) {
+                        uri = StringEscapeUtils.unescapeJava(uri);
 
-                    uri = StringEscapeUtils.unescapeJava(uri);
+                        try {
+                            uri = URLDecoder.decode(uri, "UTF-8");
+                        } catch (Exception e) {
+                        }
 
-                    try {
-                        uri = URLDecoder.decode(uri, "UTF-8");
-                    } catch (Exception e) {
+                        Integer key = IndexMapping.indexMappings.get(uri);
+                        if (key != null) {
+                            pageRankMap.put(key, v);
+                        }
+//                    else {
+//                        System.out.println(line);
+//                    }
                     }
-
-                    Integer key = IndexMapping.indexMappings.get(uri);
-                    if (key != null) {
-                        pageRankMap.put(key, v);
-                    }
-
                 }
+                indexMappingReader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-            });
-
-        } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("  DONE");
         }
 
-        System.out.println("  DONE");
-        
+//        try (Stream<String> stream = Files.lines(Paths.get(path))) {
+//            stream.parallel().forEach(item -> {
+//
+//                String line = item.toString();
+//
+//                String[] data = line.split("\t");
+//                String uri = data[1];
+//
+//                Double v = Double.parseDouble(data[2]);
+//
+//                if (!(uri.contains("Category:") || uri.contains("(disambiguation)") || uri.contains("File:"))) {
+//
+//                    uri = StringEscapeUtils.unescapeJava(uri);
+//
+//                    try {
+//                        uri = URLDecoder.decode(uri, "UTF-8");
+//                    } catch (Exception e) {
+//                    }
+//
+//                    Integer key = IndexMapping.indexMappings.get(uri);
+//                    if (key != null) {
+//                        pageRankMap.put(key, v);
+//                    }
+//                    else{
+//                        System.err.println(uri + " "+key);
+//                    }
+//
+//                }
+//
+//            });
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         isInitialized = true;
     }
+
+    private void savePageRankMap() {
+        try {
+
+            FileOutputStream fout = new FileOutputStream("serializedPageRankMap.bin");
+            ObjectOutputStream oos = new ObjectOutputStream(fout);
+            oos.writeObject(pageRankMap);
+            oos.close();
+            System.out.println("Saved page rank map");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void readPageRankMap() {
+        try {
+
+            FileInputStream fin = new FileInputStream("serializedPageRankMap.bin");
+            ObjectInputStream ois = new ObjectInputStream(fin);
+            pageRankMap = (Map) ois.readObject();
+            ois.close();
+
+        } catch (Exception ex) {
+            System.err.println("File not found serializedPageRankMap.bin");
+        }
+    }
+    
+    
 
 }

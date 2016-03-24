@@ -31,6 +31,14 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
+                <Logger name="de.citec.sc.SVMTrain" level="DEBUG" additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
+                <Logger name="de.citec.sc.SVMTest" level="DEBUG" additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
 		<Logger name="test" level="DEBUG" additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
@@ -61,7 +69,7 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="sampling.DefaultSampler" level="WARN" additivity="false">
+		<Logger name="sampling.DefaultSampler" level="DEBUG" additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>

@@ -5,8 +5,10 @@
  */
 package de.citec.sc.createIndex;
 
-import de.citec.sc.BIREMain;
-import de.citec.sc.BIRETestModelsMain;
+import de.citec.sc.BIRETrain;
+import de.citec.sc.BIRETest;
+import de.citec.sc.SVMTest;
+import de.citec.sc.SVMTrain;
 import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
@@ -16,13 +18,17 @@ import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
+import de.citec.sc.weka.WekaRegression;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import test.TestWeka;
 
 /**
  *
@@ -36,16 +42,25 @@ public class Main {
     private static final String PARAM_RUN = "-r";
 
     public static void main(String[] args) throws UnsupportedEncodingException, IOException {
-        
-        
-        
+
 //        args = new String[8];
+//////        args[0] = "-s";
+//////        args[1] = "0";
+//////        args[2] = "-r";
+//////        args[3] = "train";
+//////        args[4] = "-n";
+//////        args[5] = "1";
+//////        args[6] = "-d";
+//////        args[7] = "CoNLLTraining";
+////
 //        args[0] = "-s";
 //        args[1] = "0";
 //        args[2] = "-r";
-//        args[3] = "train";
+//        args[3] = "wekaTrain";
+//
 //        args[4] = "-n";
 //        args[5] = "1";
+//        
 //        args[6] = "-d";
 //        args[7] = "CoNLLTraining";
         
@@ -55,7 +70,7 @@ public class Main {
 //        RetrievalPerformancePageRank.run();
         if (PARAMETERS.get(PARAM_RUN).equals("test")) {
             try {
-                BIRETestModelsMain.main(args);
+                BIRETest.main(args);
             } catch (Exception e) {
 
             }
@@ -63,7 +78,22 @@ public class Main {
 
         if (PARAMETERS.get(PARAM_RUN).equals("train")) {
             try {
-                BIREMain.main(args);
+                BIRETrain.main(args);
+            } catch (Exception e) {
+
+            }
+        }
+        
+        if (PARAMETERS.get(PARAM_RUN).equals("wekaTrain")) {
+            try {
+                SVMTrain.main(args);
+            } catch (Exception e) {
+
+            }
+        }
+        if (PARAMETERS.get(PARAM_RUN).equals("wekaTest")) {
+            try {
+                SVMTest.main(args);
             } catch (Exception e) {
 
             }

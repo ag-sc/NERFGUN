@@ -61,14 +61,18 @@ import sampling.stoppingcriterion.StoppingCriterion;
 import templates.AbstractTemplate;
 import variables.AbstractState;
 
-public class BIREMain {
+public class BIRETrain {
 
     private static final String PARAM_SETTING_IDENTIFIER = "-s";
 
     private static final String PARAM_SETTING_DOCUMENTSIZE = "-n";
     private static final String PARAM_SETTING_DATASET = "-d";
+    private static final String PARAM_SETTING_LEARNING_STRATEGY = "-l";
+    private static final String PARAM_SETTING_EPOCHS = "-e";
+    public static final String PARAM_SETTING_BINS = "-b";
+    
 
-    private static final Map<String, String> PARAMETERS = new HashMap<>();
+    public static final Map<String, String> PARAMETERS = new HashMap<>();
 
     private static final String PARAMETER_PREFIX = "-";
 
@@ -148,6 +152,9 @@ public class BIREMain {
         }
 
         int numberOfEpochs = 1;
+        if(PARAMETERS.containsKey(PARAM_SETTING_EPOCHS)){
+            numberOfEpochs = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_EPOCHS));
+        }
 
         /*
          * Some code for n-fold cross validation
