@@ -42,6 +42,8 @@ import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import exceptions.MissingFactorException;
+import factors.Factor;
+import java.util.Set;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
@@ -59,16 +61,22 @@ import sampling.stoppingcriterion.StoppingCriterion;
 import templates.AbstractTemplate;
 import variables.AbstractState;
 
-public class BIREMain {
+public class BIRETrain {
 
 	private static final String PARAM_SETTING_IDENTIFIER = "-s";
 
 	private static final String PARAM_SETTING_DOCUMENTSIZE = "-n";
 	private static final String PARAM_SETTING_DATASET = "-d";
+	private static final String PARAM_SETTING_LEARNING_STRATEGY = "-l";
+	private static final String PARAM_SETTING_EPOCHS = "-e";
+	public static final String PARAM_SETTING_BINS = "-b";
 
-	private static final Map<String, String> PARAMETERS = new HashMap<>();
+	private static final int MAX_CANDIDATES = 100;
+	public static final Map<String, String> PARAMETERS = new HashMap<>();
 
 	private static final String PARAMETER_PREFIX = "-";
+
+	private static Logger log = LogManager.getFormatterLogger();
 
 	private static String indexFile = "tfidf.bin";
 	private static String dfFile = "en_wiki_large_abstracts.docfrequency";
@@ -77,9 +85,8 @@ public class BIREMain {
 	private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 	private static CandidateRetriever index;
 	private static Setting setting;
-	private static final int MAX_CANDIDATES = 100;
+
 	private static Explorer<State> explorer;
-	private static Logger log = LogManager.getFormatterLogger();
 
 	/**
 	 * Read the parameters from the command line.
@@ -98,10 +105,17 @@ public class BIREMain {
 
 	public static void main(String[] args) throws IOException {
 
-		args = new String[] { "-s", "2" };
+		/*
+		 * TODO: Just for testing !!!! Remove before Jar export.
+		 */
+		// args = new String[]{"-s", "7"};
 
 		initializeBIRE(args);
 
+		/*
+		 * Define templates that are responsible to generate factors/features to
+		 * score intermediate, generated states.
+		 */
 		List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
 
 		addTemplatesFromSetting(templates);
@@ -133,9 +147,10 @@ public class BIREMain {
 		}
 
 		int numberOfEpochs = 1;
+		if (PARAMETERS.containsKey(PARAM_SETTING_EPOCHS)) {
+			numberOfEpochs = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_EPOCHS));
+		}
 
-		Map<String, Double> avrgTrain = new LinkedHashMap<>();
-		Map<String, Double> avrgTest = new LinkedHashMap<>();
 		Collections.shuffle(documents, new Random(100l));
 
 		List<Document> train = documents;
@@ -143,6 +158,9 @@ public class BIREMain {
 		log.info("Train data:");
 		train.forEach(s -> log.info("%s", s));
 
+		/*
+		 * Define an objective function that guides the training procedure.
+		 */
 		ObjectiveFunction<State, List<Annotation>> objective = new DisambiguationObjectiveFunction();
 
 		/*
@@ -208,35 +226,7 @@ public class BIREMain {
 				explorers, objectiveOneCriterion);
 		sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
 		sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
-		sampler.addStepCallback(new StepCallback() {
 
-			public <InstanceT extends Instance, StateT extends AbstractState<InstanceT>> void onEndStep(
-					DefaultSampler<InstanceT, StateT, ?> defaultSampler, int step, int e, int size, StateT initialState,
-					StateT currentState) {
-				StringBuilder builder = new StringBuilder();
-				try {
-					Vector features = FeatureUtils.mergeFeatures(currentState.getFactorGraph().getFactors());
-					builder.append(currentState.getObjectiveScore());
-					builder.append("\t");
-					for (Entry<String, Double> feature : features.getFeatures().entrySet()) {
-						builder.append(feature.getKey());
-						builder.append("\t");
-						builder.append(feature.getValue());
-						builder.append("\t");
-					}
-					featuresFileWriter.write(builder.toString());
-					featuresFileWriter.newLine();
-				} catch (IOException ex) {
-					ex.printStackTrace();
-				} catch (MissingFactorException ex) {
-					ex.printStackTrace();
-				}
-			}
-		});
-		/*
-		 * Define a learning strategy. The learner will receive state pairs
-		 * which can be used to update the models parameters.
-		 */
 		DefaultLearner<State> learner = new DefaultLearner<>(model, 0.1);
 
 		log.info("####################");
@@ -331,6 +321,7 @@ public class BIREMain {
 	private static void initializeTempaltesFromSetting(Setting setting) {
 
 		try {
+
 			for (Class<? extends AbstractTemplate> template : setting.getSetting()) {
 				// if (template.equals(IndexRankTemplate.class)) {
 				//

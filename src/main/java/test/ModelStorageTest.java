@@ -101,7 +101,7 @@ public class ModelStorageTest {
 		DefaultCorpus testaCorpus = loader.loadCorpus(CorpusName.CoNLLTesta);
 		List<Document> documents = trainingCorpus.getDocuments();
 
-		AllScoresExplorer exp1 = new AllScoresExplorer(index);
+		AllScoresExplorer exp1 = new AllScoresExplorer(index, MAX_CANDIDATES);
 
 		List<Document> train = trainingCorpus.getDocuments();
 		List<Document> test = testaCorpus.getDocuments();
@@ -328,7 +328,7 @@ public class ModelStorageTest {
 		DefaultCorpus testaCorpus = loader.loadCorpus(CorpusName.CoNLLTesta);
 		List<Document> documents = trainingCorpus.getDocuments();
 
-		AllScoresExplorer exp1 = new AllScoresExplorer(index);
+		AllScoresExplorer exp1 = new AllScoresExplorer(index, MAX_CANDIDATES);
 
 		List<Document> train = trainingCorpus.getDocuments();
 		List<Document> test = testaCorpus.getDocuments();

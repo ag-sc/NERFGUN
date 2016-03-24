@@ -10,7 +10,10 @@ import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.Instance;
+import static de.citec.sc.sampling.AllScoresExplorer.pageRankMap;
+import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.variables.State;
+import java.util.ArrayList;
 import sampling.Initializer;
 
 public class DisambiguationInitializer implements Initializer<Document, State> {
@@ -55,8 +58,38 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 		for (Annotation annotation : document.getGoldResult()) {
 			log.debug("Assign initial ID for Annotation:\n%s", annotation);
 			List<Instance> candidateURIs = index.getAllResources(annotation.getWord(), topK);
+
+			double sumPR = 0.0;
+
+			List<Instance> filteredCandidates = new ArrayList<>();
+
+			for (Instance i : candidateURIs) {
+
+				double d = 0.0;
+				try {
+					Integer pID = IndexMapping.indexMappings.get(i.getUri());
+
+					if (pID != null) {
+						Double d1 = pageRankMap.get(pID);
+						if (d1 != null) {
+							d = d1;
+						}
+					} else {
+						filteredCandidates.add(i);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				sumPR += d;
+
+			}
+
+			// remove candidates with zero pagerank score
+			candidateURIs.removeAll(filteredCandidates);
+
 			if (candidateURIs.isEmpty()) {
-				log.warn("No candidates found for %s. Dropping annotation from state.", annotation);
+				log.warn("No candidates found. Dropping annotation from state.", annotation);
 			} else {
 				int candidateRank;
 				if (assignRandomURI) {
@@ -71,7 +104,15 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
 						annotation.getEndIndex());
 
 				newAnnotation.setIndexRank(candidateRank);
+
+				Integer pID = IndexMapping.indexMappings.get(initialLink);
+
+				Double d1 = AllScoresExplorer.pageRankMap.get(pID);
+
+				newAnnotation.setPageRankScore(d1 / sumPR);
+
 				newAnnotation.setRelativeTermFrequencyScore(candidate.getScore());
+
 				state.addEntity(newAnnotation);
 			}
 			// initialLink = initialLink.replace("http://dbpedia.org/resource/",

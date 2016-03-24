@@ -22,7 +22,7 @@ public class Annotation extends AbstractVariable {
 	private int startIndex, endIndex;
 	private int indexRank = -1;
 	private double relativeTermFrequencyScore;
-	private float pageRankScore = 0;
+	private double pageRankScore = 0.0;
 	private double stringSimilarity;
 
 	public Annotation(String word, String link, int startIndex, int endIndex) {
@@ -139,7 +139,7 @@ public class Annotation extends AbstractVariable {
 		return pageRankScore;
 	}
 
-	public void setPageRankScore(float pageRankScore) {
+	public void setPageRankScore(double pageRankScore) {
 		this.pageRankScore = pageRankScore;
 	}
 
