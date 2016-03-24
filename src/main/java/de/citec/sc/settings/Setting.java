@@ -10,28 +10,29 @@ import templates.AbstractTemplate;
 
 public class Setting {
 
-	final Set<Class<? extends AbstractTemplate>> orderedOption;
+    final Set<Class<? extends AbstractTemplate>> orderedOption;
 
-	public Setting(Class<? extends AbstractTemplate>... orderedOption) {
-		this.orderedOption = new LinkedHashSet<>(Arrays.asList(orderedOption));
+    public Setting(Class<? extends AbstractTemplate>... orderedOption) {
+        this.orderedOption = new LinkedHashSet<>(Arrays.asList(orderedOption));
 
-	}
+    }
 
-	public Setting(List<Class<? extends AbstractTemplate>> templates) {
-		this.orderedOption = new LinkedHashSet<>(templates);
-	}
+    public Setting(List<Class<? extends AbstractTemplate>> templates) {
+        this.orderedOption = new LinkedHashSet<>(templates);
+    }
 
-	@Override
-	public String toString() {
-		return "Option [orderedOption=" + orderedOption + "]";
-	}
+    @Override
+    public String toString() {
+        return "Option [orderedOption="
+                + orderedOption.stream().map(t -> t.getSimpleName()+" ").reduce("", String::concat) + "]";
+    }
 
-	public void addTemplate(Class<? extends AbstractTemplate> template) {
-		this.orderedOption.add(template);
-	}
+    public void addTemplate(Class<? extends AbstractTemplate> template) {
+        this.orderedOption.add(template);
+    }
 
-	public ArrayList<Class<? extends AbstractTemplate>> getSetting() {
-		return new ArrayList<>(this.orderedOption);
-	}
+    public ArrayList<Class<? extends AbstractTemplate>> getSetting() {
+        return new ArrayList<>(this.orderedOption);
+    }
 
 }

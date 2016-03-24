@@ -24,11 +24,10 @@ import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.CorpusLoader.CorpusName;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
-import de.citec.sc.learning.ChangeSamplingStrategy;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.learning.FeatureUtils;
 import de.citec.sc.query.CandidateRetriever;
-import de.citec.sc.query.CandidateRetrieverOnLucene;
+import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.settings.BIRESettings;
@@ -49,7 +48,7 @@ import learning.ObjectiveFunction;
 import learning.Trainer;
 import learning.Vector;
 import learning.callbacks.StepCallback;
-import learning.scorer.DefaultScorer;
+import learning.scorer.LinearScorer;
 import learning.scorer.Scorer;
 import sampling.DefaultSampler;
 import sampling.Explorer;
@@ -64,11 +63,12 @@ public class BIREMain {
 
 	private static final String PARAM_SETTING_IDENTIFIER = "-s";
 
+	private static final String PARAM_SETTING_DOCUMENTSIZE = "-n";
+	private static final String PARAM_SETTING_DATASET = "-d";
+
 	private static final Map<String, String> PARAMETERS = new HashMap<>();
 
 	private static final String PARAMETER_PREFIX = "-";
-
-	private static Logger log = LogManager.getFormatterLogger();
 
 	private static String indexFile = "tfidf.bin";
 	private static String dfFile = "en_wiki_large_abstracts.docfrequency";
@@ -79,10 +79,11 @@ public class BIREMain {
 	private static Setting setting;
 	private static final int MAX_CANDIDATES = 100;
 	private static Explorer<State> explorer;
+	private static Logger log = LogManager.getFormatterLogger();
 
 	/**
 	 * Read the parameters from the command line.
-	 * 
+	 *
 	 * @param args
 	 */
 	private static void readParamsFromCommandLine(String[] args) {
@@ -97,101 +98,63 @@ public class BIREMain {
 
 	public static void main(String[] args) throws IOException {
 
-		/*
-		 * TODO: Just for testing !!!! Remove before Jar export.
-		 */
 		args = new String[] { "-s", "2" };
 
-		// LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-		// Configuration config = ctx.getConfiguration();
-		// LoggerConfig loggerConfig =
-		// config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-		// loggerConfig.setLevel(Level.INFO);
-		// ctx.updateLoggers();
-
 		initializeBIRE(args);
-		File modelsDir = new File("src/main/resources/models");
 
-		if (!modelsDir.exists())
+		List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
+
+		addTemplatesFromSetting(templates);
+
+		File modelsDir = new File("src/main/resources/models");
+		File featuresFile = new File("src/main/resources/features_" + generateNameFromTemplates(templates) + ".csv");
+		BufferedWriter featuresFileWriter = new BufferedWriter(new FileWriter(featuresFile));
+
+		if (!modelsDir.exists()) {
 			modelsDir.mkdirs();
+		}
 
 		/*
 		 * Load training and test data.
 		 */
 		log.info("Load Corpus...");
+
+		String dataset = PARAMETERS.get(PARAM_SETTING_DATASET);
+
 		CorpusLoader loader = new CorpusLoader();
-		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLLTraining);
+
+		DefaultCorpus corpus = loader.loadCorpus(CorpusName.valueOf(dataset));
 		List<Document> documents = corpus.getDocuments();
 
-		// documents = documents.subList(0, 1);
-
-		documents = documents.stream().filter(d -> d.getGoldStandard().size() == 3).collect(Collectors.toList());
+		documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
+		int dSize = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_DOCUMENTSIZE));
+		if (dSize < documents.size()) {
+			documents = documents.subList(0, dSize);
+		}
 
 		int numberOfEpochs = 1;
 
-		/*
-		 * Some code for n-fold cross validation
-		 */
 		Map<String, Double> avrgTrain = new LinkedHashMap<>();
 		Map<String, Double> avrgTest = new LinkedHashMap<>();
-		// Collections.shuffle(documents);
 		Collections.shuffle(documents, new Random(100l));
 
-		// int N = documents.size();
-		// int n = 2;
-		// double step = ((float) N) / n;
-		// double k = 0;
-
-		// for (int i = 0; i < n; i++) {
-		// System.out.println("Train");
-		// log.info("Cross-Validation Fold %s/%s", i + 1, n);
-		// double j = k;
-		// k = j + step;
-
-		// List<Document> test = documents;(IOException e1) {
-		// e1.printStackTrace();
-		// System.exit(1);
-		// }
 		List<Document> train = documents;
-		// List<Document> test = documents.subList((int) Math.floor(j), (int)
-		// Math.floor(k));
-		// List<Document> train = new ArrayList<>(documents);
-		// train.removeAll(test);
 
 		log.info("Train data:");
 		train.forEach(s -> log.info("%s", s));
 
-		// log.info("Test data:");
-		// test.forEach(s -> log.info("%s", s));
-		/*
-		 * In the following, we setup all necessary components for training and
-		 * testing.
-		 */
-		/*
-		 * Define an objective function that guides the training procedure.
-		 */
 		ObjectiveFunction<State, List<Annotation>> objective = new DisambiguationObjectiveFunction();
-
-		/*
-		 * Define templates that are responsible to generate factors/features to
-		 * score intermediate, generated states.
-		 */
-		List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
-
-		addTemplatesFromSetting(templates);
 
 		/*
 		 * Define a model and provide it with the necessary templates.
 		 */
 		Model<Document, State> model = new Model<>(templates);
 		model.setMultiThreaded(true);
-		model.setForceFactorComputation(false);
 		/*
 		 * Create the scorer object that computes a score from the features of a
 		 * factor and the weight vectors of the templates.
 		 */
-		Scorer scorer = new DefaultScorer();
-		// Scorer scorer = new LinearScorer();
+		Scorer scorer = new LinearScorer();
 
 		/*
 		 * Create an Initializer that is responsible for providing an initial
@@ -206,10 +169,6 @@ public class BIREMain {
 		 */
 		List<Explorer<State>> explorers = new ArrayList<>();
 		explorers.add(explorer);
-		/*
-		 * Create a sampler that generates sampling chains with which it will
-		 * trigger weight updates during training.
-		 */
 
 		/*
 		 * If you set this value too small, the sampler can not reach the
@@ -224,12 +183,14 @@ public class BIREMain {
 
 			@Override
 			public boolean checkCondition(List<State> chain, int step) {
-				if (chain.isEmpty())
+				if (chain.isEmpty()) {
 					return false;
+				}
 
 				double maxScore = chain.get(chain.size() - 1).getObjectiveScore();
-				if (maxScore >= 1)
+				if (maxScore >= 1) {
 					return true;
+				}
 				int count = 0;
 				final int maxCount = 5;
 
@@ -243,12 +204,35 @@ public class BIREMain {
 			}
 		};
 
-		// StoppingCriterion<State> stoppingCriterion = new
-		// StepLimitCriterion<>(numberOfSamplingSteps);
 		DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
 				explorers, objectiveOneCriterion);
 		sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
 		sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
+		sampler.addStepCallback(new StepCallback() {
+
+			public <InstanceT extends Instance, StateT extends AbstractState<InstanceT>> void onEndStep(
+					DefaultSampler<InstanceT, StateT, ?> defaultSampler, int step, int e, int size, StateT initialState,
+					StateT currentState) {
+				StringBuilder builder = new StringBuilder();
+				try {
+					Vector features = FeatureUtils.mergeFeatures(currentState.getFactorGraph().getFactors());
+					builder.append(currentState.getObjectiveScore());
+					builder.append("\t");
+					for (Entry<String, Double> feature : features.getFeatures().entrySet()) {
+						builder.append(feature.getKey());
+						builder.append("\t");
+						builder.append(feature.getValue());
+						builder.append("\t");
+					}
+					featuresFileWriter.write(builder.toString());
+					featuresFileWriter.newLine();
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				} catch (MissingFactorException ex) {
+					ex.printStackTrace();
+				}
+			}
+		});
 		/*
 		 * Define a learning strategy. The learner will receive state pairs
 		 * which can be used to update the models parameters.
@@ -264,8 +248,8 @@ public class BIREMain {
 		 */
 		Trainer trainer = new Trainer();
 
-		// trainer.addInstanceCallback(new ChangeSamplingStrategy(sampler));
 		trainer.train(sampler, trainInitializer, learner, train, numberOfEpochs);
+		featuresFileWriter.close();
 		/*
 		 * Stop sampling if model score does not increase for 5 iterations.
 		 */
@@ -274,8 +258,9 @@ public class BIREMain {
 			@Override
 			public boolean checkCondition(List<State> chain, int step) {
 
-				if (chain.isEmpty())
+				if (chain.isEmpty()) {
 					return false;
+				}
 
 				double maxScore = chain.get(chain.size() - 1).getModelScore();
 				int count = 0;
@@ -292,22 +277,6 @@ public class BIREMain {
 
 		sampler.setStoppingCriterion(stopAtMaxModelScore);
 
-		// Initializer<Document, State> testInitializer = new
-		// DisambiguationInitializer(index, false);
-		// List<State> testResults = trainer.test(sampler, testInitializer,
-		// test);
-
-		// List<State> testResults = trainer.test(sampler, trainInitializer,
-		// test);
-		// for (State state : testResults) {
-		// state.getInstance().setAnnotations(new
-		// ArrayList<>(state.getEntities()));
-		// }
-
-		// Map<String, Double> testEvaluation = Evaluator.evaluateAll(test);
-		// log.info("Evaluation on test data:");
-		// testEvaluation.entrySet().forEach(e -> log.info(e));
-
 		/*
 		 * Finally, print the models weights.
 		 */
@@ -316,57 +285,6 @@ public class BIREMain {
 
 		System.out.println("Write model:");
 		model.saveModelToFile(modelsDir, generateNameFromTemplates(templates));
-		// avrgTest = Evaluator.add(avrgTest, testEvaluation);
-
-		// /*
-		// * Perform prediction on training and test data.
-		// */
-		// List<State> trainResults = trainer.test(sampler, initializer,
-		// train);
-		//
-		// /*
-		// * Give the final annotations to the Document for the Evaluator
-		// */
-		// for (State state : trainResults) {
-		// state.getInstance().setAnnotations(new
-		// ArrayList<>(state.getEntities()));
-		// }
-		// /*
-		// * Evaluate train and test predictions
-		// */
-		// Map<String, Double> trainEvaluation =
-		// Evaluator.evaluateAll(train);
-		//
-		// /*
-		// * Print evaluation
-		// */
-		// log.info("Evaluation on training data:");
-		// trainEvaluation.entrySet().forEach(e -> log.info(e));
-		//
-		// /*
-		// * Finally, print the models weights.
-		// */
-		// log.info("Model weights:");
-		// EvaluationUtil.printWeights(model, 0);
-		//
-		// avrgTrain = Evaluator.add(avrgTrain, trainEvaluation);
-		//
-		// /*
-		// * Same for testdata
-		// */
-
-		// }
-		/*
-		 * Compute avrg. scores from sum of scores
-		 */
-		// avrgTest.entrySet().forEach(e -> e.setValue(e.getValue() / n));
-		// log.info("%s-fold cross validation on TEST:", n);
-		// avrgTest.entrySet().forEach(e -> log.info(e));
-
-		// avrgTrain.entrySet().forEach(e -> e.setValue(e.getValue() / n));
-		// log.info("%s-fold cross validation on TRAIN:", n);
-		// avrgTrain.entrySet().forEach(e -> log.info(e));
-
 	}
 
 	private static String generateNameFromTemplates(Collection<?> templates) {
@@ -402,12 +320,12 @@ public class BIREMain {
 		 * Load the index API.
 		 */
 		log.info("Load Index...");
-		index = new CandidateRetrieverOnLucene(true, "mergedIndex");
-		// index = new CandidateRetrieverOnMemory();
-
+		// index = new CandidateRetrieverOnLucene(false, "mergedIndex");
+		index = new CandidateRetrieverOnMemory();
+		IndexMapping.init(tsprIndexMappingFile);
 		explorer = new AllScoresExplorer(index, MAX_CANDIDATES);
-
 		initializeTempaltesFromSetting(setting);
+
 	}
 
 	private static void initializeTempaltesFromSetting(Setting setting) {
@@ -421,7 +339,7 @@ public class BIREMain {
 				if (template.equals(TopicSpecificPageRankTemplate.class)) {
 					log.info("Init TopicSpecificPageRankTemplate ...");
 					TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
-					IndexMapping.init(tsprIndexMappingFile);
+
 				}
 				if (template.equals(DocumentSimilarityTemplate.class)) {
 					log.info("Init DocumentSimilarityTemplate ...");
@@ -444,7 +362,7 @@ public class BIREMain {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param setting
 	 * @param index
 	 * @param templates
@@ -456,7 +374,6 @@ public class BIREMain {
 			// templates.add(new IndexRankTemplate());
 			// log.info("Add tempalte: " + template.getSimpleName());
 			// }
-
 			if (template.equals(PageRankTemplate.class)) {
 				templates.add(new PageRankTemplate());
 				log.info("Add tempalte: " + template.getSimpleName());
@@ -498,7 +415,6 @@ public class BIREMain {
 // 15:41:50.191 [main] INFO - Macro-average Precision=0.5365
 // 15:41:50.191 [main] INFO - Macro-average Recall=0.5325
 // 15:41:50.191 [main] INFO - F1 Macro-average=0.5345
-
 // 15:38:00.653 [main] INFO - 2-fold cross validation on TEST:
 // 15:38:00.654 [main] INFO - Micro-average Precision=0.5700000000000001
 // 15:38:00.654 [main] INFO - Micro-average Recall=0.5645
@@ -506,7 +422,6 @@ public class BIREMain {
 // 15:38:00.654 [main] INFO - Macro-average Precision=0.5945
 // 15:38:00.654 [main] INFO - Macro-average Recall=0.589
 // 15:38:00.654 [main] INFO - F1 Macro-average=0.5914999999999999
-
 // 15:35:47.926 [main] INFO - 2-fold cross validation on TEST:
 // 15:35:47.926 [main] INFO - Micro-average Precision=0.5235000000000001
 // 15:35:47.927 [main] INFO - Micro-average Recall=0.5195000000000001
@@ -514,7 +429,6 @@ public class BIREMain {
 // 15:35:47.927 [main] INFO - Macro-average Precision=0.537
 // 15:35:47.927 [main] INFO - Macro-average Recall=0.534
 // 15:35:47.927 [main] INFO - F1 Macro-average=0.5355000000000001
-
 //
 // 10 Epochs 10 docs
 // 13:49:07.862 [main] INFO - 2-fold cross validation on TEST:

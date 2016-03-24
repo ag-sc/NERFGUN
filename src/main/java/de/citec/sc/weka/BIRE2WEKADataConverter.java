@@ -22,7 +22,7 @@ import weka.core.Instances;
  */
 public class BIRE2WEKADataConverter {
 
-	private static final String BIREDataFileName = "BIRETrainingData";
+	private static final String BIREDataFileName = "features_PR-TF-ED-TSPR-DS.csv";
 
 	public static void main(String[] args) throws IOException {
 
@@ -76,7 +76,7 @@ public class BIRE2WEKADataConverter {
 		 */
 		final int featureVectorSize = 1 + BireDataLine.ALL_FEATURE_NAMES.size();
 
-		final String instancesLabel = "BIRETrainingData";
+		final String instancesLabel = BIREDataFileName;
 
 		final Set<String> allFeatureNames = BireDataLine.ALL_FEATURE_NAMES;
 
