@@ -47,26 +47,30 @@ public class Test {
         CorpusLoader loader = new CorpusLoader(false);
         DefaultCorpus corpus = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTesta);
         List<Document> documents = corpus.getDocuments();
-        int all = 0;
-        int f = 0;
+        
+        loader = new CorpusLoader(true);
+        corpus = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTesta);
+        List<Document> documentsOriginal = corpus.getDocuments();
+        
+        int c1 =0;
+        int c2 =0;
         for (Document d1 : documents) {
-            if (d1.getGoldStandard().size() > 70) {
-                List<Annotation> filtered = new ArrayList<>();
-                for (Annotation a : d1.getGoldStandard()) {
-                    if (!filtered.contains(a)) {
-                        filtered.add(a);
+            for(Document d2 : documentsOriginal){
+                if(d2.getDocumentContent().equals(d1.getDocumentContent())){
+                    for(Annotation a1 : d1.getGoldStandard()){
+                        if(!d2.getGoldStandard().contains(a1)){
+                            c1++;
+                        }
+                        else{
+                            c2++;
+                        }
                     }
                 }
-                all += d1.getGoldStandard().size();
-                f += filtered.size();
-
-                System.out.println((documents.indexOf(d1)) + " all : " + d1.getGoldStandard().size() + " unique: " + filtered.size());
             }
-
         }
 
-        System.out.println("UNIQUE: " + f);
-        System.out.println("ALL: " + all);
+        System.out.println("False: " + c1);
+        System.out.println("True: " + c2);
 
 //        String path = "dbpediaFiles/pageranks.ttl";
 //

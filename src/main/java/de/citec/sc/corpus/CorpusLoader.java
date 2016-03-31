@@ -21,6 +21,8 @@ import org.apache.commons.lang3.StringEscapeUtils;
  * @author sherzod
  */
 public class CorpusLoader {
+    
+    private boolean useOriginal = false;
 
 	private String datasetsPath = "";
 
@@ -28,8 +30,8 @@ public class CorpusLoader {
 //		datasetsPath += "src/main/resources/";
 //	}
 
-	public CorpusLoader(boolean isRun) {
-
+	public CorpusLoader(boolean useOriginal) {
+            this.useOriginal = useOriginal;
 	}
 
 	public enum CorpusName {
@@ -83,7 +85,11 @@ public class CorpusLoader {
 	}
 
 	private List<Document> getCONLLDocs(String dataset) {
+                
 		String file = datasetsPath + "dataset/conll/dataset.tsv";
+                if(useOriginal){
+                    file = datasetsPath + "dataset/conll/datasetOriginal.tsv";
+                }
 
 		List<String> list = readFileAsList(new File(file));
 

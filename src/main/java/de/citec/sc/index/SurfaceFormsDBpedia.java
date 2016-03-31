@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.queryparser.classic.ParseException;
-import test.TestSearch;
 
 public class SurfaceFormsDBpedia {
 

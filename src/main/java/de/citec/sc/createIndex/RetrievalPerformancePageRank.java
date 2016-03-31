@@ -38,7 +38,6 @@ import de.citec.sc.evaluator.Evaluator;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.query.Instance;
-import test.TestSearch;
 
 /**
  *
@@ -342,7 +341,7 @@ public class RetrievalPerformancePageRank {
 						// counter.incrementAndGet();
 						uri = URLDecoder.decode(uri, "UTF-8");
 					} catch (UnsupportedEncodingException ex) {
-						Logger.getLogger(TestSearch.class.getName()).log(Level.SEVERE, null, ex);
+						
 					}
 					pageRankMap.put(uri, v);
 
