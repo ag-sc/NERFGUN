@@ -144,7 +144,7 @@ public class SVMTrain {
 
         String dataset = PARAMETERS.get(PARAM_SETTING_DATASET);
 
-        CorpusLoader loader = new CorpusLoader();
+        CorpusLoader loader = new CorpusLoader(false);
 
         DefaultCorpus corpus = loader.loadCorpus(CorpusName.valueOf(dataset));
         List<Document> documents = corpus.getDocuments();
@@ -201,16 +201,19 @@ public class SVMTrain {
 
         // templates.add(new PageRankTemplate());
 
-        /*
-         * Define a model and provide it with the necessary templates.
-         */
-        Model<Document, State> model = new Model<>(templates);
-        model.setMultiThreaded(true);
+        
         /*
          * Create the scorer object that computes a score from the features of a
          * factor and the weight vectors of the templates.
          */
         Scorer scorer = new LinearScorer();
+        
+        /*
+         * Define a model and provide it with the necessary templates.
+         */
+        Model<Document, State> model = new Model<>(scorer, templates);
+        model.setMultiThreaded(true);
+        
 
         /*
          * Create an Initializer that is responsible for providing an initial
@@ -268,7 +271,7 @@ public class SVMTrain {
 
         // StoppingCriterion<State> stoppingCriterion = new
         // StepLimitCriterion<>(numberOfSamplingSteps);
-        DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
+        DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, objective,
                 explorers, objectiveOneCriterion);
         sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
         sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());

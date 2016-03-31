@@ -27,7 +27,7 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="de.citec.sc.BIRETestModelsMain" level="DEBUG" additivity="false">
+		<Logger name="de.citec.sc.BIRETest" level="DEBUG" additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
@@ -73,7 +73,7 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
-		<Logger name="sampling.DefaultSampler" level="DEBUG" additivity="false">
+		<Logger name="sampling.DefaultSampler" level="WARN" additivity="false">
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>

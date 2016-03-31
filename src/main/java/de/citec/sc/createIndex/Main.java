@@ -28,11 +28,11 @@ public class Main {
 
     public static void main(String[] args) throws UnsupportedEncodingException, IOException {
 
-//        args = new String[8];
-//////        args[0] = "-s";
-//////        args[1] = "0";
-//////        args[2] = "-r";
-//////        args[3] = "train";
+//        args = new String[4];
+//        args[0] = "mdeol";
+//        args[1] = "CoNLLTesta";
+//        args[2] = "-r";
+//        args[3] = "test";
 //////        args[4] = "-n";
 //////        args[5] = "1";
 //////        args[6] = "-d";
@@ -57,7 +57,7 @@ public class Main {
             try {
                 BIRETest.main(args);
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
 
@@ -65,7 +65,7 @@ public class Main {
             try {
                 BIRETrain.main(args);
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
         
@@ -73,14 +73,14 @@ public class Main {
             try {
                 SVMTrain.main(args);
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
         if (PARAMETERS.get(PARAM_RUN).equals("wekaTest")) {
             try {
                 SVMTest.main(args);
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
 

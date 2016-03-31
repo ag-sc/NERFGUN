@@ -60,7 +60,7 @@ public class DocumentSimilarityTest {
 
 		CandidateRetriever indexSearch = new CandidateRetrieverOnLucene(false, "mergedIndex");
 
-		CorpusLoader loader = new CorpusLoader();
+		CorpusLoader loader = new CorpusLoader(false);
 		DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTraining);
 
 		// read file into stream, try-with-resources

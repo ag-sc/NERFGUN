@@ -24,9 +24,9 @@ public class CorpusLoader {
 
 	private String datasetsPath = "";
 
-	public CorpusLoader() {
-		datasetsPath += "src/main/resources/";
-	}
+//	public CorpusLoader() {
+//		datasetsPath += "src/main/resources/";
+//	}
 
 	public CorpusLoader(boolean isRun) {
 

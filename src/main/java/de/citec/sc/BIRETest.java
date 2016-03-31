@@ -1,13 +1,5 @@
 package de.citec.sc;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.CorpusLoader.CorpusName;
@@ -26,13 +18,20 @@ import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import exceptions.UnkownTemplateRequestedException;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
 import learning.scorer.LinearScorer;
 import learning.scorer.Scorer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import sampling.DefaultSampler;
 import sampling.Explorer;
 import sampling.Initializer;
@@ -86,7 +85,7 @@ public class BIRETest {
         }
         log.info("Test model in dir %s on dataset %s.", modelDirPath, corpusName);
         List<Document> documents = corpus.getDocuments();
-        documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
+        //documents = documents.stream().filter(d -> d.getGoldStandard().size() > 70).collect(Collectors.toList());
 
         testModel(modelDirPath, documents);
     }
@@ -96,11 +95,63 @@ public class BIRETest {
 
         File modelDir = new File(modelDirPath);
 
-        List<Document> test = documents;
+        List<Document> testUnfiltered = documents;
 
-        log.info("Test data:");
-        test.forEach(s -> log.info("%s", s));
+        Map<Document, Document> mapOfDocs = new LinkedHashMap<Document, Document>();
 
+        List<Document> test = new ArrayList<>();
+        
+        int capacity = 70;
+
+        /**
+         * divides the documents which have higher number of gold standard annotations than 70 into bins with 50 annotatiosn
+         */
+        for (int i1 = 0; i1 < testUnfiltered.size(); i1++) {
+
+            if (testUnfiltered.get(i1).getGoldStandard().size() > capacity) {
+
+                List<Annotation> resizedGoldStandard = new ArrayList<>();
+
+                for (int j = 0; j < testUnfiltered.get(i1).getGoldStandard().size(); j++) {
+
+                    if (resizedGoldStandard.size() == 50) {
+                        Document d1 = new Document(testUnfiltered.get(i1).getDocumentContent(), testUnfiltered.get(i1).getDocumentName());
+                        d1.setGoldStandard(resizedGoldStandard);
+                        resizedGoldStandard = new ArrayList<>();
+
+                        test.add(d1);
+
+                        mapOfDocs.put(d1, testUnfiltered.get(i1));
+                        resizedGoldStandard.add(testUnfiltered.get(i1).getGoldStandard().get(j));
+
+                    } else {
+                        resizedGoldStandard.add(testUnfiltered.get(i1).getGoldStandard().get(j));
+                    }
+                }
+
+                //add the remaining
+                if (resizedGoldStandard.size() <= 20) {
+                    test.get(test.size() - 1).getGoldStandard().addAll(resizedGoldStandard);
+                } else {
+                    //create a new document
+                    Document d1 = new Document(testUnfiltered.get(i1).getDocumentContent(), testUnfiltered.get(i1).getDocumentName());
+                    d1.setGoldStandard(resizedGoldStandard);
+                    resizedGoldStandard = new ArrayList<>();
+
+                    test.add(d1);
+
+                    mapOfDocs.put(d1, testUnfiltered.get(i1));
+                }
+            } else {
+                Document d1 = new Document(testUnfiltered.get(i1).getDocumentContent(), testUnfiltered.get(i1).getDocumentName());
+                d1.setGoldStandard(testUnfiltered.get(i1).getGoldStandard());
+
+                test.add(d1);
+                mapOfDocs.put(d1, testUnfiltered.get(i1));
+            }
+        }
+
+        log.info("Document size : " + test.size());
         log.info("Load Index...");
         CandidateRetriever index = new CandidateRetrieverOnMemory();
         // CandidateRetriever index = new CandidateRetrieverOnLucene(false,
@@ -113,31 +164,32 @@ public class BIRETest {
         IndexMapping.init(tsprIndexMappingFile);
         log.info("Init DocumentSimilarityTemplate ...");
         DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
-        
+
         boolean useBins = true;
-        if(PARAMETERS.containsKey(PARAM_SETTING_BINS)){
-            if(PARAMETERS.get(PARAM_SETTING_BINS).equals("false")){
+        if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+            if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
                 useBins = false;
             }
         }
 
         NEDTemplateFactory factory = new NEDTemplateFactory(useBins);
 
+        Scorer scorer = new LinearScorer();
+
         /*
          * Define a model and provide it with the necessary templates.
          */
-        Model<Document, State> model = new Model<>();
-        model.setForceFactorComputation(true);
+        Model<Document, State> model = new Model<>(scorer);
+        model.setForceFactorComputation(false);
+        //model.setSequentialScoring(true);
         model.setMultiThreaded(true);
         model.loadModelFromDir(modelDir, factory);
 
         // Scorer scorer = new LinearScorer();
-        Scorer scorer = new LinearScorer();
         // }
         // if (PARAMETERS.get(PARAM_SCORER).equals("linear")) {
         // scorer = new LinearScorer();
         // }
-
         Initializer<Document, State> testInitializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
 
         List<Explorer<State>> explorers = new ArrayList<>();
@@ -165,7 +217,7 @@ public class BIRETest {
                 return count >= maxCount || step >= numberOfSamplingSteps;
             }
         };
-        DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
+        DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, objective,
                 explorers, stopAtMaxModelScore);
 
         sampler.setSamplingStrategy(SamplingStrategies.greedyModelStrategy());
@@ -179,10 +231,19 @@ public class BIRETest {
         List<State> testResults = trainer.test(sampler, testInitializer, test);
 
         for (State state : testResults) {
-            state.getInstance().setAnnotations(new ArrayList<>(state.getEntities()));
+            Document original = mapOfDocs.get(state.getInstance());
+
+            List<Annotation> a = original.getAnnotations();
+            a.addAll(new ArrayList<>(state.getEntities()));
+            original.setAnnotations(a);
+
+//            List<Annotation> g = original.getGoldStandard();
+//            g.addAll(state.getInstance().getGoldStandard());
+//            original.setGoldStandard(g);
+            //state.getInstance().setAnnotations(new ArrayList<>(state.getEntities()));
         }
 
-        Map<String, Double> testEvaluation = Evaluator.evaluateAll(test);
+        Map<String, Double> testEvaluation = Evaluator.evaluateAll(testUnfiltered);
         log.info("Evaluation on test data:");
         testEvaluation.entrySet().forEach(e -> log.info(e));
 

@@ -135,12 +135,13 @@ public class BIRETrain {
 
         String dataset = PARAMETERS.get(PARAM_SETTING_DATASET);
 
-        CorpusLoader loader = new CorpusLoader();
+        CorpusLoader loader = new CorpusLoader(false);
 
         DefaultCorpus corpus = loader.loadCorpus(CorpusName.valueOf(dataset));
         List<Document> documents = corpus.getDocuments();
 
-        documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
+        //documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
+        
         int dSize = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_DOCUMENTSIZE));
         if (dSize < documents.size()) {
             documents = documents.subList(0, dSize);
@@ -150,10 +151,61 @@ public class BIRETrain {
         if (PARAMETERS.containsKey(PARAM_SETTING_EPOCHS)) {
             numberOfEpochs = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_EPOCHS));
         }
-
-        Collections.shuffle(documents, new Random(100l));
+        
+        
+        int capacity = 70;
 
         List<Document> train = documents;
+        /**
+         * divides the documents which have higher number of gold standard annotations than 70 into bins with 50 annotatiosn
+         */
+        for (int i1 = 0; i1 < documents.size(); i1++) {
+
+            if (documents.get(i1).getGoldStandard().size() > capacity) {
+
+                List<Annotation> resizedGoldStandard = new ArrayList<>();
+
+                for (int j = 0; j < documents.get(i1).getGoldStandard().size(); j++) {
+
+                    if (resizedGoldStandard.size() == 50) {
+                        Document d1 = new Document(documents.get(i1).getDocumentContent(), documents.get(i1).getDocumentName());
+                        d1.setGoldStandard(resizedGoldStandard);
+                        resizedGoldStandard = new ArrayList<>();
+
+                        train.add(d1);
+
+                        
+                        resizedGoldStandard.add(documents.get(i1).getGoldStandard().get(j));
+
+                    } else {
+                        resizedGoldStandard.add(documents.get(i1).getGoldStandard().get(j));
+                    }
+                }
+
+                //add the remaining
+                if (resizedGoldStandard.size() <= 20) {
+                    train.get(train.size() - 1).getGoldStandard().addAll(resizedGoldStandard);
+                } else {
+                    //create a new document
+                    Document d1 = new Document(documents.get(i1).getDocumentContent(), documents.get(i1).getDocumentName());
+                    d1.setGoldStandard(resizedGoldStandard);
+                    resizedGoldStandard = new ArrayList<>();
+
+                    train.add(d1);
+
+                }
+            } else {
+                Document d1 = new Document(documents.get(i1).getDocumentContent(), documents.get(i1).getDocumentName());
+                d1.setGoldStandard(documents.get(i1).getGoldStandard());
+
+                train.add(d1);
+                
+            }
+        }
+
+        Collections.shuffle(train, new Random(100l));
+
+        
 
         log.info("Train data:");
         train.forEach(s -> log.info("%s", s));
@@ -162,17 +214,20 @@ public class BIRETrain {
          * Define an objective function that guides the training procedure.
          */
         ObjectiveFunction<State, List<Annotation>> objective = new DisambiguationObjectiveFunction();
-
-        /*
-         * Define a model and provide it with the necessary templates.
-         */
-        Model<Document, State> model = new Model<>(templates);
-        model.setMultiThreaded(true);
+        
         /*
          * Create the scorer object that computes a score from the features of a
          * factor and the weight vectors of the templates.
          */
         Scorer scorer = new LinearScorer();
+        
+
+        /*
+         * Define a model and provide it with the necessary templates.
+         */
+        Model<Document, State> model = new Model<>(scorer, templates);
+        model.setMultiThreaded(true);
+        
 
         /*
          * Create an Initializer that is responsible for providing an initial
@@ -222,7 +277,7 @@ public class BIRETrain {
             }
         };
 
-        DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
+        DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, objective,
                 explorers, objectiveOneCriterion);
         sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
         sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());

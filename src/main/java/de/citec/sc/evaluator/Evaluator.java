@@ -15,6 +15,11 @@ import com.google.common.collect.Sets;
 
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.Document;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -89,6 +94,8 @@ public class Evaluator {
 
 		double macroAvgPrecision = 0, macroAvgRecall = 0;
 		double microAvgPrecision = 0, microAvgRecall = 0;
+                
+                Map<Integer, Double> allF1Scores = new LinkedHashMap<>();
 
 		for (Document d : documents) {
 
@@ -118,6 +125,9 @@ public class Evaluator {
 			// calculate precision and recall for each document
 			double r = getRecall(TP, FN);
 			double p = getPrecision(TP, FP);
+                        
+                        double f1 = getF1(p, r);
+                        allF1Scores.put(documents.indexOf(d), f1);
 
 			// sum of precision and recall for each document
 			macroAvgPrecision += p;
@@ -142,6 +152,19 @@ public class Evaluator {
 		result.put("Macro-average Precision", round(macroAvgPrecision, 3));
 		result.put("Macro-average Recall", round(macroAvgRecall, 3));
 		result.put("F1 Macro-average", round(F1_macro, 3));
+                
+            try {
+                PrintStream p1 = new PrintStream(new File("src/main/resources/f1.txt"));
+                
+                for(Integer i1 : allF1Scores.keySet()){
+                    p1.println(i1 + ";" +allF1Scores.get(i1));
+                }
+                
+                p1.close();
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Evaluator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+                
 
 		return result;
 	}

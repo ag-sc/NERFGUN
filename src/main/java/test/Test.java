@@ -33,6 +33,7 @@ import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.weka.WekaRegression;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import learning.scorer.Scorer;
 
 /**
@@ -42,11 +43,30 @@ import learning.scorer.Scorer;
 public class Test {
 
     public static void main(String[] args) {
-       
-        CandidateRetrieverOnMemory in = new CandidateRetrieverOnMemory();
-        
 
-        System.exit(1);
+        CorpusLoader loader = new CorpusLoader(false);
+        DefaultCorpus corpus = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTesta);
+        List<Document> documents = corpus.getDocuments();
+        int all = 0;
+        int f = 0;
+        for (Document d1 : documents) {
+            if (d1.getGoldStandard().size() > 70) {
+                List<Annotation> filtered = new ArrayList<>();
+                for (Annotation a : d1.getGoldStandard()) {
+                    if (!filtered.contains(a)) {
+                        filtered.add(a);
+                    }
+                }
+                all += d1.getGoldStandard().size();
+                f += filtered.size();
+
+                System.out.println((documents.indexOf(d1)) + " all : " + d1.getGoldStandard().size() + " unique: " + filtered.size());
+            }
+
+        }
+
+        System.out.println("UNIQUE: " + f);
+        System.out.println("ALL: " + all);
 
 //        String path = "dbpediaFiles/pageranks.ttl";
 //

@@ -6,6 +6,7 @@
 package de.citec.sc.corpus;
 
 import java.text.DecimalFormat;
+import java.util.Objects;
 
 import variables.AbstractVariable;
 
@@ -87,6 +88,8 @@ public class Annotation extends AbstractVariable {
 		result = prime * result + ((word == null) ? 0 : word.hashCode());
 		return result;
 	}
+
+
 
 	@Override
 	public boolean equals(Object obj) {

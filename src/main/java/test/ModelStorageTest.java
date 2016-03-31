@@ -96,7 +96,7 @@ public class ModelStorageTest {
 		 * Load training and test data.
 		 */
 		log.info("Load Corpus...");
-		CorpusLoader loader = new CorpusLoader();
+		CorpusLoader loader = new CorpusLoader(false);
 		DefaultCorpus trainingCorpus = loader.loadCorpus(CorpusName.CoNLLTraining);
 		DefaultCorpus testaCorpus = loader.loadCorpus(CorpusName.CoNLLTesta);
 		List<Document> documents = trainingCorpus.getDocuments();
@@ -139,16 +139,18 @@ public class ModelStorageTest {
 		// templates.add(tpTemplate);
 		// templates.add(dTemplate);
 
-		/*
-		 * Define a model and provide it with the necessary templates.
-		 */
-		Model<Document, State> model = new Model<>(templates);
-		model.setMultiThreaded(true);
-		/*
+                /*
 		 * Create the scorer object that computes a score from the features of a
 		 * factor and the weight vectors of the templates.
 		 */
 		Scorer scorer = new DefaultScorer();
+                
+		/*
+		 * Define a model and provide it with the necessary templates.
+		 */
+		Model<Document, State> model = new Model<>(scorer, templates);
+		model.setMultiThreaded(true);
+		
 
 		/*
 		 * Create an Initializer that is responsible for providing an initial
@@ -203,7 +205,7 @@ public class ModelStorageTest {
 
 		// StoppingCriterion<State> stoppingCriterion = new
 		// StepLimitCriterion<>(numberOfSamplingSteps);
-		DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
+		DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model,  objective,
 				explorers, objectiveOneCriterion);
 		sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
 		sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
@@ -323,7 +325,7 @@ public class ModelStorageTest {
 		 * Load training and test data.
 		 */
 		log.info("Load Corpus...");
-		CorpusLoader loader = new CorpusLoader();
+		CorpusLoader loader = new CorpusLoader(false);
 		DefaultCorpus trainingCorpus = loader.loadCorpus(CorpusName.CoNLLTraining);
 		DefaultCorpus testaCorpus = loader.loadCorpus(CorpusName.CoNLLTesta);
 		List<Document> documents = trainingCorpus.getDocuments();
@@ -353,21 +355,24 @@ public class ModelStorageTest {
 		 */
 
 		TemplateFactory<Document, State> templateFactory = new NEDTemplateFactory(true);
-		/*
+		
+                /*
+		 * Create the scorer object that computes a score from the features of a
+		 * factor and the weight vectors of the templates.
+		 */
+		Scorer scorer = new DefaultScorer();
+                
+                /*
 		 * Define a model and provide it with the necessary templates.
 		 */
-		Model<Document, State> model = new Model<>();
+		Model<Document, State> model = new Model<>(scorer);
 		model.setMultiThreaded(true);
 		try {
 			model.loadModelFromDir(new File("src/main/resources/models", "model1Test"), templateFactory);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		/*
-		 * Create the scorer object that computes a score from the features of a
-		 * factor and the weight vectors of the templates.
-		 */
-		Scorer scorer = new DefaultScorer();
+		
 
 		/*
 		 * Create an Initializer that is responsible for providing an initial
@@ -417,7 +422,7 @@ public class ModelStorageTest {
 		 * Stop sampling if objective score is equal to 1.
 		 */
 
-		DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
+		DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, objective,
 				explorers, stopAtMaxModelScore);
 		sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
 		sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());

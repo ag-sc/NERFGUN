@@ -89,7 +89,7 @@ public class TopicSpecificPageRankTemplate
             throw new InitializationException(
                     "TopicSpecificPageRankTemplate is NOT initialized correctly! Call TopicSpecificPageRankTemplate.init() for proper initlialization.");
         }
-        
+
         this.useBins = b;
     }
 
@@ -185,7 +185,7 @@ public class TopicSpecificPageRankTemplate
             }
 
             if (!IndexMapping.indexMappings.containsKey(link2)) {
-				// log.warn("Unknown link node detected for link: " +
+                // log.warn("Unknown link node detected for link: " +
                 // link2);
                 break calcScore;
             }
@@ -211,11 +211,14 @@ public class TopicSpecificPageRankTemplate
 
             featureVector.set("TopicSpecificPageRank", score);
 
-            for (int i = 0; i < bin; i++) {
-                featureVector.set("TopicSpecificPageRank >= " + i, score);
+            if (useBins) {
+                for (int i = 0; i < bin; i++) {
+                    featureVector.set("TopicSpecificPageRank >= " + i, score);
+                }
+
+                featureVector.set("1TopicSpecificPageRankInBin_" + bin, 1d);
+                featureVector.set("ScoreTopicSpecificPageRankInBin_" + bin, score);
             }
-            featureVector.set("1TopicSpecificPageRankInBin_" + bin, 1d);
-            featureVector.set("ScoreTopicSpecificPageRankInBin_" + bin, score);
 
         }
 

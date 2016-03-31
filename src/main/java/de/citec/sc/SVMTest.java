@@ -123,7 +123,7 @@ public class SVMTest {
         /*
          * Define a model and provide it with the necessary templates.
          */
-        model = new Model(templates);
+        model = new Model(scorer, templates);
         model.setForceFactorComputation(false);
         model.setMultiThreaded(true);
 
@@ -194,7 +194,7 @@ public class SVMTest {
                 return count >= maxCount || step >= numberOfSamplingSteps;
             }
         };
-        DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, scorer, objective,
+        DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, objective,
                 explorers, stopAtMaxModelScore);
 
         sampler.setSamplingStrategy(SamplingStrategies.greedyModelStrategy());
