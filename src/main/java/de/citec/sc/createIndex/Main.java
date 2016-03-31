@@ -48,8 +48,9 @@ public class Main {
 //        
 //        args[6] = "-d";
 //        args[7] = "CoNLLTraining";
-        
         readParamsFromCommandLine(args);
+        int cores = Runtime.getRuntime().availableProcessors();
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", (cores - 3) + "");
 
 //        RetrievalPerformance.run();
 //        RetrievalPerformancePageRank.run();
@@ -68,7 +69,7 @@ public class Main {
                 e.printStackTrace();
             }
         }
-        
+
         if (PARAMETERS.get(PARAM_RUN).equals("wekaTrain")) {
             try {
                 SVMTrain.main(args);
