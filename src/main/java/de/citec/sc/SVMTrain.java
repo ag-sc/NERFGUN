@@ -44,6 +44,8 @@ import de.citec.sc.weka.WekaModelTrainer;
 import evaluation.EvaluationUtil;
 import exceptions.MissingFactorException;
 import factors.Factor;
+import factors.FactorPattern;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Stream;

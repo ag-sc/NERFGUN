@@ -64,51 +64,51 @@ import variables.AbstractState;
 
 public class BIRETrain {
 
-    private static final String PARAM_SETTING_IDENTIFIER = "-s";
+	private static final String PARAM_SETTING_IDENTIFIER = "-s";
 
-    private static final String PARAM_SETTING_DOCUMENTSIZE = "-n";
-    private static final String PARAM_SETTING_DATASET = "-d";
-    private static final String PARAM_SETTING_LEARNING_STRATEGY = "-u";
-    private static final String PARAM_SETTING_EPOCHS = "-e";
-    private static final String PARAM_SETTING_BINS = "-z";
+	private static final String PARAM_SETTING_DOCUMENTSIZE = "-n";
+	private static final String PARAM_SETTING_DATASET = "-d";
+	private static final String PARAM_SETTING_LEARNING_STRATEGY = "-u";
+	private static final String PARAM_SETTING_EPOCHS = "-e";
+	private static final String PARAM_SETTING_BINS = "-z";
 
-    private static final int MAX_CANDIDATES = 100;
-    private static final Map<String, String> PARAMETERS = new HashMap<>();
+	private static final int MAX_CANDIDATES = 100;
+	private static final Map<String, String> PARAMETERS = new HashMap<>();
 
-    private static final String PARAMETER_PREFIX = "-";
+	private static final String PARAMETER_PREFIX = "-";
 
-    private static Logger log = LogManager.getFormatterLogger();
+	private static Logger log = LogManager.getFormatterLogger();
 
-    private static String indexFile = "tfidf.bin";
-    private static String dfFile = "en_wiki_large_abstracts.docfrequency";
-    private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
-    private static String tsprFile = "tspr.gold";
-    private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
-    private static CandidateRetriever index;
-    private static Setting setting;
+	private static String indexFile = "tfidf.bin";
+	private static String dfFile = "en_wiki_large_abstracts.docfrequency";
+	private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
+	private static String tsprFile = "tspr.gold";
+	private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
+	private static CandidateRetriever index;
+	private static Setting setting;
 
-    private static Explorer<State> explorer;
+	private static Explorer<State> explorer;
 
-    /**
-     * Read the parameters from the command line.
-     *
-     * @param args
-     */
-    private static void readParamsFromCommandLine(String[] args) {
-        if (args != null && args.length > 0) {
-            for (int i = 0; i < args.length; i++) {
-                if (args[i].startsWith(PARAMETER_PREFIX)) {
-                    PARAMETERS.put(args[i], args[i++ + 1]); // Skip value
-                }
-            }
-        }
-    }
+	/**
+	 * Read the parameters from the command line.
+	 *
+	 * @param args
+	 */
+	private static void readParamsFromCommandLine(String[] args) {
+		if (args != null && args.length > 0) {
+			for (int i = 0; i < args.length; i++) {
+				if (args[i].startsWith(PARAMETER_PREFIX)) {
+					PARAMETERS.put(args[i], args[i++ + 1]); // Skip value
+				}
+			}
+		}
+	}
 
-    public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
 
-        /*
-         * TODO: Just for testing !!!! Remove before Jar export.
-         */
+		/*
+		 * TODO: Just for testing !!!! Remove before Jar export.
+		 */
 		// args = new String[]{"-s", "7"};
         initializeBIRE(args);
 
@@ -384,99 +384,97 @@ public class BIRETrain {
 
             for (Class<? extends AbstractTemplate> template : setting.getSetting()) {
 				// if (template.equals(IndexRankTemplate.class)) {
-                //
-                // }
+				//
+				// }
 
-                if (template.equals(TopicSpecificPageRankTemplate.class)) {
-                    log.info("Init TopicSpecificPageRankTemplate ...");
-                    TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
+				if (template.equals(TopicSpecificPageRankTemplate.class)) {
+					log.info("Init TopicSpecificPageRankTemplate ...");
+					TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
 
-                }
-                if (template.equals(DocumentSimilarityTemplate.class)) {
-                    log.info("Init DocumentSimilarityTemplate ...");
-                    DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
-                }
+				}
+				if (template.equals(DocumentSimilarityTemplate.class)) {
+					log.info("Init DocumentSimilarityTemplate ...");
+					DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
+				}
 
-                if (template.equals(PageRankTemplate.class)) {
-                }
+				if (template.equals(PageRankTemplate.class)) {
+				}
 
-                if (template.equals(EditDistanceTemplate.class)) {
-                }
+				if (template.equals(EditDistanceTemplate.class)) {
+				}
 
-                if (template.equals(TermFrequencyTemplate.class)) {
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
+				if (template.equals(TermFrequencyTemplate.class)) {
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
 
-    /**
-     *
-     * @param setting
-     * @param index
-     * @param templates
-     */
-    private static void addTemplatesFromSetting(List<AbstractTemplate<Document, State, ?>> templates) {
-        for (Class<? extends AbstractTemplate> template : setting.getSetting()) {
+	/**
+	 *
+	 * @param setting
+	 * @param index
+	 * @param templates
+	 */
+	private static void addTemplatesFromSetting(List<AbstractTemplate<Document, State, ?>> templates) {
+		for (Class<? extends AbstractTemplate> template : setting.getSetting()) {
 
 			// if (template.equals(IndexRankTemplate.class)) {
-            // templates.add(new IndexRankTemplate());
-            // log.info("Add tempalte: " + template.getSimpleName());
-            // }
-            if (template.equals(PageRankTemplate.class)) {
-                templates.add(new PageRankTemplate());
-                log.info("Add tempalte: " + template.getSimpleName());
-            }
-            if (template.equals(EditDistanceTemplate.class)) {
-                if(PARAMETERS.containsKey(PARAM_SETTING_BINS)){
-                    if(PARAMETERS.get(PARAM_SETTING_BINS).equals("false")){
-                        templates.add(new EditDistanceTemplate(false));
-                    }else{
-                        templates.add(new EditDistanceTemplate(true));
-                    }
-                }
-                else{
-                    templates.add(new EditDistanceTemplate(true));
-                }
-                
-                log.info("Add tempalte: " + template.getSimpleName());
-            }
-            if (template.equals(TopicSpecificPageRankTemplate.class)) {
-                try {
-                    if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
-                        if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
-                            templates.add(new TopicSpecificPageRankTemplate(false));
-                        } else {
-                            templates.add(new TopicSpecificPageRankTemplate(true));
-                        }
-                    } else {
-                        templates.add(new TopicSpecificPageRankTemplate(true));
-                    }
-                    
-                    
-                } catch (InitializationException e) {
-                    e.printStackTrace();
-                    System.exit(0);
-                }
-                log.info("Add tempalte: " + template.getSimpleName());
-            }
-            if (template.equals(TermFrequencyTemplate.class)) {
-                templates.add(new TermFrequencyTemplate());
-                log.info("Add tempalte: " + template.getSimpleName());
-            }
-            if (template.equals(DocumentSimilarityTemplate.class)) {
-                try {
-                    templates.add(new DocumentSimilarityTemplate());
-                } catch (InitializationException e) {
-                    e.printStackTrace();
-                    System.exit(0);
-                }
-                log.info("Add tempalte: " + template.getSimpleName());
-            }
-        }
-    }
+			// templates.add(new IndexRankTemplate());
+			// log.info("Add tempalte: " + template.getSimpleName());
+			// }
+			if (template.equals(PageRankTemplate.class)) {
+				templates.add(new PageRankTemplate());
+				log.info("Add tempalte: " + template.getSimpleName());
+			}
+			if (template.equals(EditDistanceTemplate.class)) {
+				if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+					if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+						templates.add(new EditDistanceTemplate(false));
+					} else {
+						templates.add(new EditDistanceTemplate(true));
+					}
+				} else {
+					templates.add(new EditDistanceTemplate(true));
+				}
+
+				log.info("Add tempalte: " + template.getSimpleName());
+			}
+			if (template.equals(TopicSpecificPageRankTemplate.class)) {
+				try {
+					if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+						if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+							templates.add(new TopicSpecificPageRankTemplate(false));
+						} else {
+							templates.add(new TopicSpecificPageRankTemplate(true));
+						}
+					} else {
+						templates.add(new TopicSpecificPageRankTemplate(true));
+					}
+
+				} catch (InitializationException e) {
+					e.printStackTrace();
+					System.exit(0);
+				}
+				log.info("Add tempalte: " + template.getSimpleName());
+			}
+			if (template.equals(TermFrequencyTemplate.class)) {
+				templates.add(new TermFrequencyTemplate());
+				log.info("Add tempalte: " + template.getSimpleName());
+			}
+			if (template.equals(DocumentSimilarityTemplate.class)) {
+				try {
+					templates.add(new DocumentSimilarityTemplate());
+				} catch (InitializationException e) {
+					e.printStackTrace();
+					System.exit(0);
+				}
+				log.info("Add tempalte: " + template.getSimpleName());
+			}
+		}
+	}
 
 }
 
