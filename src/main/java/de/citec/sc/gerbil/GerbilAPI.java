@@ -2,6 +2,7 @@ package de.citec.sc.gerbil;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -26,6 +27,7 @@ public class GerbilAPI {
 
 	public static void run() {
 		log.info("GERBIL NIF-Document disambiguation service started.");
+		Spark.port(8081);
 		Spark.post("/ned/gerbil", "application/x-turtle", (request, response) -> {
 			String nifDocument = request.body();
 			log.info("NIF-Document for disambiguation received:\n%s", nifDocument);
@@ -47,16 +49,22 @@ public class GerbilAPI {
 		}
 		String jsonDocument = GerbilUtil.gerbil2json(gerbilDocument);
 		log.info("Send request to disambiguation service. as JSON document:\n%s", jsonDocument);
-		String annotatedJsonDocument = sendHTTPRequest(jsonDocument);
-		log.info("Disambiguated document in JSON format received:\n%s", annotatedJsonDocument);
-		Document annotatedGerbilDocument = GerbilUtil.json2gerbil(annotatedJsonDocument);
+		String annotatedNifDocument = "";
+		try {
+			String annotatedJsonDocument;
+			annotatedJsonDocument = sendHTTPRequest(jsonDocument);
+			log.info("Disambiguated document in JSON format received:\n%s", annotatedJsonDocument);
+			Document annotatedGerbilDocument = GerbilUtil.json2gerbil(annotatedJsonDocument);
 
-		TurtleNIFDocumentCreator creator = new TurtleNIFDocumentCreator();
-		String annotatedNifDocument = creator.getDocumentAsNIFString(annotatedGerbilDocument);
+			TurtleNIFDocumentCreator creator = new TurtleNIFDocumentCreator();
+			annotatedNifDocument = creator.getDocumentAsNIFString(annotatedGerbilDocument);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return annotatedNifDocument;
 	}
 
-	public static String sendHTTPRequest(String jsonDocument) {
+	public static String sendHTTPRequest(String jsonDocument) throws IOException {
 		HttpURLConnection connection = null;
 		try {
 			// Create connection
@@ -88,9 +96,6 @@ public class GerbilAPI {
 			}
 			rd.close();
 			return response.toString();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
 		} finally {
 			if (connection != null) {
 				connection.disconnect();

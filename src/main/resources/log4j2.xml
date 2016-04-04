@@ -59,6 +59,10 @@
 			<AppenderRef ref="Console" />
 			<AppenderRef ref="LogFile" />
 		</Logger>
+		<Logger name="de.citec.sc.gerbil" level="INFO" additivity="false">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="LogFile" />
+		</Logger>
 		<!-- ++++++++++++++++++++++++ -->
 		<!-- Loggers for BIRE project -->
 		<!-- ++++++++++++++++++++++++ -->

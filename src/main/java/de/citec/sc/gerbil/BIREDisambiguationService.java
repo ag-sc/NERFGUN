@@ -127,6 +127,7 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 
 	public void run() {
 		log.info("Start JSON-Document disambiguation service.");
+		Spark.port(8080);
 		Spark.post("/ned/json", "application/json", (request, response) -> {
 			String jsonDocument = request.body();
 			Document document = GerbilUtil.json2bire(jsonDocument);
