@@ -14,6 +14,9 @@ import de.citec.sc.BIRETest;
 import de.citec.sc.BIRETrain;
 import de.citec.sc.SVMTest;
 import de.citec.sc.SVMTrain;
+import de.citec.sc.gerbil.BIREDisambiguationService;
+import de.citec.sc.gerbil.GerbilAPI;
+import spark.Spark;
 
 /**
  *
@@ -84,6 +87,17 @@ public class Main {
                 e.printStackTrace();
             }
         }
+        
+        if (PARAMETERS.get(PARAM_RUN).equals("gerbil")) {
+            try {
+                Spark.port(8080);
+                BIREDisambiguationService.main(args);
+                GerbilAPI.main(args);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
 
 //        TestSearch.main(args);
         long end = System.currentTimeMillis();

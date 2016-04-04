@@ -64,52 +64,52 @@ import variables.AbstractState;
 
 public class BIRETrain {
 
-	private static final String PARAM_SETTING_IDENTIFIER = "-s";
+    private static final String PARAM_SETTING_IDENTIFIER = "-s";
 
-	private static final String PARAM_SETTING_DOCUMENTSIZE = "-n";
-	private static final String PARAM_SETTING_DATASET = "-d";
-	private static final String PARAM_SETTING_LEARNING_STRATEGY = "-u";
-	private static final String PARAM_SETTING_EPOCHS = "-e";
-	private static final String PARAM_SETTING_BINS = "-z";
+    private static final String PARAM_SETTING_DOCUMENTSIZE = "-n";
+    private static final String PARAM_SETTING_DATASET = "-d";
+    private static final String PARAM_SETTING_LEARNING_STRATEGY = "-u";
+    private static final String PARAM_SETTING_EPOCHS = "-e";
+    private static final String PARAM_SETTING_BINS = "-z";
 
-	private static final int MAX_CANDIDATES = 100;
-	private static final Map<String, String> PARAMETERS = new HashMap<>();
+    private static final int MAX_CANDIDATES = 100;
+    private static final Map<String, String> PARAMETERS = new HashMap<>();
 
-	private static final String PARAMETER_PREFIX = "-";
+    private static final String PARAMETER_PREFIX = "-";
 
-	private static Logger log = LogManager.getFormatterLogger();
+    private static Logger log = LogManager.getFormatterLogger();
 
-	private static String indexFile = "tfidf.bin";
-	private static String dfFile = "en_wiki_large_abstracts.docfrequency";
-	private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
-	private static String tsprFile = "tspr.gold";
-	private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
-	private static CandidateRetriever index;
-	private static Setting setting;
+    private static String indexFile = "tfidf.bin";
+    private static String dfFile = "en_wiki_large_abstracts.docfrequency";
+    private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
+    private static String tsprFile = "tspr.gold";
+    private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
+    private static CandidateRetriever index;
+    private static Setting setting;
 
-	private static Explorer<State> explorer;
+    private static Explorer<State> explorer;
 
-	/**
-	 * Read the parameters from the command line.
-	 *
-	 * @param args
-	 */
-	private static void readParamsFromCommandLine(String[] args) {
-		if (args != null && args.length > 0) {
-			for (int i = 0; i < args.length; i++) {
-				if (args[i].startsWith(PARAMETER_PREFIX)) {
-					PARAMETERS.put(args[i], args[i++ + 1]); // Skip value
-				}
-			}
-		}
-	}
+    /**
+     * Read the parameters from the command line.
+     *
+     * @param args
+     */
+    private static void readParamsFromCommandLine(String[] args) {
+        if (args != null && args.length > 0) {
+            for (int i = 0; i < args.length; i++) {
+                if (args[i].startsWith(PARAMETER_PREFIX)) {
+                    PARAMETERS.put(args[i], args[i++ + 1]); // Skip value
+                }
+            }
+        }
+    }
 
-	public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
 
-		/*
-		 * TODO: Just for testing !!!! Remove before Jar export.
-		 */
-		// args = new String[]{"-s", "7"};
+        /*
+         * TODO: Just for testing !!!! Remove before Jar export.
+         */
+        // args = new String[]{"-s", "7"};
         initializeBIRE(args);
 
         /*
@@ -121,8 +121,6 @@ public class BIRETrain {
         addTemplatesFromSetting(templates);
 
         File modelsDir = new File("src/main/resources/models");
-        File featuresFile = new File("src/main/resources/features_" + generateNameFromTemplates(templates) + ".csv");
-        BufferedWriter featuresFileWriter = new BufferedWriter(new FileWriter(featuresFile));
 
         if (!modelsDir.exists()) {
             modelsDir.mkdirs();
@@ -140,8 +138,8 @@ public class BIRETrain {
         DefaultCorpus corpus = loader.loadCorpus(CorpusName.valueOf(dataset));
         List<Document> documents = corpus.getDocuments();
 
-        //documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
-        
+        documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
+
         int dSize = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_DOCUMENTSIZE));
         if (dSize < documents.size()) {
             documents = documents.subList(0, dSize);
@@ -151,83 +149,86 @@ public class BIRETrain {
         if (PARAMETERS.containsKey(PARAM_SETTING_EPOCHS)) {
             numberOfEpochs = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_EPOCHS));
         }
-        
-        
+
         int capacity = 70;
 
         List<Document> train = documents;
+
+        System.out.println("Loading training data");
         /**
-         * divides the documents which have higher number of gold standard annotations than 70 into bins with 50 annotatiosn
+         * divides the documents which have higher number of gold standard
+         * annotations than 70 into bins with 50 annotatiosn
          */
-        for (int i1 = 0; i1 < documents.size(); i1++) {
+//        for (int i1 = 0; i1 < documents.size(); i1++) {
+//
+//            if (documents.get(i1).getGoldStandard().size() > capacity) {
+//
+//                List<Annotation> resizedGoldStandard = new ArrayList<>();
+//
+//                for (int j = 0; j < documents.get(i1).getGoldStandard().size(); j++) {
+//
+//                    if (resizedGoldStandard.size() == 50) {
+//                        Document d1 = new Document(documents.get(i1).getDocumentContent(), documents.get(i1).getDocumentName());
+//                        d1.setGoldStandard(resizedGoldStandard);
+//                        resizedGoldStandard = new ArrayList<>();
+//
+//                        train.add(d1);
+//
+//                        
+//                        resizedGoldStandard.add(documents.get(i1).getGoldStandard().get(j));
+//
+//                    } else {
+//                        resizedGoldStandard.add(documents.get(i1).getGoldStandard().get(j));
+//                    }
+//                }
+//
+//                //add the remaining
+//                if (resizedGoldStandard.size() <= 20) {
+//                    train.get(train.size() - 1).getGoldStandard().addAll(resizedGoldStandard);
+//                } else {
+//                    //create a new document
+//                    Document d1 = new Document(documents.get(i1).getDocumentContent(), documents.get(i1).getDocumentName());
+//                    d1.setGoldStandard(resizedGoldStandard);
+//                    resizedGoldStandard = new ArrayList<>();
+//
+//                    train.add(d1);
+//
+//                }
+//            } else {
+//                Document d1 = new Document(documents.get(i1).getDocumentContent(), documents.get(i1).getDocumentName());
+//                d1.setGoldStandard(documents.get(i1).getGoldStandard());
+//
+//                train.add(d1);
+//                
+//            }
+//        }
 
-            if (documents.get(i1).getGoldStandard().size() > capacity) {
-
-                List<Annotation> resizedGoldStandard = new ArrayList<>();
-
-                for (int j = 0; j < documents.get(i1).getGoldStandard().size(); j++) {
-
-                    if (resizedGoldStandard.size() == 50) {
-                        Document d1 = new Document(documents.get(i1).getDocumentContent(), documents.get(i1).getDocumentName());
-                        d1.setGoldStandard(resizedGoldStandard);
-                        resizedGoldStandard = new ArrayList<>();
-
-                        train.add(d1);
-
-                        
-                        resizedGoldStandard.add(documents.get(i1).getGoldStandard().get(j));
-
-                    } else {
-                        resizedGoldStandard.add(documents.get(i1).getGoldStandard().get(j));
-                    }
-                }
-
-                //add the remaining
-                if (resizedGoldStandard.size() <= 20) {
-                    train.get(train.size() - 1).getGoldStandard().addAll(resizedGoldStandard);
-                } else {
-                    //create a new document
-                    Document d1 = new Document(documents.get(i1).getDocumentContent(), documents.get(i1).getDocumentName());
-                    d1.setGoldStandard(resizedGoldStandard);
-                    resizedGoldStandard = new ArrayList<>();
-
-                    train.add(d1);
-
-                }
-            } else {
-                Document d1 = new Document(documents.get(i1).getDocumentContent(), documents.get(i1).getDocumentName());
-                d1.setGoldStandard(documents.get(i1).getGoldStandard());
-
-                train.add(d1);
-                
-            }
-        }
-
+        System.out.println("Train data size : " + train.size());
+        log.info("Train data size : " + train.size());
+        System.out.print("Shuffling train data ");
         Collections.shuffle(train, new Random(100l));
 
-        
-
-        log.info("Train data:");
-        train.forEach(s -> log.info("%s", s));
+        System.out.println("  DONE ");
+        //train.forEach(s -> log.info("%s", s));
 
         /*
          * Define an objective function that guides the training procedure.
          */
         ObjectiveFunction<State, List<Annotation>> objective = new DisambiguationObjectiveFunction();
-        
+
         /*
          * Create the scorer object that computes a score from the features of a
          * factor and the weight vectors of the templates.
          */
         Scorer scorer = new LinearScorer();
-        
+
 
         /*
          * Define a model and provide it with the necessary templates.
          */
         Model<Document, State> model = new Model<>(scorer, templates);
         model.setMultiThreaded(true);
-        
+
 
         /*
          * Create an Initializer that is responsible for providing an initial
@@ -299,7 +300,7 @@ public class BIRETrain {
         }
 
         trainer.train(sampler, trainInitializer, learner, train, numberOfEpochs);
-        featuresFileWriter.close();
+
         /*
          * Stop sampling if model score does not increase for 5 iterations.
          */
@@ -384,97 +385,97 @@ public class BIRETrain {
 
             for (Class<? extends AbstractTemplate> template : setting.getSetting()) {
 				// if (template.equals(IndexRankTemplate.class)) {
-				//
-				// }
+                //
+                // }
 
-				if (template.equals(TopicSpecificPageRankTemplate.class)) {
-					log.info("Init TopicSpecificPageRankTemplate ...");
-					TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
+                if (template.equals(TopicSpecificPageRankTemplate.class)) {
+                    log.info("Init TopicSpecificPageRankTemplate ...");
+                    TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
 
-				}
-				if (template.equals(DocumentSimilarityTemplate.class)) {
-					log.info("Init DocumentSimilarityTemplate ...");
-					DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
-				}
+                }
+                if (template.equals(DocumentSimilarityTemplate.class)) {
+                    log.info("Init DocumentSimilarityTemplate ...");
+                    DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
+                }
 
-				if (template.equals(PageRankTemplate.class)) {
-				}
+                if (template.equals(PageRankTemplate.class)) {
+                }
 
-				if (template.equals(EditDistanceTemplate.class)) {
-				}
+                if (template.equals(EditDistanceTemplate.class)) {
+                }
 
-				if (template.equals(TermFrequencyTemplate.class)) {
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
+                if (template.equals(TermFrequencyTemplate.class)) {
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
 
-	/**
-	 *
-	 * @param setting
-	 * @param index
-	 * @param templates
-	 */
-	private static void addTemplatesFromSetting(List<AbstractTemplate<Document, State, ?>> templates) {
-		for (Class<? extends AbstractTemplate> template : setting.getSetting()) {
+    /**
+     *
+     * @param setting
+     * @param index
+     * @param templates
+     */
+    private static void addTemplatesFromSetting(List<AbstractTemplate<Document, State, ?>> templates) {
+        for (Class<? extends AbstractTemplate> template : setting.getSetting()) {
 
 			// if (template.equals(IndexRankTemplate.class)) {
-			// templates.add(new IndexRankTemplate());
-			// log.info("Add tempalte: " + template.getSimpleName());
-			// }
-			if (template.equals(PageRankTemplate.class)) {
-				templates.add(new PageRankTemplate());
-				log.info("Add tempalte: " + template.getSimpleName());
-			}
-			if (template.equals(EditDistanceTemplate.class)) {
-				if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
-					if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
-						templates.add(new EditDistanceTemplate(false));
-					} else {
-						templates.add(new EditDistanceTemplate(true));
-					}
-				} else {
-					templates.add(new EditDistanceTemplate(true));
-				}
+            // templates.add(new IndexRankTemplate());
+            // log.info("Add tempalte: " + template.getSimpleName());
+            // }
+            if (template.equals(PageRankTemplate.class)) {
+                templates.add(new PageRankTemplate());
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            if (template.equals(EditDistanceTemplate.class)) {
+                if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+                    if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+                        templates.add(new EditDistanceTemplate(false));
+                    } else {
+                        templates.add(new EditDistanceTemplate(true));
+                    }
+                } else {
+                    templates.add(new EditDistanceTemplate(true));
+                }
 
-				log.info("Add tempalte: " + template.getSimpleName());
-			}
-			if (template.equals(TopicSpecificPageRankTemplate.class)) {
-				try {
-					if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
-						if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
-							templates.add(new TopicSpecificPageRankTemplate(false));
-						} else {
-							templates.add(new TopicSpecificPageRankTemplate(true));
-						}
-					} else {
-						templates.add(new TopicSpecificPageRankTemplate(true));
-					}
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            if (template.equals(TopicSpecificPageRankTemplate.class)) {
+                try {
+                    if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+                        if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+                            templates.add(new TopicSpecificPageRankTemplate(false));
+                        } else {
+                            templates.add(new TopicSpecificPageRankTemplate(true));
+                        }
+                    } else {
+                        templates.add(new TopicSpecificPageRankTemplate(true));
+                    }
 
-				} catch (InitializationException e) {
-					e.printStackTrace();
-					System.exit(0);
-				}
-				log.info("Add tempalte: " + template.getSimpleName());
-			}
-			if (template.equals(TermFrequencyTemplate.class)) {
-				templates.add(new TermFrequencyTemplate());
-				log.info("Add tempalte: " + template.getSimpleName());
-			}
-			if (template.equals(DocumentSimilarityTemplate.class)) {
-				try {
-					templates.add(new DocumentSimilarityTemplate());
-				} catch (InitializationException e) {
-					e.printStackTrace();
-					System.exit(0);
-				}
-				log.info("Add tempalte: " + template.getSimpleName());
-			}
-		}
-	}
+                } catch (InitializationException e) {
+                    e.printStackTrace();
+                    System.exit(0);
+                }
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            if (template.equals(TermFrequencyTemplate.class)) {
+                templates.add(new TermFrequencyTemplate());
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            if (template.equals(DocumentSimilarityTemplate.class)) {
+                try {
+                    templates.add(new DocumentSimilarityTemplate());
+                } catch (InitializationException e) {
+                    e.printStackTrace();
+                    System.exit(0);
+                }
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+        }
+    }
 
 }
 

@@ -27,7 +27,7 @@ public class GerbilAPI {
 
 	public static void run() {
 		log.info("GERBIL NIF-Document disambiguation service started.");
-		Spark.port(8081);
+		//Spark.port(8081);
 		Spark.post("/ned/gerbil", "application/x-turtle", (request, response) -> {
 			String nifDocument = request.body();
 			log.info("NIF-Document for disambiguation received:\n%s", nifDocument);

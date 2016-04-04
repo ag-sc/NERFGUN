@@ -57,7 +57,6 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 	private File modelDir;
 	private CandidateRetriever index;
 	private ObjectiveFunction<State, List<Annotation>> objective;
-	private NEDTemplateFactory factory;
 	private Scorer scorer;
 	private Model<Document, State> model;
 	private Initializer<Document, State> testInitializer;
@@ -89,7 +88,7 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 		model = new Model<>(scorer);
 		model.setForceFactorComputation(false);
 		model.setMultiThreaded(true);
-		model.loadModelFromDir(modelDir, factory);
+		model.loadModelFromDir(modelDir,this);
 
 		testInitializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
 
@@ -127,7 +126,7 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 
 	public void run() {
 		log.info("Start JSON-Document disambiguation service.");
-		Spark.port(8080);
+		
 		Spark.post("/ned/json", "application/json", (request, response) -> {
 			String jsonDocument = request.body();
 			Document document = GerbilUtil.json2bire(jsonDocument);

@@ -37,11 +37,6 @@
 			<artifactId>gson</artifactId>
 			<version>2.5</version>
 		</dependency>
-		<dependency>
-			<groupId>org.aksw</groupId>
-			<artifactId>gerbil</artifactId>
-			<version>1.2.2</version>
-		</dependency>
 
 		<dependency>
 			<groupId>edu.stanford.nlp</groupId>
@@ -82,6 +77,11 @@
 			<groupId>tw.edu.ntu.csie</groupId>
 			<artifactId>libsvm</artifactId>
 			<version>3.17</version>
+		</dependency>
+                <dependency>
+			<groupId>org.aksw</groupId>
+			<artifactId>gerbil</artifactId>
+			<version>1.2.2</version>
 		</dependency>
 	</dependencies>
 	<properties>

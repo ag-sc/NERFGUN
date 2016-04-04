@@ -42,6 +42,7 @@ public class IndexMapping {
     private static void loadIndexMapping(final String keyFiles)
             throws FileNotFoundException, IOException {
 
+        System.out.println("Loading index mapping ...");
         if (indexMappings == null && indexMappingsInverse == null) {
             indexMappings = new HashMap<>(NUM_OF_GOLD_INDICIES);
             indexMappingsInverse = new HashMap<>(NUM_OF_GOLD_INDICIES);

@@ -5,6 +5,8 @@
  */
 package test;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -31,6 +33,11 @@ import de.citec.sc.formats.bire.BireDataLine;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.weka.WekaRegression;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,33 +51,42 @@ public class Test {
 
     public static void main(String[] args) {
 
-        CorpusLoader loader = new CorpusLoader(false);
-        DefaultCorpus corpus = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTesta);
-        List<Document> documents = corpus.getDocuments();
         
-        loader = new CorpusLoader(true);
-        corpus = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTesta);
-        List<Document> documentsOriginal = corpus.getDocuments();
+        String address = "http://purpur-v11:8080/ned/gerbil";
+        Document d1 = new Document("", "");
+        Annotation a1 = new Annotation("obama", "Barack_Obama", 1, 6);
+        List<Annotation> goldAnnotations = new ArrayList<>();
+        goldAnnotations.add(a1);
+        d1.setGoldStandard(goldAnnotations);
         
-        int c1 =0;
-        int c2 =0;
-        for (Document d1 : documents) {
-            for(Document d2 : documentsOriginal){
-                if(d2.getDocumentContent().equals(d1.getDocumentContent())){
-                    for(Annotation a1 : d1.getGoldStandard()){
-                        if(!d2.getGoldStandard().contains(a1)){
-                            c1++;
-                        }
-                        else{
-                            c2++;
-                        }
-                    }
-                }
-            }
-        }
+        
+        
 
-        System.out.println("False: " + c1);
-        System.out.println("True: " + c2);
+        try {
+            URL url = new URL(address);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+
+            if (conn.getResponseCode() != 200) {
+                throw new RuntimeException("Failed : HTTP error code : "
+                        + conn.getResponseCode());
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(
+                    (conn.getInputStream())));
+
+            Gson gson = new GsonBuilder().create();
+
+            
+            conn.disconnect();
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    
 
 //        String path = "dbpediaFiles/pageranks.ttl";
 //
