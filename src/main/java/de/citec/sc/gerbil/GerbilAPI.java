@@ -20,17 +20,23 @@ public class GerbilAPI {
 	private static final String NED_BIRE_URL = "http://localhost:8080/ned/json";
 	private static Logger log = LogManager.getFormatterLogger();
 
-	public void run() {
+	public static void main(String[] args) {
+		run();
+	}
+
+	public static void run() {
+		log.info("GERBIL NIF-Document disambiguation service started.");
 		Spark.post("/ned/gerbil", "application/x-turtle", (request, response) -> {
 			String nifDocument = request.body();
+			log.info("NIF-Document for disambiguation received:\n%s", nifDocument);
 			String annotatedJsonDocument = onRequest(nifDocument);
-
+			log.info("Returning disambiguated NIF-Document:\n%s", annotatedJsonDocument);
 			response.type("application/x-tutle");
 			return annotatedJsonDocument;
 		});
 	}
 
-	public String onRequest(String nifDocument) {
+	public static String onRequest(String nifDocument) {
 		TurtleNIFDocumentParser parser = new TurtleNIFDocumentParser();
 		Document gerbilDocument;
 		try {
@@ -39,8 +45,10 @@ public class GerbilAPI {
 			log.error("Exception while reading request.", e);
 			return "";
 		}
-		String annotatedJsonDocument = sendHTTPRequest(GerbilUtil.gerbil2json(gerbilDocument));
-
+		String jsonDocument = GerbilUtil.gerbil2json(gerbilDocument);
+		log.info("Send request to disambiguation service. as JSON document:\n%s", jsonDocument);
+		String annotatedJsonDocument = sendHTTPRequest(jsonDocument);
+		log.info("Disambiguated document in JSON format received:\n%s", annotatedJsonDocument);
 		Document annotatedGerbilDocument = GerbilUtil.json2gerbil(annotatedJsonDocument);
 
 		TurtleNIFDocumentCreator creator = new TurtleNIFDocumentCreator();
@@ -48,7 +56,7 @@ public class GerbilAPI {
 		return annotatedNifDocument;
 	}
 
-	public String sendHTTPRequest(String jsonDocument) {
+	public static String sendHTTPRequest(String jsonDocument) {
 		HttpURLConnection connection = null;
 		try {
 			// Create connection

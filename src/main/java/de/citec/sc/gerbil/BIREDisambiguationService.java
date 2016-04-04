@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -38,12 +37,11 @@ import sampling.Initializer;
 import sampling.samplingstrategies.AcceptStrategies;
 import sampling.samplingstrategies.SamplingStrategies;
 import sampling.stoppingcriterion.StoppingCriterion;
-import spark.ResponseTransformer;
 import spark.Spark;
 import templates.AbstractTemplate;
 import templates.TemplateFactory;
 
-public class BIREDisambiguator implements TemplateFactory<Document, State> {
+public class BIREDisambiguationService implements TemplateFactory<Document, State> {
 	private static Logger log = LogManager.getFormatterLogger();
 
 	private static String indexFile = "tfidf.bin";
@@ -68,11 +66,20 @@ public class BIREDisambiguator implements TemplateFactory<Document, State> {
 	private DefaultSampler<Document, State, List<Annotation>> sampler;
 	private Trainer trainer;
 
-	public BIREDisambiguator() {
+	public static void main(String[] args)
+			throws FileNotFoundException, IOException, UnkownTemplateRequestedException, Exception {
+		BIREDisambiguationService service = new BIREDisambiguationService();
+		String modelDirPath = args[0];
+		service.init(modelDirPath);
+		service.run();
+	}
+
+	public BIREDisambiguationService() {
 	}
 
 	public void init(String modelDirPath)
 			throws FileNotFoundException, IOException, UnkownTemplateRequestedException, Exception {
+		log.info("Initialize service from model dir \"%s\" ...", modelDirPath);
 		modelDir = new File(modelDirPath);
 		index = new CandidateRetrieverOnMemory();
 
@@ -119,6 +126,7 @@ public class BIREDisambiguator implements TemplateFactory<Document, State> {
 	}
 
 	public void run() {
+		log.info("Start JSON-Document disambiguation service.");
 		Spark.post("/ned/json", "application/json", (request, response) -> {
 			String jsonDocument = request.body();
 			Document document = GerbilUtil.json2bire(jsonDocument);
