@@ -26,6 +26,7 @@ import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import exceptions.UnkownTemplateRequestedException;
+import java.util.HashMap;
 import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
@@ -54,6 +55,8 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 	private boolean useBins = true;
 	private int capacity = 70;
 
+        public static final String DBPEDIA_LINK_PREFIX = "http://dbpedia.org/resource/";
+        
 	private File modelDir;
 	private CandidateRetriever index;
 	private ObjectiveFunction<State, List<Annotation>> objective;
@@ -69,7 +72,7 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 			throws FileNotFoundException, IOException, UnkownTemplateRequestedException, Exception {
 		BIREDisambiguationService service = new BIREDisambiguationService();
 		String modelDirPath = args[0];
-		service.init(modelDirPath);
+		//service.init(modelDirPath);
 		service.run();
 	}
 
@@ -129,11 +132,16 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 		
 		Spark.post("/ned/json", "application/json", (request, response) -> {
 			String jsonDocument = request.body();
-			Document document = GerbilUtil.json2bire(jsonDocument);
-			Document annotatedDocument = disambiguate(document);
+			Document document = GerbilUtil.json2bire(jsonDocument, true);
+//			Document annotatedDocument = disambiguate(document);
 
+                        Document annotatedDocument = new Document(document.getDocumentContent(), document.getDocumentName());
+                        annotatedDocument.setAnnotations(document.getGoldStandard());
+                        annotatedDocument.setGoldStandard(document.getGoldStandard());
+                        
 			response.type("application/json");
-			return GerbilUtil.bire2json(annotatedDocument);
+                        
+			return GerbilUtil.bire2json(annotatedDocument, false);
 		});
 	}
 
@@ -152,6 +160,23 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 			List<Annotation> a = annotatedDocument.getAnnotations();
 			a.addAll(state.getEntities());
 		}
+                
+                HashMap<String, Annotation> coveredAnnotations = new HashMap<>();
+                
+                for(Annotation a1  : annotatedDocument.getAnnotations()){
+                    coveredAnnotations.put(a1.getStartIndex()+","+a1.getEndIndex(), a1);
+                    a1.setLink(DBPEDIA_LINK_PREFIX+""+a1.getLink());
+                }
+                
+                for(Annotation a1  : document.getGoldStandard()){
+                    String s = a1.getStartIndex()+","+a1.getEndIndex();
+                    
+                    if(!coveredAnnotations.containsKey(s)){
+                        a1.setLink("http://de.citec.sc.ned/"+a1.getWord());
+                        annotatedDocument.addAnnotation(a1);
+                    }
+                }
+                
 		log.info("Done!");
 
 		log.info("---------------------");

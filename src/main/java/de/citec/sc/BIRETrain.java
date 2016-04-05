@@ -45,11 +45,13 @@ import evaluation.EvaluationUtil;
 import exceptions.MissingFactorException;
 import factors.Factor;
 import java.util.Set;
+import java.util.logging.Level;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
 import learning.Vector;
+import learning.callbacks.EpochCallback;
 import learning.callbacks.StepCallback;
 import learning.scorer.LinearScorer;
 import learning.scorer.Scorer;
@@ -119,12 +121,6 @@ public class BIRETrain {
         List<AbstractTemplate<Document, State, ?>> templates = new ArrayList<>();
 
         addTemplatesFromSetting(templates);
-
-        File modelsDir = new File("src/main/resources/models");
-
-        if (!modelsDir.exists()) {
-            modelsDir.mkdirs();
-        }
 
         /*
          * Load training and test data.
@@ -298,7 +294,23 @@ public class BIRETrain {
                 trainer.addInstanceCallback(new ChangeSamplingStrategy(sampler));
             }
         }
+        trainer.addEpochCallback(new EpochCallback() {
 
+            @Override
+            public void onEndEpoch(Trainer caller, int epoch, int numberOfEpochs, int numberOfInstances) {
+
+                File modelsDir = new File("src/main/resources/models_" + numberOfEpochs);
+
+                if (!modelsDir.exists()) {
+                    modelsDir.mkdirs();
+                }
+                try {
+                    model.saveModelToFile(modelsDir, generateNameFromTemplates(templates));
+                } catch (IOException ex) {
+                    java.util.logging.Logger.getLogger(BIRETrain.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
         trainer.train(sampler, trainInitializer, learner, train, numberOfEpochs);
 
         /*
@@ -335,7 +347,7 @@ public class BIRETrain {
         EvaluationUtil.printWeights(model, -1);
 
         System.out.println("Write model:");
-        model.saveModelToFile(modelsDir, generateNameFromTemplates(templates));
+        //model.saveModelToFile(modelsDir, generateNameFromTemplates(templates));
     }
 
     private static String generateNameFromTemplates(Collection<?> templates) {
@@ -384,7 +396,7 @@ public class BIRETrain {
         try {
 
             for (Class<? extends AbstractTemplate> template : setting.getSetting()) {
-				// if (template.equals(IndexRankTemplate.class)) {
+                // if (template.equals(IndexRankTemplate.class)) {
                 //
                 // }
 
@@ -422,7 +434,7 @@ public class BIRETrain {
     private static void addTemplatesFromSetting(List<AbstractTemplate<Document, State, ?>> templates) {
         for (Class<? extends AbstractTemplate> template : setting.getSetting()) {
 
-			// if (template.equals(IndexRankTemplate.class)) {
+            // if (template.equals(IndexRankTemplate.class)) {
             // templates.add(new IndexRankTemplate());
             // log.info("Add tempalte: " + template.getSimpleName());
             // }

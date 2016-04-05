@@ -35,7 +35,7 @@ public class Main {
 //        args[0] = "mdeol";
 //        args[1] = "CoNLLTesta";
 //        args[2] = "-r";
-//        args[3] = "test";
+//        args[3] = "gerbil";
 //////        args[4] = "-n";
 //////        args[5] = "1";
 //////        args[6] = "-d";

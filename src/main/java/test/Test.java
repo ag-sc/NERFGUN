@@ -5,43 +5,18 @@
  */
 package test;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-
 import de.citec.sc.corpus.Annotation;
-import de.citec.sc.corpus.CorpusLoader;
-import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
-import de.citec.sc.formats.bire.BireDataLine;
-import de.citec.sc.query.CandidateRetrieverOnMemory;
-import de.citec.sc.templates.IndexMapping;
-import de.citec.sc.weka.WekaRegression;
+import de.citec.sc.gerbil.GerbilUtil;
+import de.citec.sc.gerbil.GsonDocument;
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-import learning.scorer.Scorer;
+import java.util.ArrayList;
+import java.util.List;
+import org.aksw.gerbil.transfer.nif.TurtleNIFDocumentCreator;
 
 /**
  *
@@ -51,42 +26,62 @@ public class Test {
 
     public static void main(String[] args) {
 
-        
-        String address = "http://purpur-v11:8080/ned/gerbil";
-        Document d1 = new Document("", "");
-        Annotation a1 = new Annotation("obama", "Barack_Obama", 1, 6);
+        String url = "http://purpur-v11:8080/ned/gerbil";
+        Document d1 = new Document("phoneqdwtz", "testDocument");
+        Annotation a1 = new Annotation("a1", "", 0, 5);
+        Annotation a2 = new Annotation("a2", "", 5, 10);
         List<Annotation> goldAnnotations = new ArrayList<>();
         goldAnnotations.add(a1);
+        goldAnnotations.add(a2);
         d1.setGoldStandard(goldAnnotations);
-        
+
+        GsonDocument gson = GerbilUtil.bire2gson(d1, true);
+        org.aksw.gerbil.transfer.nif.Document d2 = GerbilUtil.gson2gerbil(gson);
+        //String parameters = GerbilUtil.bire2json(d1, true);
+        //String parameters2 = GerbilUtil.gerbil2json(d2);
+
+        TurtleNIFDocumentCreator creator = new TurtleNIFDocumentCreator();
+        String nifDoc = creator.getDocumentAsNIFString(d2);
+
         
         
 
         try {
-            URL url = new URL(address);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/json");
+            URL obj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-            if (conn.getResponseCode() != 200) {
-                throw new RuntimeException("Failed : HTTP error code : "
-                        + conn.getResponseCode());
+            //add reuqest header
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+            // Send post request
+            con.setDoOutput(true);
+            DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+            wr.writeBytes(nifDoc);
+            wr.flush();
+            wr.close();
+
+            int responseCode = con.getResponseCode();
+            System.out.println("\nSending 'POST' request to URL : " + url);
+            System.out.println("Post parameters : " + nifDoc);
+            System.out.println("Response Code : " + responseCode);
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
             }
+            in.close();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(
-                    (conn.getInputStream())));
+            //print result
+            System.out.println(response.toString());
 
-            Gson gson = new GsonBuilder().create();
-
-            
-            conn.disconnect();
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-    
 
 //        String path = "dbpediaFiles/pageranks.ttl";
 //
