@@ -415,6 +415,11 @@ public class BIRETrain {
                     log.info("Init DocumentSimilarityTemplate ...");
                     DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
                 }
+                
+                if (template.equals(CandidateSimilarityTemplate.class)) {
+                    log.info("Init CandidateSimilarityTemplate ...");
+                    CandidateSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
+                }
 
                 if (template.equals(PageRankTemplate.class)) {
                 }

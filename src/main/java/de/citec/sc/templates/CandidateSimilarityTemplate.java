@@ -63,10 +63,10 @@ public class CandidateSimilarityTemplate
 
 	public CandidateSimilarityTemplate() throws InitializationException {
 		if (!isInitialized) {
-			log.warn("DocumentSimilarityTemplate is NOT initialized correctly!");
-			log.warn("Call DocumentSimilarityTemplate.init() for proper initlialization.");
+			log.warn("CandidateSimilarityTemplate is NOT initialized correctly!");
+			log.warn("Call CandidateSimilarityTemplate.init() for proper initlialization.");
 			throw new InitializationException(
-					"DocumentSimilarityTemplate is NOT initialized correctly! Call DocumentSimilarityTemplate.init() for proper initlialization.");
+					"CandidateSimilarityTemplate is NOT initialized correctly! Call CandidateSimilarityTemplate.init() for proper initlialization.");
 		}
 	}
 
