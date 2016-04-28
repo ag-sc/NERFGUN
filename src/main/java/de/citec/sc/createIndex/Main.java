@@ -35,7 +35,7 @@ public class Main {
 //        args[0] = "mdeol";
 //        args[1] = "CoNLLTesta";
 //        args[2] = "-r";
-//        args[3] = "gerbil";
+//        args[3] = "gerbilAPI";
 //////        args[4] = "-n";
 //////        args[5] = "1";
 //////        args[6] = "-d";
@@ -53,7 +53,7 @@ public class Main {
 //        args[7] = "CoNLLTraining";
         readParamsFromCommandLine(args);
         int cores = Runtime.getRuntime().availableProcessors();
-        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", (cores - 3) + "");
+        System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", (cores - 5) + "");
 
 //        RetrievalPerformance.run();
 //        RetrievalPerformancePageRank.run();
@@ -88,11 +88,35 @@ public class Main {
             }
         }
         
-        if (PARAMETERS.get(PARAM_RUN).equals("gerbil")) {
+        if (PARAMETERS.get(PARAM_RUN).equals("bireAPI")) {
             try {
                 Spark.port(8080);
                 BIREDisambiguationService.main(args);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (PARAMETERS.get(PARAM_RUN).equals("gerbilAPI")) {
+            try {
+                Spark.port(8182);
                 GerbilAPI.main(args);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (PARAMETERS.get(PARAM_RUN).equals("bothAPI")) {
+            try {
+                Spark.port(8181);
+                GerbilAPI.main(args);
+                BIREDisambiguationService.main(args);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+        if (PARAMETERS.get(PARAM_RUN).equals("retrieval")) {
+            try {
+                RetrievalPerformance.run(args);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -6,20 +6,25 @@ import de.citec.sc.corpus.CorpusLoader.CorpusName;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.evaluator.Evaluator;
+import de.citec.sc.helper.DocumentUtils;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
+import de.citec.sc.templates.CandidateSimilarityTemplate;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.templates.NEDTemplateFactory;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
+import edu.stanford.nlp.io.PrintFile;
 import evaluation.EvaluationUtil;
 import exceptions.UnkownTemplateRequestedException;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -48,12 +53,14 @@ public class BIRETest {
     private static String tsprFile = "tspr.gold";
     private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 
-    private static int MAX_CANDIDATES = 100;
+    private static int MAX_CANDIDATES = 1;
     private static final Map<String, String> PARAMETERS = new HashMap<>();
 
     private static final String PARAMETER_PREFIX = "-";
 
     private static final String PARAM_SETTING_BINS = "-z";
+    
+    private static final String PARAM_SETTING_MAX_CANDIDATES = "-n";
 
     public static void main(String[] args) throws UnkownTemplateRequestedException, Exception {
 
@@ -76,8 +83,11 @@ public class BIRETest {
             case "CoNLLTestb":
                 corpus = loader.loadCorpus(CorpusName.CoNLLTestb);
                 break;
-            case "MicroTagging":
-                corpus = loader.loadCorpus(CorpusName.MicroTagging);
+            case "MicroTag2014Train":
+                corpus = loader.loadCorpus(CorpusName.MicroTag2014Train);
+                break;
+            case "MicroTag2014Test":
+                corpus = loader.loadCorpus(CorpusName.MicroTag2014Test);
                 break;
             default:
                 log.error("No dataset found for %s", corpusName);
@@ -100,11 +110,12 @@ public class BIRETest {
         Map<Document, Document> mapOfDocs = new LinkedHashMap<Document, Document>();
 
         List<Document> test = new ArrayList<>();
-        
+
         int capacity = 70;
 
         /**
-         * divides the documents which have higher number of gold standard annotations than 70 into bins with 50 annotatiosn
+         * divides the documents which have higher number of gold standard
+         * annotations than 70 into bins with 50 annotatiosn
          */
         for (int i1 = 0; i1 < testUnfiltered.size(); i1++) {
 
@@ -163,7 +174,8 @@ public class BIRETest {
         TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
         IndexMapping.init(tsprIndexMappingFile);
         log.info("Init DocumentSimilarityTemplate ...");
-        DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
+//        DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
+        CandidateSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
 
         boolean useBins = true;
         if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
@@ -190,9 +202,17 @@ public class BIRETest {
         // if (PARAMETERS.get(PARAM_SCORER).equals("linear")) {
         // scorer = new LinearScorer();
         // }
-        Initializer<Document, State> testInitializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
+        
 
         List<Explorer<State>> explorers = new ArrayList<>();
+        
+        if (PARAMETERS.containsKey(PARAM_SETTING_MAX_CANDIDATES)) {
+            MAX_CANDIDATES = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_MAX_CANDIDATES));
+        }
+        
+        
+        Initializer<Document, State> testInitializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
+        
         explorers.add(new AllScoresExplorer(index, MAX_CANDIDATES));
         int numberOfSamplingSteps = 200;
 
@@ -207,7 +227,7 @@ public class BIRETest {
 
                 double maxScore = chain.get(chain.size() - 1).getModelScore();
                 int count = 0;
-                final int maxCount = 5;
+                final int maxCount = 2;
 
                 for (int i = 0; i < chain.size(); i++) {
                     if (chain.get(i).getModelScore() >= maxScore) {
@@ -228,14 +248,20 @@ public class BIRETest {
 
         Trainer trainer = new Trainer();
 
+        long startTime = System.currentTimeMillis();
         List<State> testResults = trainer.test(sampler, testInitializer, test);
+        long endTime = System.currentTimeMillis();
 
+        //get total number of annotations
+        int annotationSize = 0;
         for (State state : testResults) {
             Document original = mapOfDocs.get(state.getInstance());
 
             List<Annotation> a = original.getAnnotations();
             a.addAll(new ArrayList<>(state.getEntities()));
             original.setAnnotations(a);
+
+            annotationSize += a.size();
 
 //            List<Annotation> g = original.getGoldStandard();
 //            g.addAll(state.getInstance().getGoldStandard());
@@ -247,9 +273,30 @@ public class BIRETest {
         log.info("Evaluation on test data:");
         testEvaluation.entrySet().forEach(e -> log.info(e));
 
+        System.out.println("Evaluation on test data:");
+        testEvaluation.entrySet().forEach(e -> System.out.println(e));
+
         /*
          * Finally, print the models weights.
          */
+        long runTimePerDoc = (endTime - startTime) / (long) test.size();
+        long runTimePerAnt = (endTime - startTime) / (long) annotationSize;
+        log.info("\nRuntime per doc: " + runTimePerDoc + " ms\n");
+        log.info("Runtime per annotation: " + runTimePerAnt + " ms\n");
+        System.out.println("\nRuntime per doc: " + runTimePerDoc + " ms\n");
+        System.out.println("Runtime per annotation: " + runTimePerAnt + " ms\n");
+
+        //get results and write to the file
+        Date d = new Date();
+        String results = "Setting : " + modelDirPath + " Date : "+ d.toString();
+        results +="\nEvaluation on test data:";
+        for(String r1 : testEvaluation.keySet()){
+            results +=r1 + " : "+testEvaluation.get(r1)+"\n";
+        }
+        results +="\n=======================================================================\n";
+        
+        DocumentUtils.writeListToFile("src/main/resources/results.txt", results);
+
         log.info("Model weights:");
         EvaluationUtil.printWeights(model, -1);
 

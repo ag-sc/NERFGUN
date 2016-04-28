@@ -9,13 +9,19 @@ import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.gerbil.GerbilUtil;
 import de.citec.sc.gerbil.GsonDocument;
+import de.citec.sc.helper.DocumentUtils;
+import de.citec.sc.query.Instance;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import org.aksw.gerbil.transfer.nif.TurtleNIFDocumentCreator;
 
 /**
@@ -26,63 +32,107 @@ public class Test {
 
     public static void main(String[] args) {
 
-        String url = "http://purpur-v11:8080/ned/gerbil";
-        Document d1 = new Document("phoneqdwtz", "testDocument");
-        Annotation a1 = new Annotation("a1", "", 0, 5);
-        Annotation a2 = new Annotation("a2", "", 5, 10);
-        List<Annotation> goldAnnotations = new ArrayList<>();
-        goldAnnotations.add(a1);
-        goldAnnotations.add(a2);
-        d1.setGoldStandard(goldAnnotations);
+        Set<String> f = DocumentUtils.readFile(new File("gerbil_results.txt"));
 
-        GsonDocument gson = GerbilUtil.bire2gson(d1, true);
-        org.aksw.gerbil.transfer.nif.Document d2 = GerbilUtil.gson2gerbil(gson);
-        //String parameters = GerbilUtil.bire2json(d1, true);
-        //String parameters2 = GerbilUtil.gerbil2json(d2);
+        HashMap<String, HashMap<String, String>> values = new LinkedHashMap<>();
 
-        TurtleNIFDocumentCreator creator = new TurtleNIFDocumentCreator();
-        String nifDoc = creator.getDocumentAsNIFString(d2);
+        for (String s : f) {
+            if (!s.startsWith("Systems")) {
+                String[] data = s.split("\t");
 
-        
-        
+                if (data.length == 5) {
+                    String system = data[0];
+                    String dataset = data[1];
+                    String microF1 = data[2];
+                    String macroF1 = data[3];
+                    String runtime = data[4];
 
-        try {
-            URL obj = new URL(url);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+                    if (values.containsKey(system)) {
+                        HashMap<String, String> old = values.get(system);
 
-            //add reuqest header
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+                        old.put(dataset, microF1 + "\t" + macroF1 + "\t" + runtime);
 
-            // Send post request
-            con.setDoOutput(true);
-            DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-            wr.writeBytes(nifDoc);
-            wr.flush();
-            wr.close();
+                        values.put(system, old);
+                    } else {
+                        HashMap<String, String> old = new LinkedHashMap<>();
 
-            int responseCode = con.getResponseCode();
-            System.out.println("\nSending 'POST' request to URL : " + url);
-            System.out.println("Post parameters : " + nifDoc);
-            System.out.println("Response Code : " + responseCode);
+                        old.put(dataset, microF1 + "\t" + macroF1 + "\t" + runtime);
 
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
+                        values.put(system, old);
+                    }
 
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
+                } else {
+
+                    String system = data[0];
+                    String dataset = data[1];
+
+                    if (values.containsKey(system)) {
+                        HashMap<String, String> old = values.get(system);
+
+                        old.put(dataset, "Error\tError\tError");
+
+                        values.put(system, old);
+                    } else {
+                        HashMap<String, String> old = new LinkedHashMap<>();
+
+                        old.put(dataset, "Error\tError\tError");
+
+                        values.put(system, old);
+                    }
+
+                }
             }
-            in.close();
-
-            //print result
-            System.out.println(response.toString());
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
+        String header = "Systems";
+
+        String content = "";
+        List<String> lines = new ArrayList<>();
+
+        for (String system : values.keySet()) {
+            String rMicro = system + "\tMicro F1";
+            String rMacro = system + "\tMacro F1";
+            String runtime = system + "\tRuntime (ms)";
+
+            for (String k : values.get(system).keySet()) {
+
+                String v = values.get(system).get(k);
+
+                String[] data = v.split("\t");
+                rMicro += "\t" + data[0];
+                rMacro += "\t" + data[1];
+                runtime += "\t" + data[2];
+
+                if (!header.contains(k)) {
+                    header += "\t" + k;
+                }
+            }
+
+            content += rMicro + "\n";
+            content += rMacro + "\n";
+            content += runtime + "\n";
+        }
+
+        content = header + "\n" + content.trim();
+
+        DocumentUtils.writeListToFile("gerbil_cleaned.txt", content);
+
+        System.out.println(content);
+
+//        CorpusLoader l = new CorpusLoader(false);
+//        DefaultCorpus c = l.loadCorpus(CorpusLoader.CorpusName.CoNLLFull);
+//        
+//        System.out.println(c.getDocuments().size());
+//        int count =0;
+//        for(Document d : c.getDocuments()){
+//            if(!d.getGoldStandard().isEmpty())
+//            {
+//                count += d.getGoldStandard().size();
+//            }
+//        }
+//        System.out.println(count);
+//        testBIREAPI();
+//        testGerbilAPI();
 //        String path = "dbpediaFiles/pageranks.ttl";
 //
 //        // read file into stream, try-with-resources
@@ -163,4 +213,160 @@ public class Test {
 //        }
     }
 
+    private static List<Instance> filterNumbers(List<Instance> candidates, String text) {
+        List<Instance> filtered = new ArrayList<>();
+
+        String regexYear = "^[12][0-9]{3}$";//Years from 1000 to 2999
+        String regexNumber = "^\\d{1,3}$";//two digit numbers
+
+        HashMap<String, String> numbers = new HashMap<>();
+        numbers.put("one", "1");
+        numbers.put("two", "2");
+        numbers.put("three", "3");
+        numbers.put("four", "4");
+        numbers.put("five", "5");
+        numbers.put("six", "6");
+        numbers.put("seven", "7");
+        numbers.put("eight", "8");
+        numbers.put("nine", "9");
+        numbers.put("ten", "10");
+        numbers.put("eleven", "11");
+        numbers.put("twelve", "12");
+        numbers.put("thirteen", "13");
+
+        if (text.matches(regexYear)) {
+
+            for (Instance i : candidates) {
+                if (text.equalsIgnoreCase(i.getUri())) {
+                    filtered.add(i);
+
+                    return filtered;
+                }
+            }
+        } else if (text.matches(regexNumber)) {
+
+            for (Instance i : candidates) {
+
+                if (i.getUri().equalsIgnoreCase(text + "_(number)")) {
+                    filtered.add(i);
+                    return filtered;
+                }
+            }
+        } else if (numbers.containsKey(text.toLowerCase())) {
+
+            for (Instance i : candidates) {
+
+                if (i.getUri().equalsIgnoreCase(numbers.get(text) + "_(number)")) {
+                    filtered.add(i);
+                    return filtered;
+                }
+            }
+        }
+
+        return candidates;
+    }
+
+    public static void testGerbilAPI() {
+        String url = "http://purpur-v11:8181/NED";
+        Document d1 = new Document("phone", "testDocument");
+        Annotation a1 = new Annotation("phone", "", 0, 5);
+        Annotation a2 = new Annotation("qdwtz", "", 5, 10);
+        List<Annotation> goldAnnotations = new ArrayList<>();
+        goldAnnotations.add(a1);
+//        goldAnnotations.add(a2);
+        d1.setGoldStandard(goldAnnotations);
+
+        GsonDocument gson = GerbilUtil.bire2gson(d1, true);
+        org.aksw.gerbil.transfer.nif.Document d2 = GerbilUtil.gson2gerbil(gson);
+
+        TurtleNIFDocumentCreator creator = new TurtleNIFDocumentCreator();
+        String nifDoc = creator.getDocumentAsNIFString(d2);
+
+        try {
+            URL obj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+            //add reuqest header
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+            // Send post request
+            con.setDoOutput(true);
+            DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+            wr.writeBytes(nifDoc);
+            wr.flush();
+            wr.close();
+
+            int responseCode = con.getResponseCode();
+            System.out.println("\nSending 'POST' request to URL : " + url);
+            System.out.println("Post parameters : " + nifDoc);
+            System.out.println("Response Code : " + responseCode);
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            //print result
+            System.out.println(response.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void testBIREAPI() {
+        String url = "http://purpur-v11:8181/bire";
+        Document d1 = new Document("phoneqdwtz", "testDocument");
+        Annotation a1 = new Annotation("St. John Fisher", "", 0, 5);
+        Annotation a2 = new Annotation("2", "", 5, 10);
+        List<Annotation> goldAnnotations = new ArrayList<>();
+        goldAnnotations.add(a1);
+        goldAnnotations.add(a2);
+        d1.setGoldStandard(goldAnnotations);
+
+        String parameters = GerbilUtil.bire2json(d1, true);
+
+        try {
+            URL obj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+            //add reuqest header
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+            // Send post request
+            con.setDoOutput(true);
+            DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+            wr.writeBytes(parameters);
+            wr.flush();
+            wr.close();
+
+            int responseCode = con.getResponseCode();
+            System.out.println("\nSending 'POST' request to URL : " + url);
+            System.out.println("Post parameters : " + parameters);
+            System.out.println("Response Code : " + responseCode);
+
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            //print result
+            System.out.println(response.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

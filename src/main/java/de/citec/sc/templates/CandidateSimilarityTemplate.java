@@ -40,7 +40,7 @@ public class CandidateSimilarityTemplate
 	/**
 	 * The number of wikipedia documents.
 	 */
-	static public double NUMBER_OF_WIKI_DOCUMENTS;
+
 
 	private static boolean isInitialized = false;
 
@@ -55,7 +55,7 @@ public class CandidateSimilarityTemplate
 			FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
 			IDFProvider.getIDF(dfFile);
 
-			NUMBER_OF_WIKI_DOCUMENTS = WikipediaTFIDFVector.countLines(tfidfFile);
+			
 			isInitialized = true;
 		}
 

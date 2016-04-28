@@ -11,28 +11,30 @@ import templates.TemplateFactory;
 
 public class NEDTemplateFactory implements TemplateFactory<Document, State> {
 
-	private boolean useBins = true;
+    private boolean useBins = true;
 
-	public NEDTemplateFactory(boolean b) {
-		this.useBins = b;
-	}
+    public NEDTemplateFactory(boolean b) {
+        this.useBins = b;
+    }
 
-	@Override
-	public AbstractTemplate<Document, State, ?> newInstance(String templateName)
-			throws UnkownTemplateRequestedException, Exception {
-		switch (templateName) {
-		case "TermFrequencyTemplate":
-			return new TermFrequencyTemplate();
-		case "PageRankTemplate":
-			return new PageRankTemplate();
-		case "EditDistanceTemplate":
-			return new EditDistanceTemplate(useBins);
-		case "TopicSpecificPageRankTemplate":
-			return new TopicSpecificPageRankTemplate(useBins);
-		case "DocumentSimilarityTemplate":
-			return new DocumentSimilarityTemplate();
-		}
-		throw new UnkownTemplateRequestedException("Cannot instanciate Template for name " + templateName);
-	}
+    @Override
+    public AbstractTemplate<Document, State, ?> newInstance(String templateName)
+            throws UnkownTemplateRequestedException, Exception {
+        switch (templateName) {
+            case "TermFrequencyTemplate":
+                return new TermFrequencyTemplate();
+            case "PageRankTemplate":
+                return new PageRankTemplate();
+            case "EditDistanceTemplate":
+                return new EditDistanceTemplate(useBins);
+            case "TopicSpecificPageRankTemplate":
+                return new TopicSpecificPageRankTemplate(useBins);
+            case "DocumentSimilarityTemplate":
+                return new DocumentSimilarityTemplate();
+            case "CandidateSimilarityTemplate":
+                return new CandidateSimilarityTemplate();
+        }
+        throw new UnkownTemplateRequestedException("Cannot instanciate Template for name " + templateName);
+    }
 
 }

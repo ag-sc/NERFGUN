@@ -33,6 +33,7 @@ import de.citec.sc.sampling.AllScoresExplorer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.settings.BIRESettings;
 import de.citec.sc.settings.Setting;
+import de.citec.sc.templates.CandidateSimilarityTemplate;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
 import de.citec.sc.templates.IndexMapping;
@@ -73,8 +74,9 @@ public class BIRETrain {
     private static final String PARAM_SETTING_LEARNING_STRATEGY = "-u";
     private static final String PARAM_SETTING_EPOCHS = "-e";
     private static final String PARAM_SETTING_BINS = "-z";
+    private static final String PARAM_SETTING_MAX_CANDIDATE = "-w";
 
-    private static final int MAX_CANDIDATES = 100;
+    private static int MAX_CANDIDATES = 1;
     private static final Map<String, String> PARAMETERS = new HashMap<>();
 
     private static final String PARAMETER_PREFIX = "-";
@@ -112,6 +114,10 @@ public class BIRETrain {
          * TODO: Just for testing !!!! Remove before Jar export.
          */
         // args = new String[]{"-s", "7"};
+        if (PARAMETERS.containsKey(PARAM_SETTING_MAX_CANDIDATE)) {
+            MAX_CANDIDATES = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_MAX_CANDIDATE));
+        }
+
         initializeBIRE(args);
 
         /*
@@ -134,7 +140,7 @@ public class BIRETrain {
         DefaultCorpus corpus = loader.loadCorpus(CorpusName.valueOf(dataset));
         List<Document> documents = corpus.getDocuments();
 
-        documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50).collect(Collectors.toList());
+        documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50 && d.getGoldStandard().size() > 0).collect(Collectors.toList());
 
         int dSize = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_DOCUMENTSIZE));
         if (dSize < documents.size()) {
@@ -299,7 +305,7 @@ public class BIRETrain {
             @Override
             public void onEndEpoch(Trainer caller, int epoch, int numberOfEpochs, int numberOfInstances) {
 
-                File modelsDir = new File("src/main/resources/models_" + numberOfEpochs);
+                File modelsDir = new File("src/main/resources/models_" + epoch);
 
                 if (!modelsDir.exists()) {
                     modelsDir.mkdirs();
@@ -480,6 +486,16 @@ public class BIRETrain {
             if (template.equals(DocumentSimilarityTemplate.class)) {
                 try {
                     templates.add(new DocumentSimilarityTemplate());
+                } catch (InitializationException e) {
+                    e.printStackTrace();
+                    System.exit(0);
+                }
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            
+            if (template.equals(CandidateSimilarityTemplate.class)) {
+                try {
+                    templates.add(new CandidateSimilarityTemplate());
                 } catch (InitializationException e) {
                     e.printStackTrace();
                     System.exit(0);

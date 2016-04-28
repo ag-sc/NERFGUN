@@ -17,6 +17,8 @@ import de.citec.sc.similarity.measures.SimilarityMeasures;
 import de.citec.sc.variables.State;
 import factors.Factor;
 import factors.patterns.SingleVariablePattern;
+import java.util.ArrayList;
+import java.util.List;
 import learning.Vector;
 
 /**
@@ -42,7 +44,6 @@ public class EditDistanceTemplate
 
 //    public EditDistanceTemplate() {
 //    }
-
     @Override
     public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
         Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
@@ -61,7 +62,7 @@ public class EditDistanceTemplate
 
         log.debug("Retrieve text for query link %s...", entity.getLink());
 
-        double weightedEditSimilarity = 0;
+        double weightedEditSimilarity = 0, value = 0;
 
         try {
             final String link = entity.getLink().replaceAll("_", " ").toLowerCase();
@@ -73,6 +74,15 @@ public class EditDistanceTemplate
 
             weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
 
+//            value = Math.pow(weightedEditSimilarity + 1, 2);
+//
+//            //hacking features
+            if (entity.getLink().contains("_(number)")) {
+                if (isNumber(word)) {
+                    featureVector.set("NumberFeature", 2d);
+                }
+            }
+
         } catch (Exception e) {
             log.info("Link " + entity.getLink() + "\n");
             log.info("Word " + entity.getWord() + "\n");
@@ -81,6 +91,7 @@ public class EditDistanceTemplate
 
         featureVector.set("-0.5_LevenshteinEditSimilarity", weightedEditSimilarity - 0.5);
         featureVector.set("Positive_LevenshteinEditSimilarity", weightedEditSimilarity);
+//        featureVector.set("Positive_LevenshteinEditSimilarity_Pow", value);
 
         if (useBins) {
             for (double i = 0.01; i < 1.0; i = i + 0.01) {
@@ -88,6 +99,36 @@ public class EditDistanceTemplate
             }
         }
 
+    }
+
+    private boolean isNumber(String s) {
+
+        String regex = "\\d+";
+
+        boolean b = s.matches(regex);
+
+        List<String> numbers = new ArrayList<>();
+        numbers.add("one");
+        numbers.add("two");
+        numbers.add("three");
+        numbers.add("four");
+        numbers.add("five");
+        numbers.add("six");
+        numbers.add("seven");
+        numbers.add("eight");
+        numbers.add("nine");
+        numbers.add("ten");
+        numbers.add("eleven");
+        numbers.add("twelve");
+        numbers.add("thirteen");
+
+        if (b == false) {
+            if (numbers.contains(s)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

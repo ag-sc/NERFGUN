@@ -129,7 +129,7 @@ public class RetrievalPerformancePageRank {
 
 							// set the dataset
 							if (dataset.equals("tweets")) {
-								c = loader.loadCorpus(CorpusLoader.CorpusName.MicroTagging);
+								c = loader.loadCorpus(CorpusLoader.CorpusName.MicroTag2014Test);
 							}
 							if (dataset.equals("news")) {
 								c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTraining);

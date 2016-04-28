@@ -1,5 +1,6 @@
 package de.citec.sc.settings;
 
+import de.citec.sc.templates.CandidateSimilarityTemplate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,7 +19,7 @@ public class BIRESettings {
 	 */
 	final private static List<Class<? extends AbstractTemplate>> templates = Arrays.asList(PageRankTemplate.class,
 			TermFrequencyTemplate.class, EditDistanceTemplate.class, TopicSpecificPageRankTemplate.class,
-			DocumentSimilarityTemplate.class);
+			             CandidateSimilarityTemplate.class);
 
 	/**
 	 * All possible options generated given the sorted templates.

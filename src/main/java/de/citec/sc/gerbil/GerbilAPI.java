@@ -18,7 +18,8 @@ import spark.Spark;
 
 public class GerbilAPI {
 
-	private static final String NED_BIRE_URL = "http://purpur-v11:8080/ned/json";
+	private static final String NED_BIRE_URL = "http://localhost:8181/bire";
+//        private static final String NED_BIRE_URL = "http://purpur-v11:8181/bire";
 	private static Logger log = LogManager.getFormatterLogger();
 
 	public static void main(String[] args) {
@@ -27,14 +28,16 @@ public class GerbilAPI {
 
 	public static void run() {
 		log.info("GERBIL NIF-Document disambiguation service started.");
-		//Spark.port(8081);
-		Spark.post("/ned/gerbil", "application/x-turtle", (request, response) -> {
+		//Spark.port(8181);
+		Spark.post("/NED", "application/x-turtle", (request, response) -> {
 			String nifDocument = request.body();
+                        System.out.println(nifDocument);
 			log.info("NIF-Document for disambiguation received:\n%s", nifDocument);
 			String annotatedJsonDocument = onRequest(nifDocument);
 			log.info("Returning disambiguated NIF-Document:\n%s", annotatedJsonDocument);
 			response.type("application/x-tutle");
 			return annotatedJsonDocument;
+//                        return nifDocument;
 		});
 	}
 

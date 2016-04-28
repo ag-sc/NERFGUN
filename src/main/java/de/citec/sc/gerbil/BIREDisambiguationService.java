@@ -72,7 +72,7 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 			throws FileNotFoundException, IOException, UnkownTemplateRequestedException, Exception {
 		BIREDisambiguationService service = new BIREDisambiguationService();
 		String modelDirPath = args[0];
-		//service.init(modelDirPath);
+		service.init(modelDirPath);
 		service.run();
 	}
 
@@ -96,6 +96,7 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 		testInitializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
 
 		explorers = new ArrayList<>();
+                IndexMapping.init(tsprIndexMappingFile);
 		explorers.add(new AllScoresExplorer(index, MAX_CANDIDATES));
 		numberOfSamplingSteps = 200;
 
@@ -110,7 +111,7 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 
 				double maxScore = chain.get(chain.size() - 1).getModelScore();
 				int count = 0;
-				final int maxCount = 5;
+				final int maxCount = 2;
 
 				for (int i = 0; i < chain.size(); i++) {
 					if (chain.get(i).getModelScore() >= maxScore) {
@@ -130,14 +131,14 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 	public void run() {
 		log.info("Start JSON-Document disambiguation service.");
 		
-		Spark.post("/ned/json", "application/json", (request, response) -> {
+		Spark.post("/bire", "application/json", (request, response) -> {
 			String jsonDocument = request.body();
 			Document document = GerbilUtil.json2bire(jsonDocument, true);
-//			Document annotatedDocument = disambiguate(document);
+			Document annotatedDocument = disambiguate(document);
 
-                        Document annotatedDocument = new Document(document.getDocumentContent(), document.getDocumentName());
-                        annotatedDocument.setAnnotations(document.getGoldStandard());
-                        annotatedDocument.setGoldStandard(document.getGoldStandard());
+//                        Document annotatedDocument = new Document(document.getDocumentContent(), document.getDocumentName());
+//                        annotatedDocument.setAnnotations(document.getGoldStandard());
+//                        annotatedDocument.setGoldStandard(document.getGoldStandard());
                         
 			response.type("application/json");
                         

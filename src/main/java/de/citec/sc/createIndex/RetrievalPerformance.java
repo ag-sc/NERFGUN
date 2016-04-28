@@ -32,6 +32,7 @@ import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.query.Instance;
 import de.citec.sc.templates.IndexMapping;
+import java.util.LinkedHashMap;
 
 /**
  *
@@ -39,232 +40,223 @@ import de.citec.sc.templates.IndexMapping;
  */
 public class RetrievalPerformance {
 
-	static CandidateRetriever indexSearch;
+    static long time;
+    private static int topK;
 
-	static long time;
-	static String index;
-	private static int topK;
+    public static void run(String[] args) throws UnsupportedEncodingException {
 
-	public static void main(String[] args) throws UnsupportedEncodingException {
-		run();
-	}
+        List<String> datasets = new ArrayList<>();
+//        datasets.add("CoNLLTesta");
+//        datasets.add("CoNLLTestb");
+        datasets.add("CoNLLTraining");
+        datasets.add("MicroTag2014Train");
 
-	public static void run() throws UnsupportedEncodingException {
-            
-            List<Integer> topKs = new ArrayList<>();
-		// topKs.add(10);
-		topKs.add(100);
-		// topKs.add(200);
-		// topKs.add(500);
-		// topKs.add(1000);
-		// topKs.add(2000);
+        boolean compareAll = true;
 
-		List<String> datasets = new ArrayList<>();
-		// datasets.add("tweets");
-		datasets.add("testa");
-		// datasets.add("small");
+        CorpusLoader loader = new CorpusLoader(false);
 
-		boolean compareAll = false;
+        // indexSearch = new CandidateRetrieverOnLucene(m, "mergedIndex");
+        System.out.println("Loading index files ... ");
+        long start = System.currentTimeMillis();
 
-		List<String> indexType = new ArrayList<>();
-		indexType.add("all");
+        List<String> approaches = new ArrayList<String>();
+        approaches.add("DBpedia");
+        approaches.add("Wikipedia");
+        approaches.add("Merged");
 
-		List<String> dbindexPaths = new ArrayList<>();
-		// dbindexPaths.add("dbpediaIndexOnlyLabels");
-		// dbindexPaths.add("dbpediaIndexOnlyOntology");
-		dbindexPaths.add("dbpediaIndexAll");
+        HashMap<String, List<Double>> results = new LinkedHashMap<>();
 
-		List<Boolean> useMemory = new ArrayList<>();
-		// useMemory.add(Boolean.FALSE);
-		useMemory.add(Boolean.TRUE);
+        for (String approachPath : approaches) {
 
-		CorpusLoader loader = new CorpusLoader(false);
+            CandidateRetrieverOnMemory indexSearch = new CandidateRetrieverOnMemory(approachPath);
+            long end = System.currentTimeMillis();
 
-		String overallResult = "";
+            System.out.println("Loaded in " + (end - start) + " ms.");
 
-		for (Boolean m : useMemory) {
-			// indexSearch = new CandidateRetrieverOnLucene(m, "mergedIndex");
-			long start = System.currentTimeMillis();
-			indexSearch = new CandidateRetrieverOnMemory();
-			long end = System.currentTimeMillis();
+            for (String dataset : datasets) {
 
-			for (String indexT : indexType) {
-				for (Integer t : topKs) {
-					for (String dataset : datasets) {
-						for (String dbpediaIndexPath : dbindexPaths) {
+                List<Double> values = new ArrayList<>();
 
-							topK = t;
-							time = 0;
-							index = indexT;
+                for (int t = 1; t <= 100; t = t + 1) {
 
-							DefaultCorpus c = new DefaultCorpus();
+                    if (t >= 11) {
+                        t += 9;
+                    }
 
-							// set the dataset
-							if (dataset.equals("tweets")) {
-								c = loader.loadCorpus(CorpusLoader.CorpusName.MicroTagging);
-							}
-							if (dataset.equals("news")) {
-								c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTraining);
-							}
-							if (dataset.equals("testa")) {
-								c = loader.loadCorpus(CorpusLoader.CorpusName.CoNLLTesta);
-							}
+                    topK = t;
+                    time = 0;
 
-							HashMap<String, Set<String>> notFound = new HashMap<String, Set<String>>();
+                    DefaultCorpus c = loader.loadCorpus(CorpusLoader.CorpusName.valueOf(dataset));
 
-							System.out.println(c.getDocuments().size());
+                    HashMap<String, Set<String>> notFound = new HashMap<String, Set<String>>();
 
-							List<Document> docs = c.getDocuments();
+                    List<Document> docs = c.getDocuments();
 
-							int annotationsCount = 0;
+                    int annotationsCount = 0;
 
-							for (Document d : docs) {
+                    for (Document d : docs) {
 
-								List<Annotation> annotations = d.getGoldStandard();
+                        List<Annotation> annotations = d.getGoldStandard();
 
-								annotationsCount += annotations.size();
+                        annotationsCount += annotations.size();
 
-								for (Annotation a : annotations) {
+                        for (Annotation a : annotations) {
 
-									// retrieve resources from index
-									List<Instance> matches = getMatches(a.getWord());
+                            // retrieve resources from index
+                            List<Instance> matches = getMatches(a.getWord(), indexSearch);
 
-									// if the link in annoation is redirect page
-									// replace it with the original one
-									// decoder the URI with UTF-8 encoding
-									String link = a.getLink();
+                            System.out.println(matches.size());
 
-									link = URLDecoder.decode(link, "UTF-8");
+                            // if the link in annoation is redirect page
+                            // replace it with the original one
+                            // decoder the URI with UTF-8 encoding
+                            String link = a.getLink();
 
-									a.setLink(link);
+                            link = URLDecoder.decode(link, "UTF-8");
 
-									// if the retrieved list contains the link
-									// the index contains the annotation
-									boolean contains = false;
+                            a.setLink(link);
 
-									if (compareAll) {
-										for (Instance i1 : matches) {
-											if (i1.getUri().equals(link)) {
-												contains = true;
-												break;
-											}
-										}
-									} else {
-										if (!matches.isEmpty()) {
-											if (matches.get(0).getUri().equals(link)) {
-												contains = true;
-											}
-										}
-									}
+                            // if the retrieved list contains the link
+                            // the index contains the annotation
+                            boolean contains = false;
 
-									if (contains) {
-										Annotation newOne = a.clone();
+                            if (compareAll) {
+                                for (Instance i1 : matches) {
+                                    if (i1.getUri().equals(link)) {
+                                        contains = true;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                if (!matches.isEmpty()) {
+                                    if (matches.get(0).getUri().equals(link)) {
+                                        contains = true;
+                                    }
+                                }
+                            }
 
-										d.addAnnotation(newOne.clone());
-									} else {
+                            if (contains) {
+                                Annotation newOne = a.clone();
 
-										if (notFound.containsKey(a.getWord())) {
-											Set<String> list = notFound.get(a.getWord());
+                                d.addAnnotation(newOne.clone());
+                            } else {
 
-											list.add(link);
+                                if (notFound.containsKey(a.getWord())) {
+                                    Set<String> list = notFound.get(a.getWord());
 
-											notFound.put(a.getWord(), list);
-										} else {
-											Set<String> list = new HashSet<>();
+                                    list.add(link);
 
-											list.add(link);
+                                    notFound.put(a.getWord(), list);
+                                } else {
+                                    Set<String> list = new HashSet<>();
 
-											notFound.put(a.getWord(), list);
-										}
+                                    list.add(link);
 
-									}
-								}
+                                    notFound.put(a.getWord(), list);
+                                }
 
-								System.out.println(docs.indexOf(d) + "  " + m + "  " + topK);
-							}
+                            }
+                        }
+                    }
 
-							Map<String, Double> result = Evaluator.evaluateAll(docs);
+                    Map<String, Double> result = Evaluator.evaluateAll(docs);
 
-							String s1 = "";
-							for (String s : result.keySet()) {
-								s1 += s + " " + result.get(s) + "\n";
-								System.out.println(s + " " + result.get(s));
-							}
+                    for (String s : result.keySet()) {
+                        if (s.equals("Micro-average Recall")) {
+                            values.add(result.get(s));
+                        }
+                    }
 
-							time = time / (long) annotationsCount;
-							s1 += "\n\nRuntime per entity: " + time + " nanoseconds.";
+                }
 
-							System.out.println(s1);
+                System.out.println(dataset + "_" + approachPath);
 
-							String n = "";
-							for (String n1 : notFound.keySet()) {
-								n += n1;
-								for (String l : notFound.get(n1)) {
-									n += "\t" + l;
-								}
-								n += "\n";
-							}
+                results.put(dataset + "_" + approachPath, values);
+            }
 
-							DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-							Date date = new Date();
+        }
 
-							String stamp = dateFormat.format(date).replace(" ", "_");
+        String overallResult = "TopK;";
 
-							writeListToFile("retrieval/notFound_memory_" + m + "_top_" + topK + "_" + dataset
-									+ "_index_" + index + "_property_" + dbpediaIndexPath + ".txt", n);
-							writeListToFile("retrieval/results_memory_" + m + "_top_" + topK + "_" + dataset + "_index_"
-									+ index + "_property_" + dbpediaIndexPath + ".txt", s1);
+        //get dataset*approach names
+        Object[] arrayOfDatasetsAppr = results.keySet().toArray();
 
-							overallResult += "memory_" + m + "_top_" + topK + "_" + dataset + "_index_" + index
-									+ "_property_" + dbpediaIndexPath + "" + "\n\n" + s1 + "\n\n\n";
-						}
-					}
-				}
-			}
-			System.out.println((end - start) + " ms loading the index ");
-			overallResult += (end - start) + " ms loading the index ";
-		}
+        for (int l = 0; l < arrayOfDatasetsAppr.length; l++) {
+            String k = arrayOfDatasetsAppr[l].toString();
 
-		writeListToFile("overallResult_compareAll_" + compareAll + ".txt", overallResult);
-	}
+            overallResult += k;
 
-	public static void writeListToFile(String fileName, String content) {
-		try {
-			File file = new File(fileName);
+            if (l < arrayOfDatasetsAppr.length - 1) {
+                overallResult += ";";
+            }
+        }
 
-			// if file doesnt exists, then create it
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-			FileWriter fw = new FileWriter(file);
-			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write(content);
+        overallResult += "\n";
 
-			bw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+        int counter = 0;
+        for (int t = 1; t <= 100; t = t + 1) {
 
-	private static List<Instance> getMatches(String word) {
+            if (t >= 11) {
+                t += 9;
+            }
+            overallResult += t + ";";
 
-		Set<String> queryTerms = new LinkedHashSet<>();
-		queryTerms.add(word);
+            Object[] keys = results.keySet().toArray();
 
-		List<Instance> temp = new ArrayList<>();
-		// retrieve matches
-		for (String q : queryTerms) {
-			long start = System.nanoTime();
-			if (index.equals("all")) {
-				temp.addAll(indexSearch.getAllResources(q, topK));
-			}
+            for (int l = 0; l < keys.length; l++) {
 
-			long end = System.nanoTime();
+                String k = keys[l].toString();
+                List<Double> values = results.get(k);
 
-			time += (end - start);
-		}
+                overallResult += values.get(counter);
 
-		return temp;
+                if (l < keys.length - 1) {
+                    overallResult += ";";
+                }
+            }
 
-	}
+            counter++;
+            overallResult += "\n";
+        }
+
+        writeListToFile("Retrieval.txt", overallResult);
+    }
+
+    public static void writeListToFile(String fileName, String content) {
+        try {
+            File file = new File(fileName);
+
+            // if file doesnt exists, then create it
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file);
+            BufferedWriter bw = new BufferedWriter(fw);
+            bw.write(content);
+
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static List<Instance> getMatches(String word, CandidateRetrieverOnMemory indexSearch) {
+
+        Set<String> queryTerms = new LinkedHashSet<>();
+        queryTerms.add(word);
+
+        List<Instance> temp = new ArrayList<>();
+        // retrieve matches
+        for (String q : queryTerms) {
+            long start = System.nanoTime();
+            temp.addAll(indexSearch.getAllResources(q, topK));
+
+            long end = System.nanoTime();
+
+            time += (end - start);
+        }
+
+        return temp;
+
+    }
 }

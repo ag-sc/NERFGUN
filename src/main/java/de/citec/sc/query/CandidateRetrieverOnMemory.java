@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  */
 public class CandidateRetrieverOnMemory implements CandidateRetriever {
 
-    private static Map<String, HashMap<String, Integer>> dbpediSurfaceForms;
+    private Map<String, HashMap<String, Integer>> dbpediSurfaceForms;
     private boolean isInitialized = false;
 
     public CandidateRetrieverOnMemory() {
@@ -43,6 +43,14 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
             System.out.println("Loading dbpedia surface forms ...");
             loadFiles("anchorFiles/");
         }
+
+    }
+
+    public CandidateRetrieverOnMemory(String path) {
+
+        
+        System.out.println("Loading dbpedia surface forms ...");
+        loadFiles(path + "/");
 
     }
 
@@ -54,8 +62,9 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
 
         HashMap<String, Integer> result = new LinkedHashMap<>();
         int counter = 0;
+        
         for (String s1 : result1.keySet()) {
-            if (counter <= topK) {
+            if (counter < topK) {
                 result.put(s1, result1.get(s1));
                 counter++;
             } else {
@@ -81,12 +90,10 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
 
     private void loadFiles(String directory) {
 
-        
-
         if (this.dbpediSurfaceForms == null) {
-            
+
             dbpediSurfaceForms = new ConcurrentHashMap<>(18000000);
-            
+
             File indexFolder = new File(directory);
             File[] listOfFiles = indexFolder.listFiles();
 
@@ -109,6 +116,7 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
 
                                     String label = c[0].toLowerCase();
                                     String uri = c[1];
+                                    uri = uri.replace("http://dbpedia.org/resource/", "");
                                     int freq = Integer.parseInt(c[2]);
 
                                     if (!(uri.contains("Category:") || uri.contains("(disambiguation)") || uri.contains("File:"))) {
@@ -139,37 +147,9 @@ public class CandidateRetrieverOnMemory implements CandidateRetriever {
                     }
                 }
             }
-            
+
         }
         isInitialized = true;
-    }
-
-    private void saveMap() {
-        try {
-
-            FileOutputStream fout = new FileOutputStream("serializedDBpediaData.bin");
-            ObjectOutputStream oos = new ObjectOutputStream(fout);
-            oos.writeObject(dbpediSurfaceForms);
-            oos.close();
-            System.out.println("Saved dbpedia map");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private void readMap() {
-        try {
-
-            FileInputStream fin = new FileInputStream("serializedDBpediaData.bin");
-            ObjectInputStream ois = new ObjectInputStream(fin);
-            dbpediSurfaceForms = (Map<String, HashMap<String, Integer>>) ois.readObject();
-            ois.close();
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.err.println("File not found serializedDBpediaData.bin");
-        }
     }
 
     private HashMap<String, Integer> sortByValue(Map<String, Integer> unsortMap) {
