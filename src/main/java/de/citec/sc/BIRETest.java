@@ -50,7 +50,7 @@ public class BIRETest {
     private static String indexFile = "tfidf.bin";
     private static String dfFile = "en_wiki_large_abstracts.docfrequency";
     private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
-    private static String tsprFile = "tspr.gold";
+    private static String tsprFile = "tspr.all";
     private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 
     private static int MAX_CANDIDATES = 1;

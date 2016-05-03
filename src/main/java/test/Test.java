@@ -6,17 +6,22 @@
 package test;
 
 import de.citec.sc.corpus.Annotation;
+import de.citec.sc.corpus.CorpusLoader;
+import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.gerbil.GerbilUtil;
 import de.citec.sc.gerbil.GsonDocument;
 import de.citec.sc.helper.DocumentUtils;
 import de.citec.sc.query.Instance;
+import de.citec.sc.similarity.measures.SimilarityMeasures;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,9 +37,85 @@ public class Test {
 
     public static void main(String[] args) {
 
+        CorpusLoader loader = new CorpusLoader(false);
+        DefaultCorpus corpus = loader.loadCorpus(CorpusLoader.CorpusName.MicroTag2014Test);
+
+        int c = 0;
+        for (Document d : corpus.getDocuments()) {
+
+            for (Annotation entity : d.getGoldStandard()) {
+
+                String link = entity.getLink();
+
+                if (link.contains("_(") && link.endsWith(")")) {
+                    link = link.substring(0, link.indexOf("_("));
+                }
+
+                link = link.replaceAll("_", " ").toLowerCase();
+
+                final String word = entity.getWord().toLowerCase();
+
+                final int levenDist = SimilarityMeasures.levenshteinDistance(link, word);
+
+                final int max = Math.max(link.length(), word.length());
+
+                double weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
+
+//                if (score < 0.5) {
+                if (isAbbreviation(word, link)) {
+                    c++;
+                    System.out.println(word +"  "+link);
+//                    System.out.println(entity.getWord() + "   " + entity.getLink());
+                }
+//                }
+            }
+
+        }
+
+        System.out.println(c);
+
+//        testBIREAPI();
+//        testGerbilAPI();
+        gerbilResults();
+    }
+
+    private static boolean isAbbreviation(String node, String uri) {
+        String abbr = node.length() > uri.length() ? uri : node;
+        String word = node.length() > uri.length() ? node : uri;
+
+        abbr = abbr.replace(".", "");
+
+        String[] tokens = word.split(" ");
+
+        if (tokens.length != abbr.length()) {
+            return false;
+        }
+
+        int count = 0;
+        for (int i = 0; i < abbr.length(); i++) {
+            String c = abbr.charAt(i) + "";
+            if (tokens[i].startsWith(c)) {
+                count++;
+            }
+        }
+
+        if (count == abbr.length()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static void gerbilResults() {
         Set<String> f = DocumentUtils.readFile(new File("gerbil_results.txt"));
 
         HashMap<String, HashMap<String, String>> values = new LinkedHashMap<>();
+
+        DecimalFormat f1Format = new DecimalFormat("#.##");
+        f1Format.setRoundingMode(RoundingMode.CEILING);
+
+        DecimalFormat runtimeFormat = new DecimalFormat("#");
+        runtimeFormat.setRoundingMode(RoundingMode.CEILING);
 
         for (String s : f) {
             if (!s.startsWith("Systems")) {
@@ -50,13 +131,13 @@ public class Test {
                     if (values.containsKey(system)) {
                         HashMap<String, String> old = values.get(system);
 
-                        old.put(dataset, microF1 + "\t" + macroF1 + "\t" + runtime);
+                        old.put(dataset, f1Format.format(Double.parseDouble(microF1)) + "\t" + f1Format.format(Double.parseDouble(macroF1)) + "\t" + runtimeFormat.format(Double.parseDouble(runtime)));
 
                         values.put(system, old);
                     } else {
                         HashMap<String, String> old = new LinkedHashMap<>();
 
-                        old.put(dataset, microF1 + "\t" + macroF1 + "\t" + runtime);
+                        old.put(dataset, f1Format.format(Double.parseDouble(microF1)) + "\t" + f1Format.format(Double.parseDouble(macroF1)) + "\t" + runtimeFormat.format(Double.parseDouble(runtime)));
 
                         values.put(system, old);
                     }
@@ -69,13 +150,13 @@ public class Test {
                     if (values.containsKey(system)) {
                         HashMap<String, String> old = values.get(system);
 
-                        old.put(dataset, "Error\tError\tError");
+                        old.put(dataset, "N/A\tN/A\tN/A");
 
                         values.put(system, old);
                     } else {
                         HashMap<String, String> old = new LinkedHashMap<>();
 
-                        old.put(dataset, "Error\tError\tError");
+                        old.put(dataset, "N/A\tN/A\tN/A");
 
                         values.put(system, old);
                     }
@@ -84,7 +165,7 @@ public class Test {
             }
         }
 
-        String header = "Systems";
+        String header = "Systems\tMeasures";
 
         String content = "";
         List<String> lines = new ArrayList<>();
@@ -118,99 +199,6 @@ public class Test {
         DocumentUtils.writeListToFile("gerbil_cleaned.txt", content);
 
         System.out.println(content);
-
-//        CorpusLoader l = new CorpusLoader(false);
-//        DefaultCorpus c = l.loadCorpus(CorpusLoader.CorpusName.CoNLLFull);
-//        
-//        System.out.println(c.getDocuments().size());
-//        int count =0;
-//        for(Document d : c.getDocuments()){
-//            if(!d.getGoldStandard().isEmpty())
-//            {
-//                count += d.getGoldStandard().size();
-//            }
-//        }
-//        System.out.println(count);
-//        testBIREAPI();
-//        testGerbilAPI();
-//        String path = "dbpediaFiles/pageranks.ttl";
-//
-//        // read file into stream, try-with-resources
-//        ConcurrentHashMap<String, Double> map = new ConcurrentHashMap<>(19500000);
-//
-//        String patternString = "<http://dbpedia.org/resource/(.*?)>.*\"(.*?)\"";
-//        Pattern pattern1 = Pattern.compile(patternString);
-//
-//        Set<String> uris = new HashSet<>();
-//        for (Document d : c.getDocuments()) {
-//            for (Annotation a : d.getGoldResult()) {
-//                String uri = a.getLink().replace("http://en.wikipedia.org/wiki/", "");
-//                uris.add(uri);
-//            }
-//        }
-//
-//        try (Stream<String> stream = Files.lines(Paths.get(path))) {
-//            stream.parallel().forEach(item -> {
-//
-//                String line = item.toString();
-//
-//                Matcher m = pattern1.matcher(line);
-//                while (m.find()) {
-//                    String uri = m.group(1);
-//
-//                    String r = m.group(2);
-//                    Double v = Double.parseDouble(r);
-//
-//                    if (!(uri.contains("Category:") || uri.contains("(disambiguation)"))) {
-//                        try {
-//                            // counter.incrementAndGet();
-//                            uri = URLDecoder.decode(uri, "UTF-8");
-//                        } catch (UnsupportedEncodingException ex) {
-//                            Logger.getLogger(TestSearch.class.getName()).log(Level.SEVERE, null, ex);
-//                        }
-//                        map.put(uri, v);
-//
-//                    }
-//
-//                }
-//
-//            });
-//            System.out.println(map.keySet().size());
-//            for (String uri : uris) {
-//                if (!map.keySet().contains(uri)) {
-//                    System.out.println(uri);
-//                }
-//
-//            }
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        TreeMap<Integer, Double> ranges = new TreeMap<>();
-//
-//        TreeSet<Double> values = new TreeSet<>();
-//
-//        System.out.println(uris.size());
-//        for (String uri : uris) {
-//            if (map.containsKey(uri)) {
-//                Double v1 = map.get(uri);
-//                values.add(v1);
-//				// int v = (int)
-//                // ranges.put(v1, ranges.getOrDefault(v, 0) + 1);
-//            }
-//        }
-//        System.out.println(values.size());
-//
-//        List<Double> valuesAsList = new ArrayList<>();
-//        valuesAsList.addAll(values);
-//
-//        for (int i = 0; i < 10; i = i + 1) {
-//            double s1 = (((double) values.size()) / 10);
-//            int k = (int) (i * s1);
-//
-//            System.out.println(valuesAsList.get(k));
-//        }
     }
 
     private static List<Instance> filterNumbers(List<Instance> candidates, String text) {
@@ -267,13 +255,13 @@ public class Test {
     }
 
     public static void testGerbilAPI() {
-        String url = "http://purpur-v11:8181/NED";
-        Document d1 = new Document("phone", "testDocument");
-        Annotation a1 = new Annotation("phone", "", 0, 5);
+        String url = "http://psink.techfak.uni-bielefeld.de:80";
+        Document d1 = new Document("Logronesqdwtz", "testDocument");
+        Annotation a1 = new Annotation("Logrones", "", 0, 6);
         Annotation a2 = new Annotation("qdwtz", "", 5, 10);
         List<Annotation> goldAnnotations = new ArrayList<>();
         goldAnnotations.add(a1);
-//        goldAnnotations.add(a2);
+        goldAnnotations.add(a2);
         d1.setGoldStandard(goldAnnotations);
 
         GsonDocument gson = GerbilUtil.bire2gson(d1, true);
@@ -321,7 +309,7 @@ public class Test {
     }
 
     public static void testBIREAPI() {
-        String url = "http://purpur-v11:8181/bire";
+        String url = "http://purpur-v11:8080/bire";
         Document d1 = new Document("phoneqdwtz", "testDocument");
         Annotation a1 = new Annotation("St. John Fisher", "", 0, 5);
         Annotation a2 = new Annotation("2", "", 5, 10);

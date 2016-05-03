@@ -76,7 +76,7 @@ public class BIRETrain {
     private static final String PARAM_SETTING_BINS = "-z";
     private static final String PARAM_SETTING_MAX_CANDIDATE = "-w";
 
-    private static int MAX_CANDIDATES = 1;
+    private static int MAX_CANDIDATES = 10  ;
     private static final Map<String, String> PARAMETERS = new HashMap<>();
 
     private static final String PARAMETER_PREFIX = "-";
@@ -86,7 +86,7 @@ public class BIRETrain {
     private static String indexFile = "tfidf.bin";
     private static String dfFile = "en_wiki_large_abstracts.docfrequency";
     private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
-    private static String tsprFile = "tspr.gold";
+    private static String tsprFile = "tspr.all";
     private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
     private static CandidateRetriever index;
     private static Setting setting;
@@ -110,11 +110,15 @@ public class BIRETrain {
 
     public static void main(String[] args) throws IOException {
 
+        readParamsFromCommandLine(args);
+        
         /*
          * TODO: Just for testing !!!! Remove before Jar export.
          */
         // args = new String[]{"-s", "7"};
         if (PARAMETERS.containsKey(PARAM_SETTING_MAX_CANDIDATE)) {
+            
+            System.out.println("Max candy:"+PARAMETERS.get(PARAM_SETTING_MAX_CANDIDATE));
             MAX_CANDIDATES = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_MAX_CANDIDATE));
         }
 
@@ -317,6 +321,7 @@ public class BIRETrain {
                 }
             }
         });
+        System.out.println("Start trainer:");
         trainer.train(sampler, trainInitializer, learner, train, numberOfEpochs);
 
         /*
@@ -365,6 +370,8 @@ public class BIRETrain {
                 name += "TSPR";
             } else if (template instanceof DocumentSimilarityTemplate) {
                 name += "DS";
+            } else if (template instanceof CandidateSimilarityTemplate) {
+                name += "CS";
             } else if (template instanceof PageRankTemplate) {
                 name += "PR";
             } else if (template instanceof EditDistanceTemplate) {
@@ -379,7 +386,7 @@ public class BIRETrain {
 
     private static void initializeBIRE(String[] args) {
 
-        readParamsFromCommandLine(args);
+        
 
         setting = BIRESettings.getSetting(Integer.parseInt(PARAMETERS.get(PARAM_SETTING_IDENTIFIER)));
 
@@ -415,7 +422,7 @@ public class BIRETrain {
                     log.info("Init DocumentSimilarityTemplate ...");
                     DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
                 }
-                
+
                 if (template.equals(CandidateSimilarityTemplate.class)) {
                     log.info("Init CandidateSimilarityTemplate ...");
                     CandidateSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
@@ -497,7 +504,7 @@ public class BIRETrain {
                 }
                 log.info("Add tempalte: " + template.getSimpleName());
             }
-            
+
             if (template.equals(CandidateSimilarityTemplate.class)) {
                 try {
                     templates.add(new CandidateSimilarityTemplate());

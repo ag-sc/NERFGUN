@@ -65,7 +65,16 @@ public class EditDistanceTemplate
         double weightedEditSimilarity = 0, value = 0;
 
         try {
-            final String link = entity.getLink().replaceAll("_", " ").toLowerCase();
+            
+            String link = entity.getLink();
+            
+            if(link.contains("_(") && link.endsWith(")")){
+                link = link.substring(0, link.indexOf("_("));
+            }
+            
+            link = link.replaceAll("_", " ").toLowerCase();
+            
+            
             final String word = entity.getWord().toLowerCase();
 
             final int levenDist = SimilarityMeasures.levenshteinDistance(link, word);
@@ -77,10 +86,14 @@ public class EditDistanceTemplate
 //            value = Math.pow(weightedEditSimilarity + 1, 2);
 //
 //            //hacking features
-            if (entity.getLink().contains("_(number)")) {
-                if (isNumber(word)) {
-                    featureVector.set("NumberFeature", 2d);
-                }
+//            if (entity.getLink().contains("_(number)")) {
+//                if (isNumber(word)) {
+////                    featureVector.set("NumberFeature", 2d);
+//                }
+//            }
+            
+            if(isAbbreviation(word, link)){
+                featureVector.set("Abbreviation Feature", 1.0);
             }
 
         } catch (Exception e) {
@@ -91,6 +104,8 @@ public class EditDistanceTemplate
 
         featureVector.set("-0.5_LevenshteinEditSimilarity", weightedEditSimilarity - 0.5);
         featureVector.set("Positive_LevenshteinEditSimilarity", weightedEditSimilarity);
+        
+        
 //        featureVector.set("Positive_LevenshteinEditSimilarity_Pow", value);
 
         if (useBins) {
@@ -99,6 +114,33 @@ public class EditDistanceTemplate
             }
         }
 
+    }
+    
+    private boolean isAbbreviation(String node, String uri) {
+        String abbr = node.length() > uri.length() ? uri : node;
+        String word = node.length() > uri.length() ? node : uri;
+        
+        abbr = abbr.replace(".", "");
+
+        String[] tokens = word.split(" ");
+        
+        if(tokens.length != abbr.length()){
+            return false;
+        }
+        
+        int count = 0;
+        for (int i = 0; i < abbr.length(); i++) {
+            String c = abbr.charAt(i) + "";
+            if (tokens[i].startsWith(c)) {
+                count++;
+            }
+        }
+
+        if (count == abbr.length()) {
+            return true;
+        }
+
+        return false;
     }
 
     private boolean isNumber(String s) {

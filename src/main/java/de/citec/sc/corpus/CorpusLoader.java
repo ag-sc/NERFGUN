@@ -260,7 +260,7 @@ public class CorpusLoader {
         }
         if (docName.equals("full")) {
             tweetDocs = readFileAsList(new File(datasetsPath + "dataset/microposts2014/Microposts2014-NEEL_challenge_TweetsTestSet.csv"));
-            tweetDocs.addAll(tweetDocs = readFileAsList(new File(datasetsPath + "dataset/microposts2014/Microposts2014-NEEL_challenge_TweetsTrainingSet.csv")));
+            tweetDocs.addAll(readFileAsList(new File(datasetsPath + "dataset/microposts2014/Microposts2014-NEEL_challenge_TweetsTrainingSet.csv")));
         }
 
         for (String s : tweetDocs) {

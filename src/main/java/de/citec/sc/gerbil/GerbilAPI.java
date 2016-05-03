@@ -18,8 +18,7 @@ import spark.Spark;
 
 public class GerbilAPI {
 
-	private static final String NED_BIRE_URL = "http://localhost:8181/bire";
-//        private static final String NED_BIRE_URL = "http://purpur-v11:8181/bire";
+        private static final String NED_BIRE_URL = "http://purpur-v11:8080/bire";
 	private static Logger log = LogManager.getFormatterLogger();
 
 	public static void main(String[] args) {

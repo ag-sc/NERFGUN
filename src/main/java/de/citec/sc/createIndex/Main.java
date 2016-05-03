@@ -98,7 +98,7 @@ public class Main {
         }
         if (PARAMETERS.get(PARAM_RUN).equals("gerbilAPI")) {
             try {
-                Spark.port(8182);
+                Spark.port(8181);
                 GerbilAPI.main(args);
             } catch (Exception e) {
                 e.printStackTrace();
