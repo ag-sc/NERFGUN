@@ -19,11 +19,6 @@ public class Index implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * File name of the data-file
-	 */
-	public String fileName;
-
-	/**
 	 * The position of the data-point in the data-file.
 	 */
 	public long bytePosition;
@@ -39,7 +34,6 @@ public class Index implements Serializable {
 	 * Create a new empty index. Only used for Java-Serialization.
 	 */
 	public Index() {
-		this.fileName = "";
 		this.bytePosition = -1;
 		this.length = -1;
 	}
@@ -47,9 +41,8 @@ public class Index implements Serializable {
 	/**
 	 * Create a new index that stores information about a single datapoint.
 	 */
-	public Index(final String fileName, final long fromByte, final long length) {
+	public Index(final long fromByte, final long length) {
 		super();
-		this.fileName = fileName;
 		this.bytePosition = fromByte;
 		this.length = length;
 	}
@@ -58,7 +51,6 @@ public class Index implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (this.fileName == null ? 0 : this.fileName.hashCode());
 		result = prime * result + (int) (this.bytePosition ^ this.bytePosition >>> 32);
 		result = prime * result + (int) (this.length ^ this.length >>> 32);
 		return result;
@@ -76,13 +68,6 @@ public class Index implements Serializable {
 			return false;
 		}
 		final Index other = (Index) obj;
-		if (this.fileName == null) {
-			if (other.fileName != null) {
-				return false;
-			}
-		} else if (!this.fileName.equals(other.fileName)) {
-			return false;
-		}
 		if (this.bytePosition != other.bytePosition) {
 			return false;
 		}
@@ -94,8 +79,7 @@ public class Index implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Index [" + (this.fileName != null ? "fileName=" + this.fileName + ", " : "") + "fromByte="
-				+ this.bytePosition + ", length=" + this.length + "]";
+		return "Index [bytePosition=" + bytePosition + ", length=" + length + "]";
 	}
 
 }

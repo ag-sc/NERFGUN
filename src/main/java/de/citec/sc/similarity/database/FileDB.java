@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,12 +57,17 @@ public class FileDB {
 	 * The index file that contains each index for each datapoint. This method
 	 * must be called before querying the database.
 	 */
-	public static Map<String, Index> indices;
+	public static Map<String, Map<String, Index>> indices;
 
 	/**
 	 * The path to the file that contains the datapoints.
 	 */
 	public static String fileDirectory;
+
+	/**
+	 * filename of the data to query.
+	 */
+	public static String queryPrefix;
 
 	/**
 	 * Call this method to load the index-file from the hard-drive to the
@@ -87,15 +93,17 @@ public class FileDB {
 		/*
 		 * Load only if the
 		 */
+		final String file = new File(dataFileName).getName();
+
 		if (indices == null || indices.isEmpty()) {
 			fileDirectory = new File(dataFileName).getParent();
-			fileDirectory = fileDirectory != null ? fileDirectory + "/" : "";
-			if ((indices = (Map<String, Index>) restoreData(indexFileName)) == null) {
-				indices = new HashMap<String, Index>(22000000);
-				createIndexFromFile(dataFileName);
-				if (storeIndexFile)
-					writeData(indexFileName, indices);
+			if ((indices = (Map<String, Map<String, Index>>) restoreData(indexFileName)) == null) {
+				indices = new HashMap<>();
+				indices.put(file, new HashMap());
+				createIndexFromFile(file, fileDirectory);
+				writeData(indexFileName, indices);
 			}
+			queryPrefix = new ArrayList<>(indices.keySet()).get(0);
 		}
 	}
 
@@ -110,6 +118,7 @@ public class FileDB {
 	 * @throws IOException
 	 * @throws EmptyIndexException
 	 */
+
 	public static String query(final String dataID) throws IOException, EmptyIndexException {
 		if (indices.isEmpty())
 			throw new EmptyIndexException(
@@ -133,9 +142,9 @@ public class FileDB {
 		/*
 		 * The index of the queried datapoint.
 		 */
-		final Index i = indices.get(dataID);
+		final Index i = indices.get(queryPrefix).get(dataID);
 		if (i != null) {
-			fileName = fileDirectory + i.fileName;
+			fileName = fileDirectory + "/" + queryPrefix;
 			raf = new RandomAccessFile(new File(fileName), "r");
 			raf.seek(i.bytePosition);
 			datapoint = raf.readLine();
@@ -152,27 +161,30 @@ public class FileDB {
 	 *            the name of the data-file.
 	 * @throws IOException
 	 */
-	private static void createIndexFromFile(final String filename) throws IOException {
-		System.out.println("Create index...");
-		final BufferedReader br = new BufferedReader(new FileReader(filename), BUFFER_SIZE);
+	private static void createIndexFromFile(final String fileName, String fileDirectory) throws IOException {
+
+		final BufferedReader br = new BufferedReader(new FileReader(fileDirectory + "/" + fileName), BUFFER_SIZE);
 		String line;
-		long bytesOfAbstract = 0;
-		long previousNumOfBytes = 0;
+		long bytesOfLine = 0;
+		long totalBytes = 0;
+
+		int count = 0;
 		while ((line = br.readLine()) != null) {
 			if (line.isEmpty() || line.startsWith("#")) {
 				continue;
 			}
-			bytesOfAbstract = line.getBytes("UTF-8").length + System.lineSeparator().getBytes().length;
+			count++;
+			if (count % 1000 == 0) {
+				System.out.println("Lines: " + count);
+			}
+			bytesOfLine = line.getBytes("UTF-8").length + System.lineSeparator().getBytes().length;
 			final String[] data = line.split("\t", 2);
 			if (data.length == 2) {
-				for (int i = 0; i < data.length; i++) {
-					data[i] = data[i].trim();
-				}
-				indices.put(data[0], new Index(new File(filename).getName(), previousNumOfBytes, bytesOfAbstract));
+				indices.get(fileName).put(data[0], new Index(totalBytes, bytesOfLine));
 			} else {
 				System.err.println("Line could not be read + " + line);
 			}
-			previousNumOfBytes += bytesOfAbstract;
+			totalBytes += bytesOfLine;
 		}
 		br.close();
 	}
