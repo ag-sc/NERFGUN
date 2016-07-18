@@ -11,9 +11,10 @@ import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.gerbil.GerbilUtil;
 import de.citec.sc.gerbil.GsonDocument;
+import de.citec.sc.helper.DBpediaEndpoint;
 import de.citec.sc.helper.DocumentUtils;
+import de.citec.sc.helper.SortUtils;
 import de.citec.sc.query.Instance;
-import de.citec.sc.similarity.measures.SimilarityMeasures;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -27,6 +28,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.aksw.gerbil.transfer.nif.TurtleNIFDocumentCreator;
 
 /**
@@ -36,47 +39,107 @@ import org.aksw.gerbil.transfer.nif.TurtleNIFDocumentCreator;
 public class Test {
 
     public static void main(String[] args) {
-
-        CorpusLoader loader = new CorpusLoader(false);
-        DefaultCorpus corpus = loader.loadCorpus(CorpusLoader.CorpusName.MicroTag2014Test);
-
-        int c = 0;
-        for (Document d : corpus.getDocuments()) {
-
-            for (Annotation entity : d.getGoldStandard()) {
-
-                String link = entity.getLink();
-
-                if (link.contains("_(") && link.endsWith(")")) {
-                    link = link.substring(0, link.indexOf("_("));
-                }
-
-                link = link.replaceAll("_", " ").toLowerCase();
-
-                final String word = entity.getWord().toLowerCase();
-
-                final int levenDist = SimilarityMeasures.levenshteinDistance(link, word);
-
-                final int max = Math.max(link.length(), word.length());
-
-                double weightedEditSimilarity = ((double) (max - levenDist) / (double) max);
-
-//                if (score < 0.5) {
-                if (isAbbreviation(word, link)) {
-                    c++;
-                    System.out.println(word +"  "+link);
-//                    System.out.println(entity.getWord() + "   " + entity.getLink());
-                }
+//
+////        DBpediaEndpoint.init();
+//        HashMap<String, Integer> freqCategory = new HashMap<>();
+//
+//        CorpusLoader loader = new CorpusLoader(false);
+//
+//        DefaultCorpus corpus = loader.loadCorpus(CorpusLoader.CorpusName.valueOf("CoNLLTraining"));
+//        List<Document> documents = corpus.getDocuments();
+//
+//        Set<String> stopwords = DocumentUtils.readFile(new File("src/main/resources/stopwords"));
+//
+//        for (Document d : documents.subList(1, 2)) {
+//            System.out.println(documents.indexOf(d));
+//            
+//            System.out.println(d.getDocumentContent()+"\n\n");
+//
+//            String[] text = d.getDocumentContent().split(" ");
+//            HashMap<String, Integer> commontWordsFromCat = new LinkedHashMap<>();
+//            HashMap<String, Integer> commontWordsFromText = new LinkedHashMap<>();
+//            
+//            for (String w : text) {
+//                w = w.trim().toLowerCase();
+//                
+//                if (!stopwords.contains(w) && w.length() > 3) {
+//                    commontWordsFromText.put(w, commontWordsFromText.getOrDefault(w, 1) + 1);
 //                }
-            }
+//            }
+//
+//            for (Annotation a : d.getGoldResult()) {
+//                commontWordsFromText.put(a.getWord().toLowerCase(), commontWordsFromText.getOrDefault(a.getWord().toLowerCase(), 1) + 1);
+//                
+//                String link = a.getLink();
+//
+//                Set<String> categories = DBpediaEndpoint.getCategories(link);
+//                Set<String> parentCategories = DBpediaEndpoint.getParentCategories(categories);
+//                Set<String> parent_2_Categories = DBpediaEndpoint.getParentCategories(parentCategories);
+//
+//                //the child categories are also part of this set
+//                for (String c : parent_2_Categories) {
+//                    freqCategory.put(c, freqCategory.getOrDefault(c, 1) + 1);
+//                }
+//
+//                for (String c : categories) {
+//                    String[] words = c.split("_");
+//                    for (String w : words) {
+//                        w = w.trim().toLowerCase();
+//
+//                        if (!stopwords.contains(w) && w.length() > 3) {
+//                            commontWordsFromCat.put(w, commontWordsFromCat.getOrDefault(w, 1) + 1);
+//                        }
+//                    }
+//                }
+//            }
+//            
+//            commontWordsFromCat = SortUtils.sortByValue(commontWordsFromCat);
+//            commontWordsFromText = SortUtils.sortByValue(commontWordsFromText);
+//            
+//            int z =0;
+//            for(String w : commontWordsFromCat.keySet()){
+//                System.out.println(w+ " "+commontWordsFromCat.get(w));
+//                z++;
+//                if(z==10){
+//                    break;
+//                }
+//            }
+//            
+//            System.out.println("=======================================");
+//            z =0;
+//            for(String w : commontWordsFromText.keySet()){
+//                System.out.println(w+ " "+commontWordsFromText.get(w));
+//                z++;
+//                if(z==40){
+//                    break;
+//                }
+//            }
+//        }
+//
+//        freqCategory = SortUtils.sortByValue(freqCategory);
+//
+//        int sum = 0;
+//        for (String s : freqCategory.keySet()) {
+//
+//        }
+//        File f = new File("freqCategories.txt");
+//        if (f.exists()) {
+//            f.delete();
+//        }
+//
+//        for (String s : freqCategory.keySet()) {
+//            DocumentUtils.writeListToFile("freqCategories.txt", s.replace("http://dbpedia.org/resource/", "") + "   " + freqCategory.get(s), true);
+////            System.out.println(s.replace("http://dbpedia.org/resource/", "")+"   "+freqCategory.get(s));
+//        }
 
-        }
-
-        System.out.println(c);
-
+//        System.out.println(documents.size());
 //        testBIREAPI();
 //        testGerbilAPI();
         gerbilResults();
+    }
+
+    private static double sigmoid(double x) {
+        return (1.0 / (1 + Math.pow(Math.E, -x)));
     }
 
     private static boolean isAbbreviation(String node, String uri) {
@@ -127,6 +190,10 @@ public class Test {
                     String microF1 = data[2];
                     String macroF1 = data[3];
                     String runtime = data[4];
+                    
+                    if(dataset.contains("Derczynski") || dataset.contains("Microposts2013-Test") || dataset.contains("Microposts2013-Train")){
+                        continue;
+                    }
 
                     if (values.containsKey(system)) {
                         HashMap<String, String> old = values.get(system);
@@ -146,6 +213,10 @@ public class Test {
 
                     String system = data[0];
                     String dataset = data[1];
+                    if(dataset.contains("Derczynski") || dataset.contains("Microposts2013-Test") || dataset.contains("Microposts2013-Train")){
+                        continue;
+                    }
+                    
 
                     if (values.containsKey(system)) {
                         HashMap<String, String> old = values.get(system);
@@ -173,7 +244,7 @@ public class Test {
         for (String system : values.keySet()) {
             String rMicro = system + "\tMicro F1";
             String rMacro = system + "\tMacro F1";
-            String runtime = system + "\tRuntime (ms)";
+//            String runtime = system + "\tRuntime (ms)";
 
             for (String k : values.get(system).keySet()) {
 
@@ -182,7 +253,7 @@ public class Test {
                 String[] data = v.split("\t");
                 rMicro += "\t" + data[0];
                 rMacro += "\t" + data[1];
-                runtime += "\t" + data[2];
+//                runtime += "\t" + data[2];
 
                 if (!header.contains(k)) {
                     header += "\t" + k;
@@ -191,12 +262,12 @@ public class Test {
 
             content += rMicro + "\n";
             content += rMacro + "\n";
-            content += runtime + "\n";
+//            content += runtime + "\n";
         }
 
         content = header + "\n" + content.trim();
 
-        DocumentUtils.writeListToFile("gerbil_cleaned.txt", content);
+        DocumentUtils.writeListToFile("gerbil_cleaned.txt", content, false);
 
         System.out.println(content);
     }
@@ -255,9 +326,9 @@ public class Test {
     }
 
     public static void testGerbilAPI() {
-        String url = "http://psink.techfak.uni-bielefeld.de:80";
-        Document d1 = new Document("Logronesqdwtz", "testDocument");
-        Annotation a1 = new Annotation("Logrones", "", 0, 6);
+        String url = "http://psink.techfak.uni-bielefeld.de/ned";
+        Document d1 = new Document("Obamaesqdwtz", "testDocument");
+        Annotation a1 = new Annotation("Obama", "", 0, 6);
         Annotation a2 = new Annotation("qdwtz", "", 5, 10);
         List<Annotation> goldAnnotations = new ArrayList<>();
         goldAnnotations.add(a1);

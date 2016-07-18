@@ -84,10 +84,10 @@ public class SVMTest {
 
         for (int i = 0; i < t.length; i++) {
             if (t[i].equals("PR")) {
-                templates.add(new PageRankTemplate());
+                templates.add(new PageRankTemplate(false));
             }
             if (t[i].equals("TF")) {
-                templates.add(new TermFrequencyTemplate());
+                templates.add(new TermFrequencyTemplate(false));
             }
             if (t[i].equals("DS")) {
                 templates.add(new DocumentSimilarityTemplate());

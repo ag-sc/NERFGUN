@@ -153,18 +153,6 @@ public class Evaluator {
 		result.put("Macro-average Recall", round(macroAvgRecall, 3));
 		result.put("F1 Macro-average", round(F1_macro, 3));
                 
-            try {
-                PrintStream p1 = new PrintStream(new File("src/main/resources/f1.txt"));
-                
-                for(Integer i1 : allF1Scores.keySet()){
-                    p1.println(i1 + ";" +allF1Scores.get(i1));
-                }
-                
-                p1.close();
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(Evaluator.class.getName()).log(Level.SEVERE, null, ex);
-            }
-                
 
 		return result;
 	}

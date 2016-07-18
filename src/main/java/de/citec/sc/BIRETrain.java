@@ -24,6 +24,7 @@ import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.CorpusLoader.CorpusName;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
+import de.citec.sc.helper.DBpediaEndpoint;
 import de.citec.sc.learning.ChangeSamplingStrategy;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.learning.FeatureUtils;
@@ -34,11 +35,14 @@ import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.settings.BIRESettings;
 import de.citec.sc.settings.Setting;
 import de.citec.sc.templates.CandidateSimilarityTemplate;
+import de.citec.sc.templates.CategoryTemplate;
+import de.citec.sc.templates.ClassPropertyTemplate;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
 import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.templates.InitializationException;
 import de.citec.sc.templates.PageRankTemplate;
+import de.citec.sc.templates.PairwiseClassOccurenceTemplate;
 import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
@@ -144,7 +148,7 @@ public class BIRETrain {
         DefaultCorpus corpus = loader.loadCorpus(CorpusName.valueOf(dataset));
         List<Document> documents = corpus.getDocuments();
 
-        documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 50 && d.getGoldStandard().size() > 0).collect(Collectors.toList());
+        documents = documents.stream().filter(d -> d.getGoldStandard().size() <= 70 && d.getGoldStandard().size() > 0).collect(Collectors.toList());
 
         int dSize = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_DOCUMENTSIZE));
         if (dSize < documents.size()) {
@@ -155,8 +159,6 @@ public class BIRETrain {
         if (PARAMETERS.containsKey(PARAM_SETTING_EPOCHS)) {
             numberOfEpochs = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_EPOCHS));
         }
-
-        int capacity = 70;
 
         List<Document> train = documents;
 
@@ -254,7 +256,7 @@ public class BIRETrain {
          * If you set this value too small, the sampler can not reach the
          * optimal solution. Large values, however, increase computation time.
          */
-        int numberOfSamplingSteps = 200;
+        int numberOfSamplingSteps = 400;
 
         /*
          * Stop sampling if objective score is equal to 1.
@@ -379,6 +381,15 @@ public class BIRETrain {
             } else if (template instanceof TermFrequencyTemplate) {
                 name += "TF";
             }
+            else if (template instanceof ClassPropertyTemplate) {
+                name += "CP";
+            }
+            else if (template instanceof CategoryTemplate) {
+                name += "CT";
+            }
+            else if (template instanceof PairwiseClassOccurenceTemplate) {
+                name += "PCO";
+            }
             dash = "-";
         }
         return name;
@@ -392,6 +403,10 @@ public class BIRETrain {
 
         log.info("Template setting: " + setting.toString());
 
+                
+        log.info("Load Categories...");
+        DBpediaEndpoint.init();
+        
         /*
          * Load the index API.
          */
@@ -400,6 +415,8 @@ public class BIRETrain {
         index = new CandidateRetrieverOnMemory();
         IndexMapping.init(tsprIndexMappingFile);
         explorer = new AllScoresExplorer(index, MAX_CANDIDATES);
+
+        
         initializeTempaltesFromSetting(setting);
 
     }
@@ -457,7 +474,16 @@ public class BIRETrain {
             // log.info("Add tempalte: " + template.getSimpleName());
             // }
             if (template.equals(PageRankTemplate.class)) {
-                templates.add(new PageRankTemplate());
+                if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+                    if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+                        templates.add(new PageRankTemplate(false));
+                    } else {
+                        templates.add(new PageRankTemplate(false));
+                    }
+                } else {
+                    templates.add(new PageRankTemplate(true));
+                }
+                
                 log.info("Add tempalte: " + template.getSimpleName());
             }
             if (template.equals(EditDistanceTemplate.class)) {
@@ -492,7 +518,16 @@ public class BIRETrain {
                 log.info("Add tempalte: " + template.getSimpleName());
             }
             if (template.equals(TermFrequencyTemplate.class)) {
-                templates.add(new TermFrequencyTemplate());
+                if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+                    if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+                        templates.add(new TermFrequencyTemplate(false));
+                    } else {
+                        templates.add(new TermFrequencyTemplate(false));
+                    }
+                } else {
+                    templates.add(new TermFrequencyTemplate(true));
+                }
+                
                 log.info("Add tempalte: " + template.getSimpleName());
             }
             if (template.equals(DocumentSimilarityTemplate.class)) {
@@ -512,6 +547,27 @@ public class BIRETrain {
                     e.printStackTrace();
                     System.exit(0);
                 }
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            if (template.equals(ClassPropertyTemplate.class)) {
+                templates.add(new ClassPropertyTemplate());
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            if (template.equals(CategoryTemplate.class)) {
+                if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+                    if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+                        templates.add(new CategoryTemplate(false));
+                    } else {
+                        templates.add(new CategoryTemplate(true));
+                    }
+                } else {
+                    templates.add(new CategoryTemplate(true));
+                }
+                
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            if (template.equals(PairwiseClassOccurenceTemplate.class)) {
+                templates.add(new PairwiseClassOccurenceTemplate());
                 log.info("Add tempalte: " + template.getSimpleName());
             }
         }

@@ -297,7 +297,11 @@ public class CorpusLoader {
                     } catch (Exception e) {
 
                     }
-                    Annotation a1 = new Annotation(label, uri, 0, 0);
+
+                    int startPosition = data[1].indexOf(label);
+                    int endPosition = data[1].indexOf(label) + label.length();
+
+                    Annotation a1 = new Annotation(label, uri, startPosition, endPosition);
                     goldSet.add(a1);
                     int z = 1;
                 }

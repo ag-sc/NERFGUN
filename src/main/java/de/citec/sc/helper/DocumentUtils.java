@@ -83,7 +83,7 @@ public class DocumentUtils {
         return content;
     }
 
-    public static void writeListToFile(String fileName, String content) {
+    public static void writeListToFile(String fileName, String content, boolean append) {
         try {
             File file = new File(fileName);
 
@@ -92,7 +92,7 @@ public class DocumentUtils {
             if (!file.exists()) {
                 file.createNewFile();
             }
-            FileWriter fw = new FileWriter(file,true);
+            FileWriter fw = new FileWriter(file,append);
             BufferedWriter bw = new BufferedWriter(fw);
             PrintWriter pw = new PrintWriter(bw);
             pw.println(content);

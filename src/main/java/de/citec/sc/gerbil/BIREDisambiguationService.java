@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.Document;
+import de.citec.sc.helper.DBpediaEndpoint;
 import de.citec.sc.helper.DocumentUtils;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
@@ -28,6 +29,7 @@ import de.citec.sc.variables.State;
 import exceptions.UnkownTemplateRequestedException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
@@ -60,7 +62,6 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
     public static final String DBPEDIA_LINK_PREFIX = "http://dbpedia.org/resource/";
 
 //    private File modelDir;
-    
     private CandidateRetriever index;
     private ObjectiveFunction<State, List<Annotation>> objective;
     private Scorer scorer;
@@ -91,9 +92,9 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
 
     public static void main(String[] args)
             throws FileNotFoundException, IOException, UnkownTemplateRequestedException, Exception {
-        
+
         readParamsFromCommandLine(args);
-        
+
         BIREDisambiguationService service = new BIREDisambiguationService();
         String modelDirPath = PARAMETERS.get(PARAM_SETTING_MODEL);
         String modelDirPathTwitter = PARAMETERS.get(PARAM_SETTING_MODEL_TWITTER);
@@ -117,7 +118,7 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
         model.setForceFactorComputation(false);
         model.setMultiThreaded(true);
         model.loadModelFromDir(new File(modelDirPath), this);
-        
+
         modelTwitter = new Model<>(scorer);
         modelTwitter.setForceFactorComputation(false);
         modelTwitter.setMultiThreaded(true);
@@ -128,6 +129,9 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
         explorers = new ArrayList<>();
         IndexMapping.init(tsprIndexMappingFile);
         explorers.add(new AllScoresExplorer(index, MAX_CANDIDATES));
+        
+        DBpediaEndpoint.init();
+        log.info("Initialization done! Ready for service");
 
         stopAtMaxModelScore = new StoppingCriterion<State>() {
 
@@ -153,13 +157,11 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
         sampler = new DefaultSampler<>(model, objective, explorers, stopAtMaxModelScore);
         sampler.setSamplingStrategy(SamplingStrategies.greedyModelStrategy());
         sampler.setAcceptStrategy(AcceptStrategies.strictModelAccept());
-        
+
         samplerTwitter = new DefaultSampler<>(modelTwitter, objective, explorers, stopAtMaxModelScore);
         samplerTwitter.setSamplingStrategy(SamplingStrategies.greedyModelStrategy());
         samplerTwitter.setAcceptStrategy(AcceptStrategies.strictModelAccept());
-        
-        
-        
+
         trainer = new Trainer();
     }
 
@@ -183,8 +185,8 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
     public Document disambiguate(Document document) {
         log.info("####################");
         log.info("Request to disambiguate document:\n%s", document);
-        
-        if(document.getGoldStandard().isEmpty()){
+
+        if (document.getGoldStandard().isEmpty()) {
             log.info("Document has no annotations. Done!");
             return document;
         }
@@ -193,15 +195,12 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
         log.info("Split into %s smaller documents.", test.size());
 
         log.info("Predict ...");
-        
-        
-        
+
         List<State> testResults = new ArrayList<>();
-        
-        if(document.getGoldStandard().size() > 3){
+
+        if (document.getGoldStandard().size() > 3) {
             testResults = trainer.predict(sampler, testInitializer, test);
-        }
-        else{
+        } else {
             testResults = trainer.predict(samplerTwitter, testInitializer, test);
         }
 
@@ -236,6 +235,22 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
             }
         }
 
+        //surname - name postprocessing
+        for (Annotation a1 : document.getAnnotations()) {
+            for (Annotation a2 : document.getAnnotations()) {
+
+                if (!a1.equals(a2)) {
+                    if (a1.getWord().toLowerCase().contains(a2.getWord().toLowerCase()) && a1.getWord().length() > a2.getWord().length() && a1.getEndIndex() < a2.getEndIndex()) {
+                        Set<String> classes = DBpediaEndpoint.getClasses(a1.getLink());
+                        if (classes.contains("Person")) {
+                            a2.setLink(a1.getLink());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         log.info("Done!");
 
         log.info("---------------------");
@@ -248,9 +263,9 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
             throws UnkownTemplateRequestedException, Exception {
         switch (templateName) {
             case "TermFrequencyTemplate":
-                return new TermFrequencyTemplate();
+                return new TermFrequencyTemplate(useBins);
             case "PageRankTemplate":
-                return new PageRankTemplate();
+                return new PageRankTemplate(useBins);
             case "EditDistanceTemplate":
                 return new EditDistanceTemplate(useBins);
             case "TopicSpecificPageRankTemplate":

@@ -9,26 +9,36 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.Document;
+import de.citec.sc.helper.DBpediaEndpoint;
+import de.citec.sc.similarity.measures.SimilarityMeasures;
 import de.citec.sc.variables.State;
 import factors.Factor;
 import factors.patterns.SingleVariablePattern;
+import java.util.ArrayList;
+import java.util.List;
 import learning.Vector;
 
 /**
  *
+ * Adds properties and classes of the entity querying DBpedia
+ *
  * @author sherzod
+ *
+ * Jul 5, 2016
  */
-public class TermFrequencyTemplate
+public class ClassPropertyTemplate
         extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
 
-    private static org.apache.logging.log4j.Logger log = LogManager.getFormatterLogger();
-    private boolean useBins;
+    private static Logger log = LogManager.getFormatterLogger();
 
-    public TermFrequencyTemplate(boolean useBins) {
-        this.useBins = useBins;
+    
+
+    public ClassPropertyTemplate() {
+        
     }
 
     @Override
@@ -44,15 +54,29 @@ public class TermFrequencyTemplate
     @Override
     public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
         Annotation entity = factor.getFactorPattern().getVariable();
-        log.debug("Compute %s factor for variable %s", TermFrequencyTemplate.class.getSimpleName(), entity);
+        log.debug("Compute %s factor for variable %s", ClassPropertyTemplate.class.getSimpleName(), entity);
         Vector featureVector = factor.getFeatureVector();
 
-        if (useBins) {
-            for (double i = 0.01; i < 1.0; i = i + 0.01) {
-                featureVector.set("Relative_TF_bin_" + i, entity.getPageRankScore() > i ? 1.0 : 0);
+        log.debug("Retrieve classes and properties for query link %s...", entity.getLink());
+
+        try {
+
+            String link = entity.getLink();
+
+            Set<String> properties = DBpediaEndpoint.getProperties(link);
+            Set<String> classes = DBpediaEndpoint.getClasses(link);
+
+            for (String p : properties) {
+                featureVector.set("PROPERTIES Feature: " + p, 1.0);
             }
-        } else {
-            featureVector.set("Relative_TF", entity.getRelativeTermFrequencyScore());
+            for (String p : classes) {
+                featureVector.set("CLASSES Feature: " + p, 1.0);
+            }
+
+        } catch (Exception e) {
+            log.info("Link " + entity.getLink() + "\n");
+            log.info("Word " + entity.getWord() + "\n");
+            log.info(e.getMessage() + "\n");
         }
 
     }

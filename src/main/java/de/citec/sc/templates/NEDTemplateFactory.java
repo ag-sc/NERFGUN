@@ -22,9 +22,9 @@ public class NEDTemplateFactory implements TemplateFactory<Document, State> {
             throws UnkownTemplateRequestedException, Exception {
         switch (templateName) {
             case "TermFrequencyTemplate":
-                return new TermFrequencyTemplate();
+                return new TermFrequencyTemplate(false);
             case "PageRankTemplate":
-                return new PageRankTemplate();
+                return new PageRankTemplate(false);
             case "EditDistanceTemplate":
                 return new EditDistanceTemplate(useBins);
             case "TopicSpecificPageRankTemplate":
@@ -33,6 +33,12 @@ public class NEDTemplateFactory implements TemplateFactory<Document, State> {
                 return new DocumentSimilarityTemplate();
             case "CandidateSimilarityTemplate":
                 return new CandidateSimilarityTemplate();
+            case "ClassPropertyTemplate":
+                return new ClassPropertyTemplate();
+            case "CategoryTemplate":
+                return new CategoryTemplate(false);
+            case "PairwiseClassOccurenceTemplate":
+                return new PairwiseClassOccurenceTemplate();
         }
         throw new UnkownTemplateRequestedException("Cannot instanciate Template for name " + templateName);
     }

@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.exceptions.EmptyIndexException;
-import de.citec.sc.helper.StanfordLemmatizer;
+import de.citec.sc.helper.StanfordParser;
 import de.citec.sc.helper.Stopwords;
 import de.citec.sc.helper.Tokenizer;
 import de.citec.sc.similarity.database.FileDB;
@@ -43,7 +43,7 @@ public class DocumentSimilarityTemplate
         extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
 
     private static Logger log = LogManager.getFormatterLogger();
-    private static StanfordLemmatizer lemmatizer;
+    private static StanfordParser lemmatizer;
 
     private Map<String, Double> currentDocumentVector = null;
 
@@ -68,7 +68,7 @@ public class DocumentSimilarityTemplate
             FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
             DocumentSimilarityTemplate.dfFile = dfFile;
             IDFProvider.getIDF(dfFile);
-            lemmatizer = new StanfordLemmatizer();
+            lemmatizer = new StanfordParser();
 
             NUMBER_OF_WIKI_DOCUMENTS = WikipediaTFIDFVector.countLines(tfidfFile);
             isInitialized = true;

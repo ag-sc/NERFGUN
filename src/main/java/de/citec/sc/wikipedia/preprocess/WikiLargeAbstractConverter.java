@@ -9,7 +9,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.citec.sc.helper.StanfordLemmatizer;
+import de.citec.sc.helper.StanfordParser;
 import de.citec.sc.helper.Tokenizer;
 
 public class WikiLargeAbstractConverter {
@@ -62,7 +62,7 @@ public class WikiLargeAbstractConverter {
 
 		List<String> linesToWrite = new ArrayList<String>();
 
-		StanfordLemmatizer lemmatizer = new StanfordLemmatizer();
+		StanfordParser lemmatizer = new StanfordParser();
 
 		while ((line = br.readLine()) != null) {
 			count++;

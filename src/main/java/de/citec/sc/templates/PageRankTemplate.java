@@ -23,24 +23,38 @@ import learning.Vector;
  */
 public class PageRankTemplate extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
 
-	private static org.apache.logging.log4j.Logger log = LogManager.getFormatterLogger();
+    private static org.apache.logging.log4j.Logger log = LogManager.getFormatterLogger();
+    private boolean useBins = false;
 
-	@Override
-	public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
-		Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
-		for (Annotation a : state.getEntities()) {
-			factors.add(new SingleVariablePattern<>(this, a));
-		}
-		log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
-		return factors;
-	}
+    public PageRankTemplate(boolean useBins) {
+        this.useBins = useBins;
+    }
 
-	@Override
-	public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
-		Annotation entity = factor.getFactorPattern().getVariable();
-		log.debug("Compute %s factor for variable %s", PageRankTemplate.class.getSimpleName(), entity);
-		Vector featureVector = factor.getFeatureVector();
-		featureVector.set("Relative_PR", entity.getPageRankScore());
-	}
+    @Override
+    public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
+        Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
+        for (Annotation a : state.getEntities()) {
+            factors.add(new SingleVariablePattern<>(this, a));
+        }
+        log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
+        return factors;
+    }
+
+    @Override
+    public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
+        Annotation entity = factor.getFactorPattern().getVariable();
+        log.debug("Compute %s factor for variable %s", PageRankTemplate.class.getSimpleName(), entity);
+        Vector featureVector = factor.getFeatureVector();
+        
+        if (useBins) {
+            for (double i = 0.01; i < 1.0; i = i + 0.01) {
+                featureVector.set("Relative_PR_bin_" + i, entity.getPageRankScore() > i ? 1.0 : 0);
+            }
+        }
+        else{
+            featureVector.set("Relative_PR", entity.getPageRankScore());
+        }
+        
+    }
 
 }

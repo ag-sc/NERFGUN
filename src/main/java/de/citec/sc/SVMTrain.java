@@ -459,7 +459,7 @@ public class SVMTrain {
             if (template.equals(PageRankTemplate.class
             )) {
                 templates.add(
-                        new PageRankTemplate());
+                        new PageRankTemplate(false));
                 log.info(
                         "Add tempalte: " + template.getSimpleName());
             }
@@ -504,7 +504,7 @@ public class SVMTrain {
             if (template.equals(TermFrequencyTemplate.class
             )) {
                 templates.add(
-                        new TermFrequencyTemplate());
+                        new TermFrequencyTemplate(false));
                 log.info(
                         "Add tempalte: " + template.getSimpleName());
             }
