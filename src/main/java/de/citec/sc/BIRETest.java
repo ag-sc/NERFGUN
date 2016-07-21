@@ -54,9 +54,11 @@ import sampling.stoppingcriterion.StoppingCriterion;
 public class BIRETest {
 
     private static Logger log = LogManager.getFormatterLogger();
-    private static String indexFile = "tfidf.bin";
-    private static String dfFile = "en_wiki_large_abstracts.docfrequency";
-    private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
+        private static String indexFile = "tfidf.bin";
+//    private static String dfFile = "en_wiki_large_abstracts.docfrequency";
+    private static String dfFile = "en_wiki.docfrequency";
+//    private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
+    private static String tfidfFile = "en_wiki.tfidf";
     private static String tsprFile = "tspr.all";
     private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 

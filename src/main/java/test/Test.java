@@ -14,6 +14,8 @@ import de.citec.sc.gerbil.GsonDocument;
 import de.citec.sc.helper.DBpediaEndpoint;
 import de.citec.sc.helper.DocumentUtils;
 import de.citec.sc.helper.SortUtils;
+import de.citec.sc.query.CandidateRetriever;
+import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.query.Instance;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -25,6 +27,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -43,10 +46,59 @@ public class Test {
 ////        DBpediaEndpoint.init();
 //        HashMap<String, Integer> freqCategory = new HashMap<>();
 //
-//        CorpusLoader loader = new CorpusLoader(false);
+        Set<String> uris = new HashSet<>();
+        Set<String> urisNew = new HashSet<>();
+        CorpusLoader loader = new CorpusLoader(false);
 //
-//        DefaultCorpus corpus = loader.loadCorpus(CorpusLoader.CorpusName.valueOf("CoNLLTraining"));
-//        List<Document> documents = corpus.getDocuments();
+        DefaultCorpus corpus = loader.loadCorpus(CorpusLoader.CorpusName.valueOf("CoNLLFull"));
+        List<Document> documents = corpus.getDocuments();
+
+        CandidateRetriever index = new CandidateRetrieverOnLucene(false, "mergedIndexNew");
+//        CandidateRetriever indexNew = new CandidateRetrieverOnLucene(false, "mergedIndexNew");
+        int countOfGold = 0, countOfRetrieval = 0 , countOfRetrievalNew = 0;
+        for (Document d : documents) {
+
+            System.out.println(documents.indexOf(d));
+
+            for (Annotation a : d.getGoldStandard()) {
+                List<Instance> r = index.getAllResources(a.getWord(), 10);
+                boolean isThere = false;
+                for (Instance i : r) {
+                    if (i.getUri().equals(a.getLink())) {
+                        isThere = true;
+                    }
+                    uris.add(i.getUri());
+                }
+                if (isThere) {
+                    countOfRetrieval++;
+                }
+
+//                //new index
+//                List<Instance> rNew = indexNew.getAllResources(a.getWord(), 10);
+//                for (Instance i : rNew) {
+//
+//                    urisNew.add(i.getUri());
+//                }
+
+            }
+
+            countOfGold += d.getGoldStandard().size();
+        }
+        
+//        for(String u : uris){
+//            if(!urisNew.contains(u)){
+//                DocumentUtils.writeListToFile("uriMissing.txt", u, true);
+//            }
+//        }
+
+        System.out.println(countOfRetrieval + "/" + countOfGold + " " + (countOfRetrieval / ((double) countOfGold)));
+
+        String result = "";
+        for (String s : uris) {
+            result += s + "\n";
+        }
+        DocumentUtils.writeListToFile("uris.txt", result.trim(), false);
+        System.out.println(documents.size());
 //
 //        Set<String> stopwords = DocumentUtils.readFile(new File("src/main/resources/stopwords"));
 //
@@ -135,7 +187,7 @@ public class Test {
 //        System.out.println(documents.size());
 //        testBIREAPI();
 //        testGerbilAPI();
-        gerbilResults();
+//        gerbilResults();
     }
 
     private static double sigmoid(double x) {
@@ -190,8 +242,8 @@ public class Test {
                     String microF1 = data[2];
                     String macroF1 = data[3];
                     String runtime = data[4];
-                    
-                    if(dataset.contains("Derczynski") || dataset.contains("Microposts2013-Test") || dataset.contains("Microposts2013-Train")){
+
+                    if (dataset.contains("Derczynski") || dataset.contains("Microposts2013-Test") || dataset.contains("Microposts2013-Train")) {
                         continue;
                     }
 
@@ -213,10 +265,9 @@ public class Test {
 
                     String system = data[0];
                     String dataset = data[1];
-                    if(dataset.contains("Derczynski") || dataset.contains("Microposts2013-Test") || dataset.contains("Microposts2013-Train")){
+                    if (dataset.contains("Derczynski") || dataset.contains("Microposts2013-Test") || dataset.contains("Microposts2013-Train")) {
                         continue;
                     }
-                    
 
                     if (values.containsKey(system)) {
                         HashMap<String, String> old = values.get(system);

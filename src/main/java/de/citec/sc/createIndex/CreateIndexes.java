@@ -43,7 +43,7 @@ public class CreateIndexes {
 //
         System.out.println("Creating index files ...");
         AnchorTextLoader anchorLoader = new AnchorTextLoader();
-        anchorLoader.load(true, "mergedIndex", "anchorFiles/");
+        anchorLoader.load(true, "mergedIndexNew", "anchorFiles/");
 
 //        anchorLoader.load(true, "emptyIndex", "testFiles/");
 //

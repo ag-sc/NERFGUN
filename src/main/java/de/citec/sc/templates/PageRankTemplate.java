@@ -25,6 +25,17 @@ public class PageRankTemplate extends templates.AbstractTemplate<Document, State
 
     private static org.apache.logging.log4j.Logger log = LogManager.getFormatterLogger();
     private boolean useBins = false;
+    final private static int NUMBER_OF_BINS = 1000;
+
+    private static double[] bins = new double[NUMBER_OF_BINS + 1];
+
+    static {
+
+        for (int i = 0; i <= NUMBER_OF_BINS; i++) {
+            bins[i] = (double) i / (double) NUMBER_OF_BINS;
+        }
+
+    }
 
     public PageRankTemplate(boolean useBins) {
         this.useBins = useBins;
@@ -45,16 +56,30 @@ public class PageRankTemplate extends templates.AbstractTemplate<Document, State
         Annotation entity = factor.getFactorPattern().getVariable();
         log.debug("Compute %s factor for variable %s", PageRankTemplate.class.getSimpleName(), entity);
         Vector featureVector = factor.getFeatureVector();
-        
+
+        final int bin = getBin(entity.getPageRankScore());
+
         if (useBins) {
-            for (double i = 0.01; i < 1.0; i = i + 0.01) {
-                featureVector.set("Relative_PR_bin_" + i, entity.getPageRankScore() > i ? 1.0 : 0);
+            for (int i = 0; i < bin; i++) {
+                featureVector.set("Relative_PR_bin_ >= " + i, entity.getPageRankScore());
             }
+
+            featureVector.set("1Relative_PR_binInBin_" + bin, 1d);
+            featureVector.set("ScoreRelative_PR_binInBin_" + bin, entity.getPageRankScore());
         }
         else{
             featureVector.set("Relative_PR", entity.getPageRankScore());
         }
-        
+
+    }
+
+    private int getBin(final double score) {
+        for (int i = 0; i < bins.length - 1; i++) {
+            if (bins[i] <= score && score < bins[i + 1]) {
+                return i;
+            }
+        }
+        return -1;
     }
 
 }

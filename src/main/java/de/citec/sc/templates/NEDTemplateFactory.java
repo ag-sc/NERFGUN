@@ -20,11 +20,14 @@ public class NEDTemplateFactory implements TemplateFactory<Document, State> {
     @Override
     public AbstractTemplate<Document, State, ?> newInstance(String templateName)
             throws UnkownTemplateRequestedException, Exception {
+        
+        boolean binsForPRTF = true;
+        
         switch (templateName) {
             case "TermFrequencyTemplate":
-                return new TermFrequencyTemplate(false);
+                return new TermFrequencyTemplate(binsForPRTF);
             case "PageRankTemplate":
-                return new PageRankTemplate(false);
+                return new PageRankTemplate(binsForPRTF);
             case "EditDistanceTemplate":
                 return new EditDistanceTemplate(useBins);
             case "TopicSpecificPageRankTemplate":

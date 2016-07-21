@@ -92,9 +92,9 @@ public class EditDistanceTemplate
 //                }
 //            }
             
-            if(isAbbreviation(word, link)){
-                featureVector.set("Abbreviation Feature", 1.0);
-            }
+//            if(isAbbreviation(word, link)){
+//                featureVector.set("Abbreviation Feature", 1.0);
+//            }
 
         } catch (Exception e) {
             log.info("Link " + entity.getLink() + "\n");

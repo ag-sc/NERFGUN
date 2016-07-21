@@ -72,8 +72,8 @@ public class CategoryTemplate
         double sim = DBpediaEndpoint.normalizedCategorySimilarity(link1, link2);
         
         if (useBins) {
-            for (double i = 0.01; i < 1.0; i = i + 0.01) {
-                featureVector.set("PairwiseCategorySimilarity_bin_" + i, sim > i ? 1.0 : 0);
+            for (double i = 0.001; i < 1.0; i = i + 0.001) {
+                featureVector.set("PairwiseCategorySimilarity_bin_>=" + i, sim > i ? 1.0 : 0);
             }
         }
         else{

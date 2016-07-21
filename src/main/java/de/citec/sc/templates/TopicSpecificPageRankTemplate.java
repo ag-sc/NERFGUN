@@ -166,9 +166,9 @@ public class TopicSpecificPageRankTemplate
         final String surname = firstAnnotation.getWord().trim().toLowerCase();//s
         final String fullname = secondAnnotation.getWord().trim().toLowerCase();//d_s
 
-        if (isName(surname, fullname, link1, link2)) {
-            featureVector.set("Surname -> Fullname Feature", 2.0);
-        }
+//        if (isName(surname, fullname, link1, link2)) {
+//            featureVector.set("Surname -> Fullname Feature", 2.0);
+//        }
 
         calcScore:
         {

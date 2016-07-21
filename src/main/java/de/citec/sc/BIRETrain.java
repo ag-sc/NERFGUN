@@ -88,8 +88,10 @@ public class BIRETrain {
     private static Logger log = LogManager.getFormatterLogger();
 
     private static String indexFile = "tfidf.bin";
-    private static String dfFile = "en_wiki_large_abstracts.docfrequency";
-    private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
+//    private static String dfFile = "en_wiki_large_abstracts.docfrequency";
+    private static String dfFile = "en_wiki.docfrequency";
+//    private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
+    private static String tfidfFile = "en_wiki.tfidf";
     private static String tsprFile = "tspr.all";
     private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
     private static CandidateRetriever index;
@@ -473,15 +475,18 @@ public class BIRETrain {
             // templates.add(new IndexRankTemplate());
             // log.info("Add tempalte: " + template.getSimpleName());
             // }
+            
+            boolean binsForPRTF = true;
+            
             if (template.equals(PageRankTemplate.class)) {
                 if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
                     if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
-                        templates.add(new PageRankTemplate(false));
+                        templates.add(new PageRankTemplate(binsForPRTF));
                     } else {
-                        templates.add(new PageRankTemplate(false));
+                        templates.add(new PageRankTemplate(binsForPRTF));
                     }
                 } else {
-                    templates.add(new PageRankTemplate(true));
+                    templates.add(new PageRankTemplate(binsForPRTF));
                 }
                 
                 log.info("Add tempalte: " + template.getSimpleName());
@@ -520,12 +525,12 @@ public class BIRETrain {
             if (template.equals(TermFrequencyTemplate.class)) {
                 if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
                     if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
-                        templates.add(new TermFrequencyTemplate(false));
+                        templates.add(new TermFrequencyTemplate(binsForPRTF));
                     } else {
-                        templates.add(new TermFrequencyTemplate(false));
+                        templates.add(new TermFrequencyTemplate(binsForPRTF));
                     }
                 } else {
-                    templates.add(new TermFrequencyTemplate(true));
+                    templates.add(new TermFrequencyTemplate(binsForPRTF));
                 }
                 
                 log.info("Add tempalte: " + template.getSimpleName());
