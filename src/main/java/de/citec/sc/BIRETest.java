@@ -301,36 +301,36 @@ public class BIRETest {
 
         log.info("Replacing Person names ...");
 //        //postprocess assigned URIs to replace surnames with fullname URIs
-        for (Document d : testUnfiltered) {
-
-            //modify some annotations
-            for (Annotation a1 : d.getAnnotations()) {
-                for (Annotation a2 : d.getAnnotations()) {
-
-                    if (!a1.equals(a2)) {
-                        if (a1.getWord().toLowerCase().contains(a2.getWord().toLowerCase()) && a1.getWord().length() > a2.getWord().length() && a1.getEndIndex()< a2.getEndIndex()) {
-                            Set<String> classes = DBpediaEndpoint.getClasses(a1.getLink());
-                            if (classes.contains("Person")) {
-                                System.out.println("Found here: a1" + a1);
-                                System.out.println("Found here: a2" + a2);
-                                for (Annotation g : d.getGoldStandard()) {
-                                    if (g.getWord().equals(a1.getWord()) && g.getStartIndex() == a1.getStartIndex() && g.getEndIndex() == a1.getEndIndex()) {
-                                        System.out.println("GoldStandard here a1: " + g);
-                                    }
-                                    if (g.getWord().equals(a2.getWord()) && g.getStartIndex() == a2.getStartIndex() && g.getEndIndex() == a2.getEndIndex()) {
-                                        System.out.println("GoldStandard here a2: " + g);
-                                    }
-                                }
-                                a2.setLink(a1.getLink());
-                                System.out.println("Edited here: " + a1 + "    " + a2);
-                                break;
-                                
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//        for (Document d : testUnfiltered) {
+//
+//            //modify some annotations
+//            for (Annotation a1 : d.getAnnotations()) {
+//                for (Annotation a2 : d.getAnnotations()) {
+//
+//                    if (!a1.equals(a2)) {
+//                        if (a1.getWord().toLowerCase().contains(a2.getWord().toLowerCase()) && a1.getWord().length() > a2.getWord().length() && a1.getEndIndex()< a2.getEndIndex()) {
+//                            Set<String> classes = DBpediaEndpoint.getClasses(a1.getLink());
+//                            if (classes.contains("Person")) {
+//                                System.out.println("Found here: a1" + a1);
+//                                System.out.println("Found here: a2" + a2);
+//                                for (Annotation g : d.getGoldStandard()) {
+//                                    if (g.getWord().equals(a1.getWord()) && g.getStartIndex() == a1.getStartIndex() && g.getEndIndex() == a1.getEndIndex()) {
+//                                        System.out.println("GoldStandard here a1: " + g);
+//                                    }
+//                                    if (g.getWord().equals(a2.getWord()) && g.getStartIndex() == a2.getStartIndex() && g.getEndIndex() == a2.getEndIndex()) {
+//                                        System.out.println("GoldStandard here a2: " + g);
+//                                    }
+//                                }
+//                                a2.setLink(a1.getLink());
+//                                System.out.println("Edited here: " + a1 + "    " + a2);
+//                                break;
+//                                
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
         
         log.info("... Done!\n");
         for (Document d : testUnfiltered) {

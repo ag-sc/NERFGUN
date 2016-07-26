@@ -36,7 +36,7 @@ public class StanfordParser {
         Properties props;
         props = new Properties();
 //        props.put("annotators", "tokenize, ssplit,pos, lemma");
-        props.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner,parse,mention,coref");
+        props.setProperty("annotators", "tokenize,ssplit,pos,lemma,ner,parse");
 //        props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
 //        props.put("dcoref.score", true);
 
@@ -77,25 +77,34 @@ public class StanfordParser {
 //        }
     }
 
-
     public List<String> lemmatizeDocument(String documentText) {
         List<String> lemmas = new LinkedList<>();
 
-        // create an empty Annotation just with the given text
-        Annotation document = new Annotation(documentText);
+        try {
+            // create an empty Annotation just with the given text
+            Annotation document = new Annotation(documentText);
 
-        // run all Annotators on this text
-        this.pipeline.annotate(document);
+            // run all Annotators on this text
+            this.pipeline.annotate(document);
 
-        // Iterate over all of the sentences found
-        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-        for (CoreMap sentence : sentences) {
-            // Iterate over all tokens in a sentence
-            for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
+            // Iterate over all of the sentences found
+            List<CoreMap> sentences = document.get(SentencesAnnotation.class);
+            for (CoreMap sentence : sentences) {
+                // Iterate over all tokens in a sentence
+                for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
                 // Retrieve and add the lemma for each word into the
-                // list of lemmas
-                lemmas.add(token.get(LemmaAnnotation.class));
+                    // list of lemmas
+                    lemmas.add(token.get(LemmaAnnotation.class));
+                }
             }
+
+        } catch (Exception e) {
+            System.out.println("DOC ERROR : " + documentText);
+            e.printStackTrace();
+//             String[] dummyTokens =  documentText.split(" ");
+//             for(int i=0; i<dummyTokens.length; i++){
+//                 lemmas.add(dummyTokens[i].trim());
+//             }
         }
 
         return lemmas;

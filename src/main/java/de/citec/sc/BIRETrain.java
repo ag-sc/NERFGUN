@@ -41,6 +41,7 @@ import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
 import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.templates.InitializationException;
+import de.citec.sc.templates.NameSurnameTemplate;
 import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.PairwiseClassOccurenceTemplate;
 import de.citec.sc.templates.TermFrequencyTemplate;
@@ -392,6 +393,9 @@ public class BIRETrain {
             else if (template instanceof PairwiseClassOccurenceTemplate) {
                 name += "PCO";
             }
+            else if (template instanceof NameSurnameTemplate) {
+                name += "NS";
+            }
             dash = "-";
         }
         return name;
@@ -573,6 +577,11 @@ public class BIRETrain {
             }
             if (template.equals(PairwiseClassOccurenceTemplate.class)) {
                 templates.add(new PairwiseClassOccurenceTemplate());
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            
+            if (template.equals(NameSurnameTemplate.class)) {
+                templates.add(new NameSurnameTemplate());
                 log.info("Add tempalte: " + template.getSimpleName());
             }
         }

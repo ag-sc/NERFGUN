@@ -56,6 +56,7 @@ public class DocumentSimilarityTemplate
     static public double NUMBER_OF_WIKI_DOCUMENTS;
 
     private static boolean isInitialized = false;
+    private static HashMap<String, Map<String, Double>> cacheDocs = new HashMap<>();
 
     public static boolean isInitialized() {
         return isInitialized;
@@ -101,13 +102,36 @@ public class DocumentSimilarityTemplate
         log.debug("Compute %s factor for variable %s", DocumentSimilarityTemplate.class.getSimpleName(), entity);
         Vector featureVector = factor.getFeatureVector();
 
-        try {
-            log.debug("Retrieve text for query link %s...", entity.getLink());
-            String queryResult = FileDB.query(entity.getLink());
-            double cosineSimilarity = 0;
-            if (queryResult != null) {
+        log.debug("Retrieve text for query link %s...", entity.getLink());
+        Map<String, Double> candidateVector = null;
+
+        double cosineSimilarity = 0;
+
+        if (cacheDocs.containsKey(entity.getLink())) {
+            //if cache contains it
+            candidateVector = cacheDocs.get(entity.getLink());
+        } else {
+            try {
+                String queryResult = FileDB.query(entity.getLink());
+                if (queryResult != null) {
+                    candidateVector = lineToVector(queryResult);
+                    
+                    //cache the vector
+                    cacheDocs.put(entity.getLink(), candidateVector);
+                }
+
+            } catch (IOException | EmptyIndexException e) {
+
+                e.printStackTrace();
+//                System.exit(1);
+            }
+
+        }
+
+        if (candidateVector != null) {
+            try {
                 log.debug("Convert retrieved abstract to vector...");
-                Map<String, Double> candidateVector = lineToVector(queryResult);
+//                Map<String, Double> 
 
                 final String document = instance.getDocumentContent();
 
@@ -118,15 +142,12 @@ public class DocumentSimilarityTemplate
                 log.debug("Compute cosine similarity...");
                 cosineSimilarity = SimilarityMeasures.cosineDistance(candidateVector, currentDocumentVector);
                 log.debug("Cosine similarity: %s", cosineSimilarity);
-
-            } else {
-                cosineSimilarity = 0;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            featureVector.set("Document_Cosine_Similarity", cosineSimilarity);
-        } catch (IOException | EmptyIndexException e) {
-            System.exit(1);
-            e.printStackTrace();
         }
+
+        featureVector.set("Document_Cosine_Similarity", cosineSimilarity);
     }
 
     private Map<String, Double> convertDocumentToVector(final String document, final String documentName)

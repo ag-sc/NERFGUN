@@ -42,6 +42,8 @@ public class NEDTemplateFactory implements TemplateFactory<Document, State> {
                 return new CategoryTemplate(false);
             case "PairwiseClassOccurenceTemplate":
                 return new PairwiseClassOccurenceTemplate();
+            case "NameSurnameTemplate":
+                return new NameSurnameTemplate();
         }
         throw new UnkownTemplateRequestedException("Cannot instanciate Template for name " + templateName);
     }
