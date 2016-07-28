@@ -36,7 +36,18 @@ public class CategoryTemplate
         extends templates.AbstractTemplate<Document, State, VariablePairPattern<Annotation>> {
 
     private static Logger log = LogManager.getFormatterLogger();
-    boolean useBins = false;
+    private boolean useBins = false;
+    final private static int NUMBER_OF_BINS = 1000;
+
+    private static double[] bins = new double[NUMBER_OF_BINS + 1];
+
+    static {
+
+        for (int i = 0; i <= NUMBER_OF_BINS; i++) {
+            bins[i] = (double) i / (double) NUMBER_OF_BINS;
+        }
+
+    }
 
     public CategoryTemplate(boolean b) {
         this.useBins = b;
@@ -71,16 +82,30 @@ public class CategoryTemplate
         
         double sim = DBpediaEndpoint.normalizedCategorySimilarity(link1, link2);
         
+        final int bin = getBin(sim);
+        
         if (useBins) {
-            for (double i = 0.001; i < 1.0; i = i + 0.001) {
-                featureVector.set("PairwiseCategorySimilarity_bin_>=" + i, sim > i ? 1.0 : 0);
+            for (int i = 0; i < bin; i++) {
+                featureVector.set("PairwiseCategorySim_ >= " + i, sim);
             }
+
+            featureVector.set("1PairwiseCategorySim_binInBin_" + bin, 1d);
+            featureVector.set("ScorePairwiseCategorySim_binInBin_" + bin, sim);
         }
         else{
             featureVector.set("OneFeature_PairwiseCategorySimilary", sim);
         }
         
         
+    }
+    
+    private int getBin(final double score) {
+        for (int i = 0; i < bins.length - 1; i++) {
+            if (bins[i] <= score && score < bins[i + 1]) {
+                return i;
+            }
+        }
+        return -1;
     }
     
 }

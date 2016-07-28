@@ -234,7 +234,7 @@ public class BIRETest {
 //        Initializer<Document, State> testInitializer = new AlternativeInitializer(index, MAX_CANDIDATES, true);
 
         explorers.add(new AllScoresExplorer(index, MAX_CANDIDATES));
-        int numberOfSamplingSteps = 200;
+        int numberOfSamplingSteps = 300;
 
         StoppingCriterion<State> stopAtMaxModelScore = new StoppingCriterion<State>() {
 
@@ -420,7 +420,7 @@ public class BIRETest {
             results += modelName + "=" + resultsFromFile.get(modelName) + "\n";
         }
 
-        DocumentUtils.writeListToFile(resultPath, results.trim(), false);
+        DocumentUtils.writeStringToFile(resultPath, results.trim(), false);
 
         log.info("Model weights:");
         EvaluationUtil.printWeights(model, -1);
@@ -512,7 +512,7 @@ public class BIRETest {
                     r += "\n==========================================================================================================================\n";
                 }
 
-                DocumentUtils.writeListToFile("errors" + i + ".txt", r, false);
+                DocumentUtils.writeStringToFile("errors" + i + ".txt", r, false);
             }
 
         }
@@ -526,7 +526,7 @@ public class BIRETest {
             result += t + "    " + frequentTypes.get(t) + "\n";
         }
 
-        DocumentUtils.writeListToFile("wrongAnnotationTypes.txt", result.trim(), false);
+        DocumentUtils.writeStringToFile("wrongAnnotationTypes.txt", result.trim(), false);
     }
 
 }

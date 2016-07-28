@@ -46,59 +46,54 @@ public class Test {
 ////        DBpediaEndpoint.init();
 //        HashMap<String, Integer> freqCategory = new HashMap<>();
 //
-        Set<String> uris = new HashSet<>();
-        Set<String> urisNew = new HashSet<>();
-        CorpusLoader loader = new CorpusLoader(false);
+
+        Set<String> files = new HashSet<>();
+        files.add("CoNLLTestb");
+        files.add("CoNLLTesta");
+        files.add("CoNLLTraining");
+
+        for (String fileName : files) {
+            CorpusLoader loader = new CorpusLoader(false);
 //
-        DefaultCorpus corpus = loader.loadCorpus(CorpusLoader.CorpusName.valueOf("CoNLLFull"));
-        List<Document> documents = corpus.getDocuments();
+            DefaultCorpus corpus = loader.loadCorpus(CorpusLoader.CorpusName.valueOf(fileName));
+            List<Document> documents = corpus.getDocuments();
 
-        CandidateRetriever index = new CandidateRetrieverOnLucene(false, "mergedIndexNew");
-//        CandidateRetriever indexNew = new CandidateRetrieverOnLucene(false, "mergedIndexNew");
-        int countOfGold = 0, countOfRetrieval = 0 , countOfRetrievalNew = 0;
-        for (Document d : documents) {
+            CandidateRetriever index = new CandidateRetrieverOnLucene(false, "mergedIndexNew");
+            System.out.println(documents.size());
 
-            System.out.println(documents.indexOf(d));
+            String filePath = "candidates"+fileName+".txt";
 
-            for (Annotation a : d.getGoldStandard()) {
-                List<Instance> r = index.getAllResources(a.getWord(), 10);
-                boolean isThere = false;
-                for (Instance i : r) {
-                    if (i.getUri().equals(a.getLink())) {
-                        isThere = true;
+            DocumentUtils.writeStringToFile(filePath, "", false);
+
+            for (Document d : documents) {
+
+                System.out.println(documents.indexOf(d));
+                String candidates = "";
+
+                for (Annotation a : d.getGoldStandard()) {
+                    List<Instance> r = index.getAllResources(a.getWord(), 10);
+                    candidates += "Word\t" + a.getWord() + "\tLink\t" + a.getLink() + "\t";
+
+                    for (Instance i : r) {
+
+                        if (r.indexOf(i) != r.size() - 1) {
+                            candidates += i.getUri() + "=";
+                        } else {
+                            candidates += i.getUri();
+                        }
                     }
-                    uris.add(i.getUri());
-                }
-                if (isThere) {
-                    countOfRetrieval++;
+                    candidates += "\n";
                 }
 
-//                //new index
-//                List<Instance> rNew = indexNew.getAllResources(a.getWord(), 10);
-//                for (Instance i : rNew) {
-//
-//                    urisNew.add(i.getUri());
+                candidates = "Text\t"+d.getDocumentContent().replace("\n", " ").trim() + "\n\n" + candidates+"\n";
+//                if (documents.indexOf(d) != documents.size() - 1) {
+//                    candidates += "\n==========================================================================================\n";
 //                }
+                DocumentUtils.writeStringToFile(filePath, candidates, true);
 
             }
-
-            countOfGold += d.getGoldStandard().size();
         }
-        
-//        for(String u : uris){
-//            if(!urisNew.contains(u)){
-//                DocumentUtils.writeListToFile("uriMissing.txt", u, true);
-//            }
-//        }
 
-        System.out.println(countOfRetrieval + "/" + countOfGold + " " + (countOfRetrieval / ((double) countOfGold)));
-
-        String result = "";
-        for (String s : uris) {
-            result += s + "\n";
-        }
-        DocumentUtils.writeListToFile("uris.txt", result.trim(), false);
-        System.out.println(documents.size());
 //
 //        Set<String> stopwords = DocumentUtils.readFile(new File("src/main/resources/stopwords"));
 //
@@ -183,7 +178,6 @@ public class Test {
 //            DocumentUtils.writeListToFile("freqCategories.txt", s.replace("http://dbpedia.org/resource/", "") + "   " + freqCategory.get(s), true);
 ////            System.out.println(s.replace("http://dbpedia.org/resource/", "")+"   "+freqCategory.get(s));
 //        }
-
 //        System.out.println(documents.size());
 //        testBIREAPI();
 //        testGerbilAPI();
@@ -318,7 +312,7 @@ public class Test {
 
         content = header + "\n" + content.trim();
 
-        DocumentUtils.writeListToFile("gerbil_cleaned.txt", content, false);
+        DocumentUtils.writeStringToFile("gerbil_cleaned.txt", content, false);
 
         System.out.println(content);
     }
