@@ -87,6 +87,8 @@ public class LocalIDFDocumentSimilarityTemplate
 
 		if (!isInitialized) {
 
+			lemmatizer = new StanfordParser();
+
 			documentVectors = (Map<String, Map<String, Integer>>) restoreData(termfrequencyDBBin);
 
 			if (documentVectors == null) {
