@@ -15,7 +15,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import static javafx.scene.input.KeyCode.K;
+import static javafx.scene.input.KeyCode.V;
 
 public class DocumentUtils {
 
@@ -83,7 +88,7 @@ public class DocumentUtils {
         return content;
     }
 
-    public static void writeListToFile(String fileName, String content, boolean append) {
+    public static void writeStringToFile(String fileName, String content, boolean append) {
         try {
             File file = new File(fileName);
 
@@ -96,6 +101,58 @@ public class DocumentUtils {
             BufferedWriter bw = new BufferedWriter(fw);
             PrintWriter pw = new PrintWriter(bw);
             pw.println(content);
+            
+            pw.close();
+            bw.close();
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void writeCollectionToFile(String fileName, Collection<String> content, boolean append) {
+        try {
+            File file = new File(fileName);
+
+            // if file doesnt exists, then create it
+            
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file,append);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter pw = new PrintWriter(bw);
+            for(String s : content){
+                pw.println(s);
+            }
+            
+            
+            pw.close();
+            bw.close();
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+  
+
+    public static void writeMapToFile(String fileName, Map content, boolean append) {
+        try {
+            File file = new File(fileName);
+
+            // if file doesnt exists, then create it
+            
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file,append);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter pw = new PrintWriter(bw);
+            for(Object s : content.keySet()){
+                pw.println(s+"\t"+content.get(s));
+            }
+            
             
             pw.close();
             bw.close();

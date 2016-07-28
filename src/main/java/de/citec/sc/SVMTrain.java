@@ -275,8 +275,8 @@ public class SVMTrain {
         // StepLimitCriterion<>(numberOfSamplingSteps);
         DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, objective,
                 explorers, objectiveOneCriterion);
-        sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
-        sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
+        sampler.setTrainingSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
+        sampler.setTrainingAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
 
         for (int d = 0; d < documents.size(); d++) {
             Document document = documents.get(d);

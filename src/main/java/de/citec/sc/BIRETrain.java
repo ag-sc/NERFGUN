@@ -31,12 +31,13 @@ import de.citec.sc.learning.FeatureUtils;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
+import de.citec.sc.sampling.AlternativeInitializer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.settings.BIRESettings;
 import de.citec.sc.settings.Setting;
 import de.citec.sc.templates.CandidateSimilarityTemplate;
 import de.citec.sc.templates.CategoryTemplate;
-import de.citec.sc.templates.ClassPropertyTemplate;
+import de.citec.sc.templates.ClassContextTemplate;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
 import de.citec.sc.templates.IndexMapping;
@@ -246,6 +247,7 @@ public class BIRETrain {
          * state for the sampling chain given a sentence.
          */
         Initializer<Document, State> trainInitializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
+//        Initializer<Document, State> trainInitializer = new AlternativeInitializer(index, MAX_CANDIDATES, true);
 
         /*
          * Define the explorers that will provide "neighboring" states given a
@@ -291,8 +293,8 @@ public class BIRETrain {
 
         DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, objective,
                 explorers, objectiveOneCriterion);
-        sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
-        sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
+        sampler.setTrainingSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
+        sampler.setTrainingAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
 
         DefaultLearner<State> learner = new DefaultLearner<>(model, 0.1);
 
@@ -384,8 +386,8 @@ public class BIRETrain {
             } else if (template instanceof TermFrequencyTemplate) {
                 name += "TF";
             }
-            else if (template instanceof ClassPropertyTemplate) {
-                name += "CP";
+            else if (template instanceof ClassContextTemplate) {
+                name += "CCT";
             }
             else if (template instanceof CategoryTemplate) {
                 name += "CT";
@@ -558,8 +560,8 @@ public class BIRETrain {
                 }
                 log.info("Add tempalte: " + template.getSimpleName());
             }
-            if (template.equals(ClassPropertyTemplate.class)) {
-                templates.add(new ClassPropertyTemplate());
+            if (template.equals(ClassContextTemplate.class)) {
+                templates.add(new ClassContextTemplate());
                 log.info("Add tempalte: " + template.getSimpleName());
             }
             if (template.equals(CategoryTemplate.class)) {

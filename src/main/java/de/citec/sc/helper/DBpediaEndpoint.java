@@ -256,6 +256,14 @@ public class DBpediaEndpoint {
 
             // Set the DBpedia specific timeout.
             ((QueryEngineHTTP) qexec).addParam("timeout", "10000");
+            
+            //if ASK Query
+            if(query.contains("ASK")){
+                boolean b = qexec.execAsk();
+                results.add(b+"");
+                queryCache.put(query, results);
+                return results;
+            }
 
             // Execute.
             ResultSet rs = qexec.execSelect();
@@ -281,10 +289,47 @@ public class DBpediaEndpoint {
             queryCache.put(query, results);
 
         } catch (Exception e) {
-
+//            e.printStackTrace();
         }
 
         return results;
+    }
+
+    public static boolean isSubClass(String parent, String child) {
+        if (categoryToParentCategories == null) {
+            categoryToParentCategories = new ConcurrentHashMap<>();
+        }
+
+        if (categoryToParentCategories.containsKey(child)) {
+            
+            if(categoryToParentCategories.get(child).contains(parent)){
+                return true;
+            }
+
+        } else {
+            String q = "PREFIX dbo: <http://dbpedia.org/ontology/>\n"
+                    + "PREFIX res: <http://dbpedia.org/resource/>\n"
+                    + "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
+                    + "PREFIX dbp: <http://dbpedia.org/property/>\n"
+                    + "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n"
+                    + "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
+                    + "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n"
+                    + "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
+                    + "PREFIX yago: <http://dbpedia.org/class/yago/> \n"
+                    + "";
+
+            q += "ASK WHERE { dbo:" + child + " <http://www.w3.org/2000/01/rdf-schema#subClassOf>* dbo:" + parent + ".  }";
+
+            List<String> r = runQuery(q);
+
+            if (!r.isEmpty()) {
+                if (r.contains("true")) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public static Set<String> getClasses(String entityLink) {
@@ -301,19 +346,22 @@ public class DBpediaEndpoint {
                 result.add(c1);
             }
             return result;
-        } 
-        else {
-            String query = "select distinct ?o where {<http://dbpedia.org/resource/" + entityLink + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o . }";
+        } else {
+            String query = "select distinct ?o FROM <http://dbpedia.org> where {<http://dbpedia.org/resource/" + entityLink + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?o . }";
 
             List<String> resultFromEndpoint = DBpediaEndpoint.runQuery(query);
 
             for (String c : resultFromEndpoint) {
-                if(c.contains("http://dbpedia.org/ontology/")){
+                if (c.startsWith("http://dbpedia.org/ontology/")) {
+                    if (c.contains("Agent")) {
+                        continue;
+                    }
                     result.add(c.replace("http://dbpedia.org/ontology/", ""));
+
                 }
             }
         }
-        
+
         return result;
     }
 

@@ -36,8 +36,8 @@ public class NEDTemplateFactory implements TemplateFactory<Document, State> {
                 return new DocumentSimilarityTemplate();
             case "CandidateSimilarityTemplate":
                 return new CandidateSimilarityTemplate();
-            case "ClassPropertyTemplate":
-                return new ClassPropertyTemplate();
+            case "ClassContextTemplate":
+                return new ClassContextTemplate();
             case "CategoryTemplate":
                 return new CategoryTemplate(false);
             case "PairwiseClassOccurenceTemplate":
