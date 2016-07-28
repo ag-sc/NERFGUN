@@ -76,21 +76,24 @@ public class LocalIDFDocumentSimilarityTemplate
 
 	private static boolean isInitialized = false;
 
+	private static FileDB db;
+
 	public static boolean isInitialized() {
 		return isInitialized;
 	}
 
-	public static void init(final String termfrequencyDBBin, final String termfrequencyFile, final String dfFile,
-			final boolean storeIndexOnDrive) throws IOException, EmptyIndexException {
+	public static void init(final String filesWithURIs, final String termfrequencyDBBin, final String termfrequencyFile)
+			throws IOException, EmptyIndexException {
 
 		if (!isInitialized) {
+
 			documentVectors = (Map<String, Map<String, Integer>>) restoreData(termfrequencyDBBin);
 
 			if (documentVectors == null) {
 
 				documentVectors = new HashMap<>();
 
-				prepareUris();
+				prepareUris(filesWithURIs);
 
 				prepareDocumentVectors(termfrequencyDBBin, termfrequencyFile);
 
@@ -100,8 +103,8 @@ public class LocalIDFDocumentSimilarityTemplate
 		}
 	}
 
-	private static void prepareUris() throws IOException {
-		uris = Files.readAllLines(new File("uris").toPath()).stream().distinct().collect(Collectors.toSet());
+	private static void prepareUris(final String filesWithURIs) throws IOException {
+		uris = Files.readAllLines(new File(filesWithURIs).toPath()).stream().distinct().collect(Collectors.toSet());
 	}
 
 	private static void prepareDocumentVectors(final String termfrequencyDBBin, final String termfrequencyFile)
@@ -109,11 +112,12 @@ public class LocalIDFDocumentSimilarityTemplate
 		/*
 		 * Load database...
 		 */
-		FileDB.loadIndicies(termfrequencyDBBin, termfrequencyFile, false);
+		db = new FileDB();
+		db.loadIndicies(termfrequencyDBBin, termfrequencyFile, false);
 
 		for (String uri : uris) {
 
-			final Map<String, Integer> x = lineToVector(FileDB.query(uri));
+			final Map<String, Integer> x = lineToVector(db.query(uri));
 			if (x != null) {
 				documentVectors.put(uri, x);
 				log.info(uri + " with " + x.size() + " entries.");

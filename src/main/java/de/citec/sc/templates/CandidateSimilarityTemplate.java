@@ -21,7 +21,6 @@ import de.citec.sc.similarity.database.FileDB;
 import de.citec.sc.similarity.measures.SimilarityMeasures;
 import de.citec.sc.similarity.tfidf.IDFProvider;
 import de.citec.sc.variables.State;
-import de.citec.sc.wikipedia.preprocess.WikipediaTFIDFVector;
 import factors.Factor;
 import factors.patterns.VariablePairPattern;
 import learning.Vector;
@@ -41,8 +40,9 @@ public class CandidateSimilarityTemplate
 	 * The number of wikipedia documents.
 	 */
 
-
 	private static boolean isInitialized = false;
+
+	private static FileDB db;
 
 	public static boolean isInitialized() {
 		return isInitialized;
@@ -52,10 +52,10 @@ public class CandidateSimilarityTemplate
 			final boolean storeIndexOnDrive) throws IOException {
 
 		if (!isInitialized) {
-			FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
+			db = new FileDB();
+			db.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
 			IDFProvider.getIDF(dfFile);
 
-			
 			isInitialized = true;
 		}
 
@@ -95,8 +95,8 @@ public class CandidateSimilarityTemplate
 
 		try {
 			log.debug("Retrieve text for query link %s...", entity1.getLink());
-			String queryResult1 = FileDB.query(entity1.getLink());
-			String queryResult2 = FileDB.query(entity2.getLink());
+			String queryResult1 = db.query(entity1.getLink());
+			String queryResult2 = db.query(entity2.getLink());
 			double cosineSimilarity = 0;
 			if (queryResult1 != null && queryResult2 != null) {
 				log.debug("Convert retrieved abstract to vector...");

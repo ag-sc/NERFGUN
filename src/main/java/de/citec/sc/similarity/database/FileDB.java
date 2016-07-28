@@ -57,17 +57,17 @@ public class FileDB {
 	 * The index file that contains each index for each datapoint. This method
 	 * must be called before querying the database.
 	 */
-	public static Map<String, Map<String, Index>> indices;
+	public Map<String, Map<String, Index>> indices;
 
 	/**
 	 * The path to the file that contains the datapoints.
 	 */
-	public static String fileDirectory;
+	public String fileDirectory;
 
 	/**
 	 * filename of the data to query.
 	 */
-	public static String queryPrefix;
+	public String queryPrefix;
 
 	/**
 	 * Call this method to load the index-file from the hard-drive to the
@@ -87,7 +87,7 @@ public class FileDB {
 	 *            whether to store the computed index file or not.
 	 * @throws IOException
 	 */
-	public static void loadIndicies(final String indexFileName, final String dataFileName, final boolean storeIndexFile)
+	public void loadIndicies(final String indexFileName, final String dataFileName, final boolean storeIndexFile)
 			throws IOException {
 
 		/*
@@ -129,7 +129,7 @@ public class FileDB {
 	 * @throws IOException
 	 * @throws EmptyIndexException
 	 */
-	public static String query(final String dataID) throws IOException, EmptyIndexException {
+	public String query(final String dataID) throws IOException, EmptyIndexException {
 		if (indices.isEmpty()) {
 			throw new EmptyIndexException(
 					"The query could not be executed because the index file is empty. Call load indicies first and make sure to provide the correct indicies file for the data.");
@@ -171,7 +171,7 @@ public class FileDB {
 	 *            the name of the data-file.
 	 * @throws IOException
 	 */
-	private static void createIndexFromFile(final String fileName, String fileDirectory) throws IOException {
+	private void createIndexFromFile(final String fileName, String fileDirectory) throws IOException {
 
 		final BufferedReader br = new BufferedReader(new FileReader(fileDirectory + fileName), BUFFER_SIZE);
 		String line;
