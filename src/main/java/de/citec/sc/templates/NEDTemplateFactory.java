@@ -20,9 +20,9 @@ public class NEDTemplateFactory implements TemplateFactory<Document, State> {
     @Override
     public AbstractTemplate<Document, State, ?> newInstance(String templateName)
             throws UnkownTemplateRequestedException, Exception {
-        
+
         boolean binsForPRTF = true;
-        
+
         switch (templateName) {
             case "TermFrequencyTemplate":
                 return new TermFrequencyTemplate(binsForPRTF);
@@ -44,6 +44,8 @@ public class NEDTemplateFactory implements TemplateFactory<Document, State> {
                 return new PairwiseClassOccurenceTemplate();
             case "NameSurnameTemplate":
                 return new NameSurnameTemplate();
+            case "LocalIDFDocumentSimilarityTemplate":
+                return new LocalIDFDocumentSimilarityTemplate();
         }
         throw new UnkownTemplateRequestedException("Cannot instanciate Template for name " + templateName);
     }

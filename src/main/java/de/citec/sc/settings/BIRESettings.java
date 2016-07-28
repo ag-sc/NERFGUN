@@ -9,6 +9,7 @@ import java.util.List;
 
 import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
+import de.citec.sc.templates.LocalIDFDocumentSimilarityTemplate;
 import de.citec.sc.templates.NameSurnameTemplate;
 import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.PairwiseClassOccurenceTemplate;
@@ -22,7 +23,7 @@ public class BIRESettings {
 	 * All possible templates in order of their importance.
 	 */
 	final private static List<Class<? extends AbstractTemplate>> templates = Arrays.asList(PageRankTemplate.class,
-			TermFrequencyTemplate.class, EditDistanceTemplate.class, TopicSpecificPageRankTemplate.class, NameSurnameTemplate.class, ClassContextTemplate.class);
+			TermFrequencyTemplate.class, EditDistanceTemplate.class, TopicSpecificPageRankTemplate.class, NameSurnameTemplate.class, ClassContextTemplate.class, LocalIDFDocumentSimilarityTemplate.class);
 
 	/**
 	 * All possible options generated given the sorted templates.

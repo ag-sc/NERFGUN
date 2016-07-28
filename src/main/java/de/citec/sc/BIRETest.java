@@ -18,6 +18,7 @@ import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.templates.CandidateSimilarityTemplate;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.IndexMapping;
+import de.citec.sc.templates.LocalIDFDocumentSimilarityTemplate;
 import de.citec.sc.templates.NEDTemplateFactory;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
@@ -60,6 +61,9 @@ public class BIRETest {
 //    private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
     private static String tfidfFile = "en_wiki.tfidf";
     private static String tsprFile = "tspr.all";
+    private static String tfFile = "en_wiki.termfrequency";
+    private static String urisFile = "uris";
+    private static String tfDbBin = "tfDB.bin";
     private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 
     private static int MAX_CANDIDATES = 1;
@@ -198,6 +202,9 @@ public class BIRETest {
         CandidateSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
         log.info("Init DBpedia data loading into memory ...");
         DBpediaEndpoint.init();
+        
+        log.info("Initializing LocalIDFTemplate...");
+        LocalIDFDocumentSimilarityTemplate.init(urisFile, tfDbBin, tfFile);
 
         boolean useBins = true;
         if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {

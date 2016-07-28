@@ -42,6 +42,7 @@ import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.EditDistanceTemplate;
 import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.templates.InitializationException;
+import de.citec.sc.templates.LocalIDFDocumentSimilarityTemplate;
 import de.citec.sc.templates.NameSurnameTemplate;
 import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.PairwiseClassOccurenceTemplate;
@@ -93,7 +94,10 @@ public class BIRETrain {
 //    private static String dfFile = "en_wiki_large_abstracts.docfrequency";
     private static String dfFile = "en_wiki.docfrequency";
 //    private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
-    private static String tfidfFile = "en_wiki.tfidf";
+    private static String tfidfFile = "en_wiki.tfidf";//en_wiki.termfrequency
+    private static String tfFile = "en_wiki.termfrequency";
+    private static String urisFile = "uris";
+    private static String tfDbBin = "tfDB.bin";
     private static String tsprFile = "tspr.all";
     private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
     private static CandidateRetriever index;
@@ -116,7 +120,7 @@ public class BIRETrain {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InitializationException {
 
         readParamsFromCommandLine(args);
         
@@ -398,6 +402,9 @@ public class BIRETrain {
             else if (template instanceof NameSurnameTemplate) {
                 name += "NS";
             }
+            else if (template instanceof LocalIDFDocumentSimilarityTemplate) {
+                name += "LID";
+            }
             dash = "-";
         }
         return name;
@@ -461,6 +468,9 @@ public class BIRETrain {
 
                 if (template.equals(TermFrequencyTemplate.class)) {
                 }
+                if (template.equals(LocalIDFDocumentSimilarityTemplate.class)) {
+                    LocalIDFDocumentSimilarityTemplate.init(urisFile, tfDbBin, tfFile);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -474,7 +484,7 @@ public class BIRETrain {
      * @param index
      * @param templates
      */
-    private static void addTemplatesFromSetting(List<AbstractTemplate<Document, State, ?>> templates) {
+    private static void addTemplatesFromSetting(List<AbstractTemplate<Document, State, ?>> templates) throws InitializationException {
         for (Class<? extends AbstractTemplate> template : setting.getSetting()) {
 
             // if (template.equals(IndexRankTemplate.class)) {
@@ -584,6 +594,10 @@ public class BIRETrain {
             
             if (template.equals(NameSurnameTemplate.class)) {
                 templates.add(new NameSurnameTemplate());
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            if (template.equals(LocalIDFDocumentSimilarityTemplate.class)) {
+                templates.add(new LocalIDFDocumentSimilarityTemplate());
                 log.info("Add tempalte: " + template.getSimpleName());
             }
         }
