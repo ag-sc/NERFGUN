@@ -6,7 +6,6 @@
 package de.citec.sc.templates;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,169 +30,171 @@ import de.citec.sc.wikipedia.preprocess.WikipediaTFIDFVector;
 import factors.Factor;
 import factors.patterns.SingleVariablePattern;
 import learning.Vector;
-import utility.VariableID;
 
 /**
  *
  * @author hterhors
  *
- * Feb 18, 2016
+ *         Feb 18, 2016
  */
 public class DocumentSimilarityTemplate
-        extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
+		extends templates.AbstractTemplate<Document, State, SingleVariablePattern<Annotation>> {
 
-    private static Logger log = LogManager.getFormatterLogger();
-    private static StanfordParser lemmatizer;
+	private static Logger log = LogManager.getFormatterLogger();
+	private static StanfordParser lemmatizer;
 
-    private Map<String, Double> currentDocumentVector = null;
+	private Map<String, Double> currentDocumentVector = null;
 
-    private String currentDocumentName = null;
+	private String currentDocumentName = null;
 
-    private static String dfFile;
-    /**
-     * The number of wikipedia documents.
-     */
-    static public double NUMBER_OF_WIKI_DOCUMENTS;
+	private static String dfFile;
+	/**
+	 * The number of wikipedia documents.
+	 */
+	static public double NUMBER_OF_WIKI_DOCUMENTS;
 
-    private static boolean isInitialized = false;
-    private static HashMap<String, Map<String, Double>> cacheDocs = new HashMap<>();
+	private static boolean isInitialized = false;
+	private static HashMap<String, Map<String, Double>> cacheDocs = new HashMap<>();
+	private static FileDB db;
 
-    public static boolean isInitialized() {
-        return isInitialized;
-    }
+	public static boolean isInitialized() {
+		return isInitialized;
+	}
 
-    public static void init(final String indexFile, final String tfidfFile, final String dfFile,
-            final boolean storeIndexOnDrive) throws IOException {
+	public static void init(final String indexFile, final String tfidfFile, final String dfFile,
+			final boolean storeIndexOnDrive) throws IOException {
 
-        if (!isInitialized) {
-            FileDB.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
-            DocumentSimilarityTemplate.dfFile = dfFile;
-            IDFProvider.getIDF(dfFile);
-            lemmatizer = new StanfordParser();
+		if (!isInitialized) {
 
-            NUMBER_OF_WIKI_DOCUMENTS = WikipediaTFIDFVector.countLines(tfidfFile);
-            isInitialized = true;
-        }
+			db = new FileDB();
+			db.loadIndicies(indexFile, tfidfFile, storeIndexOnDrive);
+			DocumentSimilarityTemplate.dfFile = dfFile;
+			IDFProvider.getIDF(dfFile);
+			lemmatizer = new StanfordParser();
 
-    }
+			NUMBER_OF_WIKI_DOCUMENTS = WikipediaTFIDFVector.countLines(tfidfFile);
+			isInitialized = true;
+		}
 
-    public DocumentSimilarityTemplate() throws InitializationException {
-        if (!isInitialized) {
-            log.warn("DocumentSimilarityTemplate is NOT initialized correctly!");
-            log.warn("Call DocumentSimilarityTemplate.init() for proper initlialization.");
-            throw new InitializationException(
-                    "DocumentSimilarityTemplate is NOT initialized correctly! Call DocumentSimilarityTemplate.init() for proper initlialization.");
-        }
-    }
+	}
 
-    @Override
-    public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
-        Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
-        for (Annotation a : state.getEntities()) {
-            factors.add(new SingleVariablePattern<>(this, a));
-        }
-        log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
-        return factors;
-    }
+	public DocumentSimilarityTemplate() throws InitializationException {
+		if (!isInitialized) {
+			log.warn("DocumentSimilarityTemplate is NOT initialized correctly!");
+			log.warn("Call DocumentSimilarityTemplate.init() for proper initlialization.");
+			throw new InitializationException(
+					"DocumentSimilarityTemplate is NOT initialized correctly! Call DocumentSimilarityTemplate.init() for proper initlialization.");
+		}
+	}
 
-    @Override
-    public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
-        Annotation entity = factor.getFactorPattern().getVariable();
-        log.debug("Compute %s factor for variable %s", DocumentSimilarityTemplate.class.getSimpleName(), entity);
-        Vector featureVector = factor.getFeatureVector();
+	@Override
+	public Set<SingleVariablePattern<Annotation>> generateFactorPatterns(State state) {
+		Set<SingleVariablePattern<Annotation>> factors = new HashSet<>();
+		for (Annotation a : state.getEntities()) {
+			factors.add(new SingleVariablePattern<>(this, a));
+		}
+		log.info("Generate %s factor patterns for state %s.", factors.size(), state.getID());
+		return factors;
+	}
 
-        log.debug("Retrieve text for query link %s...", entity.getLink());
-        Map<String, Double> candidateVector = null;
+	@Override
+	public void computeFactor(Document instance, Factor<SingleVariablePattern<Annotation>> factor) {
+		Annotation entity = factor.getFactorPattern().getVariable();
+		log.debug("Compute %s factor for variable %s", DocumentSimilarityTemplate.class.getSimpleName(), entity);
+		Vector featureVector = factor.getFeatureVector();
 
-        double cosineSimilarity = 0;
+		log.debug("Retrieve text for query link %s...", entity.getLink());
+		Map<String, Double> candidateVector = null;
 
-        if (cacheDocs.containsKey(entity.getLink())) {
-            //if cache contains it
-            candidateVector = cacheDocs.get(entity.getLink());
-        } else {
-            try {
-                String queryResult = FileDB.query(entity.getLink());
-                if (queryResult != null) {
-                    candidateVector = lineToVector(queryResult);
-                    
-                    //cache the vector
-                    cacheDocs.put(entity.getLink(), candidateVector);
-                }
+		double cosineSimilarity = 0;
 
-            } catch (IOException | EmptyIndexException e) {
+		if (cacheDocs.containsKey(entity.getLink())) {
+			// if cache contains it
+			candidateVector = cacheDocs.get(entity.getLink());
+		} else {
+			try {
+				String queryResult = db.query(entity.getLink());
+				if (queryResult != null) {
+					candidateVector = lineToVector(queryResult);
 
-                e.printStackTrace();
-//                System.exit(1);
-            }
+					// cache the vector
+					cacheDocs.put(entity.getLink(), candidateVector);
+				}
 
-        }
+			} catch (IOException | EmptyIndexException e) {
 
-        if (candidateVector != null) {
-            try {
-                log.debug("Convert retrieved abstract to vector...");
-//                Map<String, Double> 
+				e.printStackTrace();
+				// System.exit(1);
+			}
 
-                final String document = instance.getDocumentContent();
+		}
 
-                log.debug("Convert document to vector...");
-                Map<String, Double> currentDocumentVector = convertDocumentToVector(document,
-                        instance.getDocumentContent());
+		if (candidateVector != null) {
+			try {
+				log.debug("Convert retrieved abstract to vector...");
+				// Map<String, Double>
 
-                log.debug("Compute cosine similarity...");
-                cosineSimilarity = SimilarityMeasures.cosineDistance(candidateVector, currentDocumentVector);
-                log.debug("Cosine similarity: %s", cosineSimilarity);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+				final String document = instance.getDocumentContent();
 
-        featureVector.set("Document_Cosine_Similarity", cosineSimilarity);
-    }
+				log.debug("Convert document to vector...");
+				Map<String, Double> currentDocumentVector = convertDocumentToVector(document,
+						instance.getDocumentContent());
 
-    private Map<String, Double> convertDocumentToVector(final String document, final String documentName)
-            throws IOException {
+				log.debug("Compute cosine similarity...");
+				cosineSimilarity = SimilarityMeasures.cosineDistance(candidateVector, currentDocumentVector);
+				log.debug("Cosine similarity: %s", cosineSimilarity);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 
-        if (currentDocumentName != null && currentDocumentName.equals(documentName)) {
-            return currentDocumentVector;
-        }
+		featureVector.set("Document_Cosine_Similarity", cosineSimilarity);
+	}
 
-        final List<String> preprocessedDocument = preprocessDocument(document);
-        currentDocumentName = documentName;
+	private Map<String, Double> convertDocumentToVector(final String document, final String documentName)
+			throws IOException {
 
-        currentDocumentVector = TFIDF.getTFWikiIDF(preprocessedDocument, IDFProvider.getIDF(this.dfFile),
-                NUMBER_OF_WIKI_DOCUMENTS);
+		if (currentDocumentName != null && currentDocumentName.equals(documentName)) {
+			return currentDocumentVector;
+		}
 
-        return currentDocumentVector;
-    }
+		final List<String> preprocessedDocument = preprocessDocument(document);
+		currentDocumentName = documentName;
 
-    private List<String> preprocessDocument(final String document) {
+		currentDocumentVector = TFIDF.getTFWikiIDF(preprocessedDocument, IDFProvider.getIDF(this.dfFile),
+				NUMBER_OF_WIKI_DOCUMENTS);
 
-        final List<String> currentPreprocessedDocument;
+		return currentDocumentVector;
+	}
 
-        final String tokenizedDocument = Tokenizer.bagOfWordsTokenizer(document, Tokenizer.toLowercaseIfNotUpperCase,
-                " ");
+	private List<String> preprocessDocument(final String document) {
 
-        currentPreprocessedDocument = lemmatizer.lemmatizeDocument(tokenizedDocument);
+		final List<String> currentPreprocessedDocument;
 
-        currentPreprocessedDocument.removeAll(Stopwords.ENGLISH_STOP_WORDS);
+		final String tokenizedDocument = Tokenizer.bagOfWordsTokenizer(document, Tokenizer.toLowercaseIfNotUpperCase,
+				" ");
 
-        return currentPreprocessedDocument;
-    }
+		currentPreprocessedDocument = lemmatizer.lemmatizeDocument(tokenizedDocument);
 
-    private Map<String, Double> lineToVector(final String line) {
+		currentPreprocessedDocument.removeAll(Stopwords.ENGLISH_STOP_WORDS);
 
-        final Map<String, Double> vector = new HashMap<String, Double>();
+		return currentPreprocessedDocument;
+	}
 
-        if (line.split("\t", 2).length == 2) {
-            final String vectorData = line.split("\t", 2)[1];
+	private Map<String, Double> lineToVector(final String line) {
 
-            for (String dataPoint : vectorData.split("\t")) {
-                final String[] data = dataPoint.split(" ");
-                vector.put(data[0], Double.parseDouble(data[1]));
-            }
-        }
+		final Map<String, Double> vector = new HashMap<String, Double>();
 
-        return vector;
-    }
+		if (line.split("\t", 2).length == 2) {
+			final String vectorData = line.split("\t", 2)[1];
+
+			for (String dataPoint : vectorData.split("\t")) {
+				final String[] data = dataPoint.split(" ");
+				vector.put(data[0], Double.parseDouble(data[1]));
+			}
+		}
+
+		return vector;
+	}
 
 }

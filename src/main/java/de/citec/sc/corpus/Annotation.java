@@ -6,6 +6,7 @@
 package de.citec.sc.corpus;
 
 import java.text.DecimalFormat;
+import java.util.HashSet;
 import java.util.Set;
 
 import variables.AbstractVariable;
@@ -35,6 +36,14 @@ public class Annotation extends AbstractVariable {
 		this.startIndex = startIndex;
 		this.endIndex = endIndex;
 		this.possibleLinks = possibleLinks;
+	}
+
+	public Annotation(String word, String link, int startIndex, int endIndex) {
+		this.word = word;
+		this.link = link;
+		this.startIndex = startIndex;
+		this.endIndex = endIndex;
+		this.possibleLinks = new HashSet<>();
 	}
 
 	public void setPossibleLinks(Set<String> possibleLinks) {
