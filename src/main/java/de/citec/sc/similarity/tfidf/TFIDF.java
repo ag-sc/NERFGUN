@@ -1,11 +1,13 @@
 package de.citec.sc.similarity.tfidf;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class provides methods to calcualte the term frequency and the document
@@ -30,14 +32,14 @@ public class TFIDF {
 	 */
 	public static Map<String, Double> getTFWikiIDF(final List<String> document, Map<String, Double> DFs,
 			Double numberOfDocumentsInCorpus) throws IOException {
-		Map<String, Double> TFs = getTFs(document, false);
+		Map<String, Integer> TFs = getTFs(document);
 		Map<String, Double> TFIDFs = new HashMap<String, Double>();
 
 		for (String term : TFs.keySet()) {
 
 			final double df = DFs.containsKey(term) ? numberOfDocumentsInCorpus / DFs.get(term) : 1;
 
-			final double tfidf = TFs.get(term) * Math.log(df);
+			final double tfidf = ((double) TFs.get(term)) * Math.log(df);
 
 			TFIDFs.put(term, tfidf);
 		}
@@ -54,19 +56,54 @@ public class TFIDF {
 	 *            whether the term-frequency should be normalized or not.
 	 * @return the term frequency for each term in the given document.
 	 */
-	public static final Map<String, Double> getTFs(final List<String> document, boolean normalize) {
-		Map<String, Double> tfs = new ConcurrentHashMap<String, Double>(document.size());
+	public static final Map<String, Integer> getTFs(final List<String> document) {
+		Map<String, Integer> tfs = new ConcurrentHashMap<>(document.size());
 
 		document.stream().forEach(word -> {
-			tfs.put(word, tfs.getOrDefault(word, 0d) + 1);
+			tfs.put(word, tfs.getOrDefault(word, 0) + 1);
 		});
 
-		if (normalize) {
-			AtomicInteger sum = new AtomicInteger(0);
-			tfs.values().stream().forEach(d -> sum.addAndGet(d.intValue()));
-			tfs.entrySet().stream().forEach(e -> e.setValue(e.getValue() / sum.get()));
-		}
+		// if (normalize) {
+		// AtomicInteger sum = new AtomicInteger(0);
+		// tfs.values().stream().forEach(d -> sum.addAndGet(d.intValue()));
+		// tfs.entrySet().stream().forEach(e -> e.setValue(e.getValue() /
+		// sum.get()));
+		// }
 		return tfs;
 	}
 
+	public static <A, B> Map<B, Double> getIDFs(final Set<B> dict, final Map<A, Set<B>> documents) {
+		final double N = documents.size();
+		Set<B> synchronizedDict = Collections.synchronizedSet(new HashSet<B>());
+		Map<B, Double> termCounts = new ConcurrentHashMap<B, Double>();
+		Map<B, Double> idfs = new ConcurrentHashMap<B, Double>();
+
+		if (dict == null) {
+			documents.entrySet().parallelStream().forEach(e -> e.getValue().stream().forEach(w -> {
+				synchronized (dict) {
+					synchronizedDict.add(w);
+				}
+			}));
+		} else {
+			synchronizedDict.addAll(dict);
+		}
+
+		dict.parallelStream().forEach(word -> {
+			documents.values().stream().forEach(document -> {
+
+				synchronized (termCounts) {
+
+					termCounts.put(word, termCounts.getOrDefault(word, 0d) + (document.contains(word) ? 1d : 0d));
+				}
+			});
+		});
+		termCounts.entrySet().parallelStream().forEach(termCount -> {
+
+			synchronized (idfs) {
+				idfs.put(termCount.getKey(),
+						(termCount.getValue().intValue()) == 0 ? 0 : Math.log(N / termCount.getValue().doubleValue()));
+			}
+		});
+		return idfs;
+	}
 }
