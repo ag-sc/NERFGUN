@@ -197,8 +197,8 @@ public class SVMTest {
         DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, objective,
                 explorers, stopAtMaxModelScore);
 
-		sampler.setSamplingStrategy(SamplingStrategies.greedyModelStrategy());
-		sampler.setAcceptStrategy(AcceptStrategies.strictModelAccept());
+		sampler.setTestSamplingStrategy(SamplingStrategies.greedyModelStrategy());
+		sampler.setTestAcceptStrategy(AcceptStrategies.strictModelAccept());
 
 		log.info("####################");
 		log.info("Start testing ...");

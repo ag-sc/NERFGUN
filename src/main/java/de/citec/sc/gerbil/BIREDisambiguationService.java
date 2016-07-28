@@ -155,12 +155,12 @@ public class BIREDisambiguationService implements TemplateFactory<Document, Stat
             }
         };
         sampler = new DefaultSampler<>(model, objective, explorers, stopAtMaxModelScore);
-        sampler.setSamplingStrategy(SamplingStrategies.greedyModelStrategy());
-        sampler.setAcceptStrategy(AcceptStrategies.strictModelAccept());
+        sampler.setTestSamplingStrategy(SamplingStrategies.greedyModelStrategy());
+        sampler.setTestAcceptStrategy(AcceptStrategies.strictModelAccept());
 
         samplerTwitter = new DefaultSampler<>(modelTwitter, objective, explorers, stopAtMaxModelScore);
-        samplerTwitter.setSamplingStrategy(SamplingStrategies.greedyModelStrategy());
-        samplerTwitter.setAcceptStrategy(AcceptStrategies.strictModelAccept());
+        samplerTwitter.setTestSamplingStrategy(SamplingStrategies.greedyModelStrategy());
+        samplerTwitter.setTestAcceptStrategy(AcceptStrategies.strictModelAccept());
 
         trainer = new Trainer();
     }
