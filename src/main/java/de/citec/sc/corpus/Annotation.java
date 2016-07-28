@@ -6,13 +6,15 @@
 package de.citec.sc.corpus;
 
 import java.text.DecimalFormat;
-import java.util.Objects;
+import java.util.Set;
 
 import variables.AbstractVariable;
 
 /**
  *
- * @author sherzod
+ * The Annotation contains now all links that can be assigned for that word.
+ *
+ * @author sherzod, hterhors
  */
 public class Annotation extends AbstractVariable {
 
@@ -25,12 +27,22 @@ public class Annotation extends AbstractVariable {
 	private double relativeTermFrequencyScore;
 	private double pageRankScore = 0.0;
 	private double stringSimilarity;
+	private Set<String> possibleLinks;
 
-	public Annotation(String word, String link, int startIndex, int endIndex) {
+	public Annotation(Set<String> possibleLinks, String word, String link, int startIndex, int endIndex) {
 		this.word = word;
 		this.link = link;
 		this.startIndex = startIndex;
 		this.endIndex = endIndex;
+		this.possibleLinks = possibleLinks;
+	}
+
+	public void setPossibleLinks(Set<String> possibleLinks) {
+		this.possibleLinks = possibleLinks;
+	}
+
+	public Set<String> getPossibleLinks() {
+		return possibleLinks;
 	}
 
 	/**
@@ -89,8 +101,6 @@ public class Annotation extends AbstractVariable {
 		return result;
 	}
 
-
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -122,7 +132,7 @@ public class Annotation extends AbstractVariable {
 	}
 
 	public Annotation clone() {
-		Annotation a = new Annotation(word, link, startIndex, endIndex);
+		Annotation a = new Annotation(possibleLinks, word, link, startIndex, endIndex);
 		a.setIndexRank(indexRank);
 		a.setStringSimilarity(stringSimilarity);
 		a.setPageRankScore(pageRankScore);
