@@ -260,8 +260,8 @@ public class BIRETest {
         DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, objective,
                 explorers, stopAtMaxModelScore);
 
-        sampler.setSamplingStrategy(SamplingStrategies.greedyModelStrategy());
-        sampler.setAcceptStrategy(AcceptStrategies.strictModelAccept());
+        sampler.setTrainingSamplingStrategy(SamplingStrategies.greedyModelStrategy());
+        sampler.setTrainingAcceptStrategy(AcceptStrategies.strictModelAccept());
 
         log.info("####################");
         log.info("Start testing ...");

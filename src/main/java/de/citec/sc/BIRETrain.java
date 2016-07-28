@@ -291,8 +291,8 @@ public class BIRETrain {
 
         DefaultSampler<Document, State, List<Annotation>> sampler = new DefaultSampler<>(model, objective,
                 explorers, objectiveOneCriterion);
-        sampler.setSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
-        sampler.setAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
+        sampler.setTrainingSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
+        sampler.setTrainingAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
 
         DefaultLearner<State> learner = new DefaultLearner<>(model, 0.1);
 
