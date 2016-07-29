@@ -1,14 +1,30 @@
-package de.citec.sc.learning;
+package de.citec.sc.helper;
 
-import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import factors.Factor;
 import learning.Vector;
 
 public class FeatureUtils {
 
+	public static double[] initializeBins(int numberOfBins) {
+		double[] bins = new double[numberOfBins + 1];
+		for (int i = 0; i <= numberOfBins; i++) {
+			bins[i] = (double) i / (double) numberOfBins;
+		}
+		return bins;
+	}
+
+	public static int getBin(final double[] bins, final double score) {
+		for (int i = 0; i < bins.length - 1; i++) {
+			if (bins[i] <= score && score < bins[i + 1]) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	public static String MIN_PREFIX = "MIN_";
 	public static String MAX_PREFIX = "MAX_";
 	public static String SUM_PREFIX = "SUM_";

@@ -22,6 +22,7 @@ import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.Document;
+import de.citec.sc.helper.FeatureUtils;
 import de.citec.sc.variables.State;
 import factors.Factor;
 import factors.patterns.VariablePairPattern;
@@ -44,15 +45,7 @@ public class PageLinkEmbeddingTemplate extends AbstractTemplate<Document, State,
 	 */
 	final private static int NUMBER_OF_BINS = 100;
 
-	private static double[] bins = new double[NUMBER_OF_BINS + 1];
-
-	static {
-
-		for (int i = 0; i <= NUMBER_OF_BINS; i++) {
-			bins[i] = (double) i / (double) NUMBER_OF_BINS;
-		}
-
-	}
+	private static double[] bins = FeatureUtils.initializeBins(NUMBER_OF_BINS);
 
 	private static Logger log = LogManager.getFormatterLogger();
 
@@ -148,7 +141,7 @@ public class PageLinkEmbeddingTemplate extends AbstractTemplate<Document, State,
 		}
 		featureVector.set("PageLinkEmbeddingScore", score);
 
-		final int bin = getBin(score);
+		final int bin = FeatureUtils.getBin(bins, score);
 		if (useBins) {
 			for (int i = 0; i < bin; i++) {
 				featureVector.set("PageLinkEmbeddingScore >= " + i, 1d);
@@ -177,30 +170,6 @@ public class PageLinkEmbeddingTemplate extends AbstractTemplate<Document, State,
 		final String key2 = getKeyForURI(uri2);
 		double score = vectors.similarity(key1, key2);
 		return score;
-	}
-	//
-	// private static double cosineSimilarity(double[] v1, double[] v2) {
-	// double score = 0;
-	// double l1 = 0;
-	// double l2 = 0;
-	// for (int i = 0; i < v1.length; i++) {
-	// score += v1[i] * v2[i];
-	// l1 += Math.pow(v1[i], 2);
-	// l2 += Math.pow(v2[i], 2);
-	// }
-	// l1 = Math.sqrt(l1);
-	// l2 = Math.sqrt(l2);
-	// score /= l1 * l2;
-	// return score;
-	// }
-
-	private static int getBin(final double score) {
-		for (int i = 0; i < bins.length - 1; i++) {
-			if (bins[i] <= score && score < bins[i + 1]) {
-				return i;
-			}
-		}
-		return -1;
 	}
 
 }

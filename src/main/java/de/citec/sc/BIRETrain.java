@@ -1,24 +1,20 @@
 package de.citec.sc;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import corpus.Instance;
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.CorpusLoader.CorpusName;
@@ -27,11 +23,9 @@ import de.citec.sc.corpus.Document;
 import de.citec.sc.helper.DBpediaEndpoint;
 import de.citec.sc.learning.ChangeSamplingStrategy;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
-import de.citec.sc.learning.FeatureUtils;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
-import de.citec.sc.sampling.AlternativeInitializer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.settings.BIRESettings;
 import de.citec.sc.settings.Setting;
@@ -49,17 +43,11 @@ import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
-import exceptions.MissingFactorException;
-import factors.Factor;
-import java.util.Set;
-import java.util.logging.Level;
 import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
 import learning.Trainer;
-import learning.Vector;
 import learning.callbacks.EpochCallback;
-import learning.callbacks.StepCallback;
 import learning.scorer.LinearScorer;
 import learning.scorer.Scorer;
 import sampling.DefaultSampler;
@@ -69,7 +57,6 @@ import sampling.samplingstrategies.AcceptStrategies;
 import sampling.samplingstrategies.SamplingStrategies;
 import sampling.stoppingcriterion.StoppingCriterion;
 import templates.AbstractTemplate;
-import variables.AbstractState;
 
 public class BIRETrain {
 
