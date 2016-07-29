@@ -65,17 +65,17 @@ public class InspectDataset {
 //	}
 	
 	public static void main(String[] args) {
-		CorpusLoader loader = new CorpusLoader();
+		CorpusLoader loader = new CorpusLoader(false);
 		
 		System.out.println("CoNLLTraining");
 		DefaultCorpus corpus = loader.loadCorpus(CorpusName.CoNLLTraining);
 		System.out.println(corpus.getDocuments().size());
 		System.out.println("CoNLLTesta");
-		loader = new CorpusLoader();
+		loader = new CorpusLoader(false);
 		corpus = loader.loadCorpus(CorpusName.CoNLLTesta);
 		System.out.println(corpus.getDocuments().size());
 		System.out.println("CoNLLTestb");
-		loader = new CorpusLoader();
+		loader = new CorpusLoader(false);
 		corpus = loader.loadCorpus(CorpusName.CoNLLTestb);
 		System.out.println(corpus.getDocuments().size());
 		

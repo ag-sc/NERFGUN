@@ -29,12 +29,12 @@ public class ChangeSamplingStrategy implements InstanceCallback {
 		log.info("%.2f%% of total instances processed.", ratio * 100);
 		if (Math.random() > ratio) {
 			log.info("Set SamplingStrategy and AcceptStrategy to: GREEDY OBJECTIVE");
-			sampler.setTrainingSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
-			sampler.setTrainingAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
+			sampler.setTestSamplingStrategy(SamplingStrategies.greedyObjectiveStrategy());
+			sampler.setTestAcceptStrategy(AcceptStrategies.strictObjectiveAccept());
 		} else {
 			log.info("Set SamplingStrategy and AcceptStrategy to: SAMPLED MODEL");
-			sampler.setTrainingSamplingStrategy(SamplingStrategies.linearModelSamplingStrategy());
-			sampler.setTrainingAcceptStrategy(AcceptStrategies.strictModelAccept());
+			sampler.setTestSamplingStrategy(SamplingStrategies.linearModelSamplingStrategy());
+			sampler.setTestAcceptStrategy(AcceptStrategies.strictModelAccept());
 
 		}
 	}
