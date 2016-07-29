@@ -197,12 +197,14 @@ public class LocalIDFDocumentSimilarityTemplate
 
             for (Entry<String, Map<String, Integer>> candidatesTFVecotrs : localTermFrequencyVectorCorpus.entrySet()) {
 
-                candidateTFIDFVectors.put(candidatesTFVecotrs.getKey(), new HashMap<>());
+                
+                
+                Map<String, Double> map = new HashMap<>();
 
                 for (Entry<String, Integer> candidateTF : candidatesTFVecotrs.getValue().entrySet()) {
                     try {
                         
-                        Map<String, Double> map =  candidateTFIDFVectors.get(candidatesTFVecotrs.getKey());
+//                        Map<String, Double> map =  candidateTFIDFVectors.get(candidatesTFVecotrs.getKey());
                         double idfScore = localIDFScores.get(candidateTF.getKey());
                         map.put(candidateTF.getKey(),candidateTF.getValue() * idfScore);
                         
@@ -212,10 +214,10 @@ public class LocalIDFDocumentSimilarityTemplate
                         System.out.println(localIDFScores);
                         System.out.println("Vectors"+candidatesTFVecotrs);
                         System.out.println(localIDFScores.get(candidateTF.getKey()));
-                        System.out.println(candidateTFIDFVectors.get(candidatesTFVecotrs.getKey()));
                         System.exit(0);
                     }
                 }
+                candidateTFIDFVectors.put(candidatesTFVecotrs.getKey(), map);
 
             }
             return true;
