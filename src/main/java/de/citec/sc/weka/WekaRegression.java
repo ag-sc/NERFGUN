@@ -1,23 +1,17 @@
 package de.citec.sc.weka;
 
-import de.citec.sc.formats.bire.BireDataLine;
-import de.citec.sc.learning.FeatureUtils;
-import factors.Factor;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import de.citec.sc.helper.FeatureUtils;
+import factors.Factor;
 import learning.Vector;
 import learning.scorer.AbstractSingleStateScorer;
-import learning.scorer.Scorer;
-import variables.AbstractState;
 import weka.classifiers.Classifier;
 import weka.classifiers.functions.LibSVM;
 import weka.core.Attribute;

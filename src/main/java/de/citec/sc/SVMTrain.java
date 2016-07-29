@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,19 +14,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import corpus.Instance;
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.CorpusLoader;
 import de.citec.sc.corpus.CorpusLoader.CorpusName;
 import de.citec.sc.corpus.DefaultCorpus;
 import de.citec.sc.corpus.Document;
+import de.citec.sc.helper.FeatureUtils;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
-import de.citec.sc.learning.FeatureUtils;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
@@ -41,21 +43,11 @@ import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
 import de.citec.sc.variables.State;
 import de.citec.sc.weka.WekaModelTrainer;
-import evaluation.EvaluationUtil;
 import exceptions.MissingFactorException;
 import factors.Factor;
-import factors.FactorPattern;
-
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Stream;
-import learning.DefaultLearner;
 import learning.Model;
 import learning.ObjectiveFunction;
-import learning.Trainer;
 import learning.Vector;
-import learning.callbacks.InstanceCallback;
-import learning.callbacks.StepCallback;
 import learning.scorer.LinearScorer;
 import learning.scorer.Scorer;
 import sampling.DefaultSampler;
@@ -66,7 +58,6 @@ import sampling.samplingstrategies.SamplingStrategies;
 import sampling.stoppingcriterion.StoppingCriterion;
 import templates.AbstractTemplate;
 import utility.Utils;
-import variables.AbstractState;
 
 public class SVMTrain {
 
