@@ -16,6 +16,7 @@ import de.citec.sc.variables.State;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import sampling.Initializer;
 
 public class DisambiguationInitializer implements Initializer<Document, State> {
@@ -109,9 +110,11 @@ public class DisambiguationInitializer implements Initializer<Document, State> {
                         candidateRank = 0;
                     }
 
+                    Set<String> possibleLinks = candidateURIs.stream().map(u -> u.getUri()).collect(Collectors.toSet());
+                    
                     Instance candidate = candidateURIs.get(candidateRank);
                     String initialLink = candidate.getUri();
-                    Annotation newAnnotation = new Annotation(annotation.getWord(), initialLink, annotation.getStartIndex(),
+                    Annotation newAnnotation = new Annotation(possibleLinks, annotation.getWord(), initialLink, annotation.getStartIndex(),
                             annotation.getEndIndex());
 
                     newAnnotation.setIndexRank(candidateRank);

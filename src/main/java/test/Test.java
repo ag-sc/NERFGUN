@@ -373,8 +373,8 @@ public class Test {
     public static void testGerbilAPI() {
         String url = "http://psink.techfak.uni-bielefeld.de/ned";
         Document d1 = new Document("Obamaesqdwtz", "testDocument");
-        Annotation a1 = new Annotation("Obama", "", 0, 6);
-        Annotation a2 = new Annotation("qdwtz", "", 5, 10);
+        Annotation a1 = new Annotation(new HashSet<>(), "Obama", "", 0, 6);
+        Annotation a2 = new Annotation(new HashSet<>(), "qdwtz", "", 5, 10);
         List<Annotation> goldAnnotations = new ArrayList<>();
         goldAnnotations.add(a1);
         goldAnnotations.add(a2);
@@ -427,8 +427,8 @@ public class Test {
     public static void testBIREAPI() {
         String url = "http://purpur-v11:8080/bire";
         Document d1 = new Document("phoneqdwtz", "testDocument");
-        Annotation a1 = new Annotation("St. John Fisher", "", 0, 5);
-        Annotation a2 = new Annotation("2", "", 5, 10);
+        Annotation a1 = new Annotation(new HashSet<>(), "St. John Fisher", "", 0, 5);
+        Annotation a2 = new Annotation(new HashSet<>(), "2", "", 5, 10);
         List<Annotation> goldAnnotations = new ArrayList<>();
         goldAnnotations.add(a1);
         goldAnnotations.add(a2);

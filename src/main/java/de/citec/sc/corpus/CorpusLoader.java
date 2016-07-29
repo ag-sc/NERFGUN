@@ -11,8 +11,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -182,7 +181,7 @@ public class CorpusLoader {
                         } catch (Exception e) {
                         }
 
-                        Annotation a1 = new Annotation(label, uri, startIndex, endIndex);
+                        Annotation a1 = new Annotation(new HashSet<>(), label, uri, startIndex, endIndex);
                         goldSet.add(a1);
                         s += content[0] + " ";
                     } else {
@@ -301,7 +300,7 @@ public class CorpusLoader {
                     int startPosition = data[1].indexOf(label);
                     int endPosition = data[1].indexOf(label) + label.length();
 
-                    Annotation a1 = new Annotation(label, uri, startPosition, endPosition);
+                    Annotation a1 = new Annotation(new HashSet<>(),label, uri, startPosition, endPosition);
                     goldSet.add(a1);
                     int z = 1;
                 }

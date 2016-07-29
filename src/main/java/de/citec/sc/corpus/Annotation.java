@@ -36,15 +36,20 @@ public class Annotation extends AbstractVariable {
 		this.startIndex = startIndex;
 		this.endIndex = endIndex;
 		this.possibleLinks = possibleLinks;
+                if(!this.possibleLinks.contains(link)){
+                    System.err.println("HAHAH ERROR" + toString()  + " "+this.possibleLinks);
+                }
 	}
 
-	public Annotation(String word, String link, int startIndex, int endIndex) {
-		this.word = word;
-		this.link = link;
-		this.startIndex = startIndex;
-		this.endIndex = endIndex;
-		this.possibleLinks = new HashSet<>();
-	}
+//	public Annotation(String word, String link, int startIndex, int endIndex) {
+//		this.word = word;
+//		this.link = link;
+//		this.startIndex = startIndex;
+//		this.endIndex = endIndex;
+//                
+//		this.possibleLinks = new HashSet<>();
+//                this.possibleLinks.add(link);
+//	}
 
 	public void setPossibleLinks(Set<String> possibleLinks) {
 		this.possibleLinks = possibleLinks;

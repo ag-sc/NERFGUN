@@ -82,7 +82,7 @@ public class StanfordParser {
 
         try {
             // create an empty Annotation just with the given text
-            Annotation document = new Annotation(documentText);
+            Annotation document = new Annotation(documentText.replace("\n", ". "));
 
             // run all Annotators on this text
             this.pipeline.annotate(document);
@@ -92,7 +92,7 @@ public class StanfordParser {
             for (CoreMap sentence : sentences) {
                 // Iterate over all tokens in a sentence
                 for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
-                // Retrieve and add the lemma for each word into the
+                    // Retrieve and add the lemma for each word into the
                     // list of lemmas
                     lemmas.add(token.get(LemmaAnnotation.class));
                 }
@@ -204,18 +204,57 @@ public class StanfordParser {
     public static void main(String[] args) {
         StanfordParser lemmatizer = new StanfordParser();
 
-        String doc = "Barack Ob_ama was reelected president in November 2012 !!!! He serves as a president.";
+        String doc = "mother teresa devoted to world s poor \n"
+                + "CALCUTTA 1996-08-22 \n"
+                + "mother teresa known as the saint of the gutters won the nobel peace prize in 1979 for bringing hope and dignity to millions of poor unwanted people with her simple message the poor must know that we love t\n"
+                + "hem \n"
+                + "while the world heaps honours on her and even regards her as a living saint the nun of albanian descent maintains she is merely doing god s work \n"
+                + " it gives me great joy and fulfilment to love and care for the poor and neglected she said \n"
+                + "the poor do not need our sympathy and pity \n"
+                + "they need our love and compassion \n"
+                + "the diminutive roman catholic missionary was on respiratory support in intensive care in an indian nursing home on thursday after suffering heart failure \n"
+                + "but an attending doctor said mother teresa who turns 86 next tuesday was conscious and in stable condition \n"
+                + "the task mother teresa began alone in 1949 in the slums of densely populated calcutta and grew to touch the hearts of people around the world \n"
+                + "when in 1979 she was told she had won the nobel peace prize she said characteristically I am unworthy \n"
+                + "the world disagreed showering more than 80 national and international honours on her including the bharat ratna or jewel of india the country s highest civilian award \n"
+                + "her health began to deteriorate in 1989 when she was fitted with a heart pacemaker \n"
+                + "A year later the vatican announced she was stepping down as superior of her missionaries of charity order \n"
+                + "more than 100 delegates flew in from around the world to elect a successor \n"
+                + "they could not agree so asked her to stay on \n"
+                + "she agreed \n"
+                + "in 1991 mother teresa was treated at a california hospital for heart disease and bacterial pneumonia \n"
+                + "in 1993 she fell in rome and broke three ribs \n"
+                + "in august the same year while in new delhi to receive yet another award she developed malaria complicated by her heart and lung problems \n"
+                + "last april she fractured her left collar bone \n"
+                + "but her increasing frailty arthritis and failing eyesight has not stopped her travels around the world to mingle with the poor and desperate \n"
+                + "mother teresa was born agnes goinxha bejaxhiu to albanian parents in skopje in what was then serbia on august 27 1910 \n"
+                + "she attended a government school and was already deeply religious by the time she was 12 \n"
+                + "at the age of 18 she became a loretto nun hoping to work at the order s calcutta mission \n"
+                + "she was sent to loretto abbey in dublin and from there to india to begin her novitiate and teach geography at a convent school in calcutta \n"
+                + "she said her divine call to work among the poor came in september 1946 \n"
+                + "the message was quite clear she told one interviewer \n"
+                + "I was to leave the convent and help the poor while living among them \n"
+                + "it was an order \n"
+                + "I knew where I belonged \n"
+                + "the vatican and the mother superior in dublin approved and after intensive training as a nurse with american missionaries she opened her first calcutta slum school in december 1949 \n"
+                + "she took the name of after france s saint therese of the child jesus \n"
+                + "in india she was simply called mother \n"
+                + "mother teresa set up her first home for the dying in a hindu rest house in calcutta after she saw a penniless woman turned away by a city hospital \n"
+                + "named nirmal hriday tender heart it was the first of a chain of 150 homes for dying destitute people admitting nearly 18,000 a year \n"
+                + "her missionaries of charity a roman catholic religious order she founded in 1949 now runs about 300 homes for unwanted children and the destitute in india and abroad \n"
+                + "in 1994 a british television documentary called the myth around mother teresa a mixture of hyperbole and credulity \n"
+                + "catholics around the world rose to her defence";
 
-        List<String> s = lemmatizer.lemmatizeDocument(doc);
+        List<String> s = lemmatizer.lemmatizeDocument(doc.replace("\n", ". "));
         System.out.println(s);
 
-        String tagged = lemmatizer.postagDocument(doc);
-        System.out.println(tagged);
-        String[] data = tagged.split(" ");
-
-        for (int i = 0; i < data.length; i++) {
-            System.out.println(data[i].substring(data[i].lastIndexOf("_") + 1));
-        }
+//        String tagged = lemmatizer.postagDocument(doc);
+//        System.out.println(tagged);
+//        String[] data = tagged.split(" ");
+//
+//        for (int i = 0; i < data.length; i++) {
+//            System.out.println(data[i].substring(data[i].lastIndexOf("_") + 1));
+//        }
 
         int z = 1;
 

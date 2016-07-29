@@ -29,9 +29,9 @@ import de.citec.sc.learning.ChangeSamplingStrategy;
 import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.learning.FeatureUtils;
 import de.citec.sc.query.CandidateRetriever;
+import de.citec.sc.query.CandidateRetrieverOnLucene;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
-import de.citec.sc.sampling.AlternativeInitializer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.settings.BIRESettings;
 import de.citec.sc.settings.Setting;
@@ -426,7 +426,7 @@ public class BIRETrain {
          * Load the index API.
          */
         log.info("Load Index...");
-        // index = new CandidateRetrieverOnLucene(false, "mergedIndex");
+//         index = new CandidateRetrieverOnLucene(false, "mergedIndex");
         index = new CandidateRetrieverOnMemory();
         IndexMapping.init(tsprIndexMappingFile);
         explorer = new AllScoresExplorer(index, MAX_CANDIDATES);
@@ -600,6 +600,7 @@ public class BIRETrain {
                 templates.add(new LocalIDFDocumentSimilarityTemplate());
                 log.info("Add tempalte: " + template.getSimpleName());
             }
+            
         }
     }
 
