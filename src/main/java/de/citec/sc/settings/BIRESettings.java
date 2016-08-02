@@ -24,7 +24,7 @@ public class BIRESettings {
 	 * All possible templates in order of their importance.
 	 */
 	final private static List<Class<? extends AbstractTemplate>> templates = Arrays.asList(TopicSpecificPageRankTemplate.class, EditDistanceTemplate.class, 
-			TermFrequencyTemplate.class,   NameSurnameTemplate.class, ClassContextTemplate.class, PageRankTemplate.class, PageLinkEmbeddingTemplate.class);
+			TermFrequencyTemplate.class,   NameSurnameTemplate.class, ClassContextTemplate.class, PageRankTemplate.class);
 
 	/**
 	 * All possible options generated given the sorted templates.
