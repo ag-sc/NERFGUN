@@ -19,6 +19,9 @@ import org.apache.logging.log4j.Logger;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
+
 import de.citec.sc.corpus.Annotation;
 import de.citec.sc.corpus.Document;
 import de.citec.sc.helper.FeatureUtils;
@@ -53,6 +56,7 @@ public class PageLinkEmbeddingTemplate extends AbstractTemplate<Document, State,
 	private boolean useBins = false;
 	private static WordVectors vectors = null;
 	private static Map<String, Integer> keymap = null;
+	private static Table<String, String, Double> scores = null;
 
 	public static boolean isInitialized() {
 		return isInitialized;
@@ -67,6 +71,7 @@ public class PageLinkEmbeddingTemplate extends AbstractTemplate<Document, State,
 			log.info("loading keymap...");
 			keymap = loadKeymap(keymapFilename);
 			log.info("Done, loading keymap");
+			scores = HashBasedTable.create();
 			isInitialized = true;
 		}
 	}
@@ -156,12 +161,14 @@ public class PageLinkEmbeddingTemplate extends AbstractTemplate<Document, State,
 	}
 
 	private static String getKeyForURI(String uri) {
-		uri = uri.trim();
-		if (keymap.containsKey(uri)) {
-			return String.valueOf(keymap.get(uri));
-		} else {
-			return null;
+		if (uri != null) {
+			uri = uri.trim();
+			if (keymap.containsKey(uri)) {
+				return String.valueOf(keymap.get(uri));
+			}
 		}
+		return null;
+
 	}
 	// private static double[] getVector(String uri) {
 	// final int key = keymap.get(uri);
@@ -171,20 +178,34 @@ public class PageLinkEmbeddingTemplate extends AbstractTemplate<Document, State,
 
 	public static double score(String uri1, String uri2) {
 		final String key1 = getKeyForURI(uri1);
+		final String key2 = getKeyForURI(uri2);
+
 		if (key1 == null)
 			return 0.0;
-
-		final String key2 = getKeyForURI(uri2);
 		if (key2 == null)
 			return 0.0;
-
 		if (!vectors.hasWord(key1)) {
 			return 0.0;
 		}
 		if (!vectors.hasWord(key2)) {
 			return 0.0;
 		} else {
-			return vectors.similarity(key1, key2);
+			String k1 = null;
+			String k2 = null;
+
+			if (key1.compareTo(key2) >= 0) {
+				k1 = key1;
+				k2 = key2;
+			} else {
+				k1 = key2;
+				k2 = key1;
+			}
+			Double score = scores.get(k1, k2);
+			if (score == null) {
+				score = vectors.similarity(k1, k2);
+				scores.put(k1, k2, score);
+			}
+			return score;
 		}
 	}
 
