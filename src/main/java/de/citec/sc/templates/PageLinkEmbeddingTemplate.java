@@ -9,7 +9,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -131,10 +130,13 @@ public class PageLinkEmbeddingTemplate extends AbstractTemplate<Document, State,
 
 		double score = 0;
 
-		final String link1 = firstAnnotation.getLink().trim();
-		final String link2 = secondAnnotation.getLink().trim();
+		final String link1 = firstAnnotation.getLink();
+		final String link2 = secondAnnotation.getLink();
 
-		if (keymap.containsKey(link1) && keymap.containsKey(link2)) {
+		final String key1 = getKeyForURI(link1);
+		final String key2 = getKeyForURI(link2);
+
+		if (key1 != null && key2 != null && vectors.hasWord(key1) && vectors.hasWord(key2)) {
 			score = score(link1, link2);
 		} else {
 			score = 0;
@@ -154,7 +156,12 @@ public class PageLinkEmbeddingTemplate extends AbstractTemplate<Document, State,
 	}
 
 	private static String getKeyForURI(String uri) {
-		return String.valueOf(keymap.get(uri));
+		uri = uri.trim();
+		if (keymap.containsKey(uri)) {
+			return String.valueOf(keymap.get(uri));
+		} else {
+			return null;
+		}
 	}
 	// private static double[] getVector(String uri) {
 	// final int key = keymap.get(uri);
@@ -162,14 +169,23 @@ public class PageLinkEmbeddingTemplate extends AbstractTemplate<Document, State,
 	// return v;
 	// }
 
-	private static double score(String uri1, String uri2) {
-		// double[] v1 = getVector(uri1);
-		// double[] v2 = getVector(uri2);
-		// double score = cosineSimilarity(v1, v2);
+	public static double score(String uri1, String uri2) {
 		final String key1 = getKeyForURI(uri1);
+		if (key1 == null)
+			return 0.0;
+
 		final String key2 = getKeyForURI(uri2);
-		double score = vectors.similarity(key1, key2);
-		return score;
+		if (key2 == null)
+			return 0.0;
+
+		if (!vectors.hasWord(key1)) {
+			return 0.0;
+		}
+		if (!vectors.hasWord(key2)) {
+			return 0.0;
+		} else {
+			return vectors.similarity(key1, key2);
+		}
 	}
 
 }
