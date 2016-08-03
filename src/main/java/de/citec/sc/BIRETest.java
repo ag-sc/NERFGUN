@@ -13,7 +13,6 @@ import de.citec.sc.learning.DisambiguationObjectiveFunction;
 import de.citec.sc.query.CandidateRetriever;
 import de.citec.sc.query.CandidateRetrieverOnMemory;
 import de.citec.sc.sampling.AllScoresExplorer;
-import de.citec.sc.sampling.AlternativeInitializer;
 import de.citec.sc.sampling.DisambiguationInitializer;
 import de.citec.sc.templates.CandidateSimilarityTemplate;
 import de.citec.sc.templates.DocumentSimilarityTemplate;
@@ -32,6 +31,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -364,7 +364,8 @@ public class BIRETest {
                         }
                     }
                     
-                    Annotation a = new Annotation(g.getWord(), link, g.getStartIndex(), g.getEndIndex());
+                    Annotation a = new Annotation(new HashSet<>(), g.getWord(), link, g.getStartIndex(), g.getEndIndex());
+                    
                     d.addAnnotation(a);
                 }
             }

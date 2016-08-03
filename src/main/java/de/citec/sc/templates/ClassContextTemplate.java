@@ -70,19 +70,19 @@ public class ClassContextTemplate
             String link = entity.getLink();
 
             Set<String> classes = DBpediaEndpoint.getClasses(link);
-            
+
             //reduce classes = > remove superclasses
             Set<String> reducedClasses = reduceClasses(classes, true);
 
             //take 5 words on left and 5 on the right
-            String contextWords = getContextWords(instance.getDocumentContent(), entity.getStartIndex(), entity.getEndIndex(), 5);
-            
+            String contextWords = getContextWords(instance.getDocumentContent(), entity.getStartIndex(), entity.getEndIndex(), 100);
+
             //extract ngrams: (uni, bi , tri), remove stopwords : true
-            Set<String> ngrams = extractNgrams(contextWords, 3, true);
+            Set<String> ngrams = extractNgrams(contextWords, 1, true);
 
             for (String c : reducedClasses) {
-                for(String n : ngrams){
-                    featureVector.set("CLASSES Feature: " + c+" NGram: "+n, 1.0);
+                for (String n : ngrams) {
+                    featureVector.set("CLASSES Feature: " + c + " NGram: " + n, 1.0);
                 }
             }
 
@@ -106,35 +106,31 @@ public class ClassContextTemplate
                 Set<String> temp = new HashSet<>();
 
                 for (String added : reducedClasses) {
-                    if(DBpediaEndpoint.isSubClass(added, c)){
-                        
+                    if (DBpediaEndpoint.isSubClass(added, c)) {
+
                         //if superclass are preferred
-                        if(superClass){
+                        if (superClass) {
                             temp.add(added);
-                        }
-                        else{
+                        } else {
                             temp.add(c);
                         }
-                        
-                    }
-                    else if(DBpediaEndpoint.isSubClass(c, added)){
-                        
+
+                    } else if (DBpediaEndpoint.isSubClass(c, added)) {
+
                         //if superclass are preferred
-                        if(superClass){
+                        if (superClass) {
                             temp.add(c);
-                        }
-                        else{
+                        } else {
                             temp.add(added);
                         }
-                        
-                    }
-                    //not related , add both
-                    else{
+
+                    } //not related , add both
+                    else {
                         temp.add(c);
                         temp.add(added);
                     }
                 }
-                
+
                 reducedClasses.clear();
                 reducedClasses.addAll(temp);
             }
@@ -189,8 +185,11 @@ public class ClassContextTemplate
         try {
             //extracts ngrams also removes stopwords if set to true
             //doesn't extract the unigrams
-            ngramExtractor.extract(text.trim(), 2, ngram_size, removeStopWords);
-            LinkedList<String> ngrams = ngramExtractor.getNGrams();
+            List<String> ngrams = new LinkedList<>();
+            if (ngram_size > 2) {
+                ngramExtractor.extract(text.trim(), 2, ngram_size, removeStopWords);
+                ngrams = ngramExtractor.getNGrams();
+            }
 
             //add ngrams
             for (String n : ngrams) {

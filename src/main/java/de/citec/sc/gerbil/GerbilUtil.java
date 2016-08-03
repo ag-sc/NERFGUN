@@ -1,13 +1,8 @@
 package de.citec.sc.gerbil;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.aksw.gerbil.transfer.nif.Document;
-import org.aksw.gerbil.transfer.nif.Marking;
-import org.aksw.gerbil.transfer.nif.TurtleNIFDocumentCreator;
-import org.aksw.gerbil.transfer.nif.TurtleNIFDocumentParser;
 import org.aksw.gerbil.transfer.nif.data.DocumentImpl;
 import org.aksw.gerbil.transfer.nif.data.NamedEntity;
 import org.aksw.gerbil.transfer.nif.data.SpanImpl;
@@ -15,6 +10,7 @@ import org.aksw.gerbil.transfer.nif.data.SpanImpl;
 import com.google.gson.Gson;
 
 import de.citec.sc.corpus.Annotation;
+import java.util.HashSet;
 
 public class GerbilUtil {
 
@@ -73,7 +69,7 @@ public class GerbilUtil {
     // return annotation;
     // }
     public static Annotation gson2bire(GsonAnnotation a) {
-        Annotation annotation = new Annotation(a.text, a.uri, a.start, a.end);
+        Annotation annotation = new Annotation(new HashSet<>(), a.text, a.uri, a.start, a.end);
         return annotation;
     }
 
