@@ -19,7 +19,9 @@ import de.citec.sc.templates.DocumentSimilarityTemplate;
 import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.templates.LocalIDFDocumentSimilarityTemplate;
 import de.citec.sc.templates.NEDTemplateFactory;
+import de.citec.sc.templates.PageLinkEmbeddingTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
+import de.citec.sc.templates.WordEntityEmbeddingTemplate;
 import de.citec.sc.variables.State;
 import edu.stanford.nlp.io.PrintFile;
 import evaluation.EvaluationUtil;
@@ -64,6 +66,10 @@ public class BIRETest {
     private static String tfFile = "en_wiki.termfrequency";
     private static String urisFile = "uris";
     private static String tfDbBin = "tfDB.bin";
+    private static String wordEntityFilePath = "embedding/word_entity/wiki_word_entity_embedding_alph=0.025_hs=0_mn_alph=0.0001_mn_cnt=10_ngtv=10_smpl=1e-05_sg=1_sz=300_unknwn_wrd=None_wndw=5_wrkrs=20_embeddings.bin.w2v";
+    private static String pageLinkFilePath = "embedding/pagelink/wiki_embedding_alph=0.025_hs=0_mn_alph=0.0001_mn_cnt=0_ngtv=10_smpl=0_sg=1_sz=300_unknwn_wrd=None_wndw=5_wrkrs=20_embeddings.bin.w2v";
+    private static String pageLinkKeyPath = "embedding/pagelink/index2id.txt";
+    
     private static String tsprIndexMappingFile = "wikipagegraphdataDecoded.keys";
 
     private static int MAX_CANDIDATES = 1;
@@ -197,15 +203,27 @@ public class BIRETest {
         log.info("Init TopicSpecificPageRankTemplate ...");
         TopicSpecificPageRankTemplate.init(tsprIndexMappingFile, tsprFile);
         IndexMapping.init(tsprIndexMappingFile);
-        log.info("Init DocumentSimilarityTemplate ...");
+        
+//        log.info("Init DocumentSimilarityTemplate ...");
 //        DocumentSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
-        CandidateSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
+//        CandidateSimilarityTemplate.init(indexFile, tfidfFile, dfFile, true);
         log.info("Init DBpedia data loading into memory ...");
         DBpediaEndpoint.init();
         
         log.info("Initializing LocalIDFTemplate...");
-        LocalIDFDocumentSimilarityTemplate.init(urisFile, tfDbBin, tfFile);
+//        LocalIDFDocumentSimilarityTemplate.init(urisFile, tfDbBin, tfFile);
 
+        
+        log.info("Initializing WordEntityTemplate...");
+        WordEntityEmbeddingTemplate.init(wordEntityFilePath);
+        
+        
+        
+        log.info("Initializing PageLinkEmbeddingTemplate...");
+        PageLinkEmbeddingTemplate.init(pageLinkKeyPath, pageLinkFilePath);
+        
+        
+        
         boolean useBins = true;
         if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
             if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
@@ -238,7 +256,6 @@ public class BIRETest {
         }
 
         Initializer<Document, State> testInitializer = new DisambiguationInitializer(index, MAX_CANDIDATES, true);
-//        Initializer<Document, State> testInitializer = new AlternativeInitializer(index, MAX_CANDIDATES, true);
 
         explorers.add(new AllScoresExplorer(index, MAX_CANDIDATES));
         int numberOfSamplingSteps = 300;

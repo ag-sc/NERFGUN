@@ -36,9 +36,6 @@ public class Annotation extends AbstractVariable {
 		this.startIndex = startIndex;
 		this.endIndex = endIndex;
 		this.possibleLinks = possibleLinks;
-                if(!this.possibleLinks.contains(link)){
-                    System.err.println("HAHAH ERROR" + toString()  + " "+this.possibleLinks);
-                }
 	}
 
 //	public Annotation(String word, String link, int startIndex, int endIndex) {

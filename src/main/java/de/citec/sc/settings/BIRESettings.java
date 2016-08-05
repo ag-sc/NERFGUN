@@ -16,6 +16,7 @@ import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.PairwiseClassOccurenceTemplate;
 import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
+import de.citec.sc.templates.WordEntityEmbeddingTemplate;
 import templates.AbstractTemplate;
 
 public class BIRESettings {
@@ -23,8 +24,8 @@ public class BIRESettings {
 	/**
 	 * All possible templates in order of their importance.
 	 */
-	final private static List<Class<? extends AbstractTemplate>> templates = Arrays.asList(TopicSpecificPageRankTemplate.class, EditDistanceTemplate.class, 
-			TermFrequencyTemplate.class,   NameSurnameTemplate.class, ClassContextTemplate.class, PageRankTemplate.class);
+	final private static List<Class<? extends AbstractTemplate>> templates = Arrays.asList(EditDistanceTemplate.class, 
+			TermFrequencyTemplate.class,   NameSurnameTemplate.class, ClassContextTemplate.class, WordEntityEmbeddingTemplate.class, PageLinkEmbeddingTemplate.class, TopicSpecificPageRankTemplate.class, PageRankTemplate.class, LocalIDFDocumentSimilarityTemplate.class);
 
 	/**
 	 * All possible options generated given the sorted templates.

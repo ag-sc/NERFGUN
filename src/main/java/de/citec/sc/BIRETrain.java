@@ -39,10 +39,12 @@ import de.citec.sc.templates.IndexMapping;
 import de.citec.sc.templates.InitializationException;
 import de.citec.sc.templates.LocalIDFDocumentSimilarityTemplate;
 import de.citec.sc.templates.NameSurnameTemplate;
+import de.citec.sc.templates.PageLinkEmbeddingTemplate;
 import de.citec.sc.templates.PageRankTemplate;
 import de.citec.sc.templates.PairwiseClassOccurenceTemplate;
 import de.citec.sc.templates.TermFrequencyTemplate;
 import de.citec.sc.templates.TopicSpecificPageRankTemplate;
+import de.citec.sc.templates.WordEntityEmbeddingTemplate;
 import de.citec.sc.variables.State;
 import evaluation.EvaluationUtil;
 import learning.DefaultLearner;
@@ -71,7 +73,7 @@ public class BIRETrain {
     private static final String PARAM_SETTING_BINS = "-z";
     private static final String PARAM_SETTING_MAX_CANDIDATE = "-w";
 
-    private static int MAX_CANDIDATES = 10  ;
+    private static int MAX_CANDIDATES = 10;
     private static final Map<String, String> PARAMETERS = new HashMap<>();
 
     private static final String PARAMETER_PREFIX = "-";
@@ -79,6 +81,9 @@ public class BIRETrain {
     private static Logger log = LogManager.getFormatterLogger();
 
     private static String indexFile = "tfidf.bin";
+    private static String wordEntityFilePath = "embedding/word_entity/wiki_word_entity_embedding_alph=0.025_hs=0_mn_alph=0.0001_mn_cnt=10_ngtv=10_smpl=1e-05_sg=1_sz=300_unknwn_wrd=None_wndw=5_wrkrs=20_embeddings.bin.w2v";
+    private static String pageLinkFilePath = "embedding/pagelink/wiki_embedding_alph=0.025_hs=0_mn_alph=0.0001_mn_cnt=0_ngtv=10_smpl=0_sg=1_sz=300_unknwn_wrd=None_wndw=5_wrkrs=20_embeddings.bin.w2v";
+    private static String pageLinkKeyPath = "embedding/pagelink/index2id.txt";
 //    private static String dfFile = "en_wiki_large_abstracts.docfrequency";
     private static String dfFile = "en_wiki.docfrequency";
 //    private static String tfidfFile = "en_wiki_large_abstracts.tfidf";
@@ -111,14 +116,14 @@ public class BIRETrain {
     public static void main(String[] args) throws IOException, InitializationException {
 
         readParamsFromCommandLine(args);
-        
+
         /*
          * TODO: Just for testing !!!! Remove before Jar export.
          */
         // args = new String[]{"-s", "7"};
         if (PARAMETERS.containsKey(PARAM_SETTING_MAX_CANDIDATE)) {
-            
-            System.out.println("Max candy:"+PARAMETERS.get(PARAM_SETTING_MAX_CANDIDATE));
+
+            System.out.println("Max candidates number: " + PARAMETERS.get(PARAM_SETTING_MAX_CANDIDATE));
             MAX_CANDIDATES = Integer.parseInt(PARAMETERS.get(PARAM_SETTING_MAX_CANDIDATE));
         }
 
@@ -377,21 +382,20 @@ public class BIRETrain {
                 name += "ED";
             } else if (template instanceof TermFrequencyTemplate) {
                 name += "TF";
-            }
-            else if (template instanceof ClassContextTemplate) {
+            } else if (template instanceof ClassContextTemplate) {
                 name += "CCT";
-            }
-            else if (template instanceof CategoryTemplate) {
+            } else if (template instanceof CategoryTemplate) {
                 name += "CT";
-            }
-            else if (template instanceof PairwiseClassOccurenceTemplate) {
+            } else if (template instanceof PairwiseClassOccurenceTemplate) {
                 name += "PCO";
-            }
-            else if (template instanceof NameSurnameTemplate) {
+            } else if (template instanceof NameSurnameTemplate) {
                 name += "NS";
-            }
-            else if (template instanceof LocalIDFDocumentSimilarityTemplate) {
+            } else if (template instanceof LocalIDFDocumentSimilarityTemplate) {
                 name += "LID";
+            } else if (template instanceof WordEntityEmbeddingTemplate) {
+                name += "WE";
+            } else if (template instanceof PageLinkEmbeddingTemplate) {
+                name += "PLE";
             }
             dash = "-";
         }
@@ -400,15 +404,15 @@ public class BIRETrain {
 
     private static void initializeBIRE(String[] args) {
 
-        
-
         setting = BIRESettings.getSetting(Integer.parseInt(PARAMETERS.get(PARAM_SETTING_IDENTIFIER)));
 
         log.info("Template setting: " + setting.toString());
 
-                
-        log.info("Load Categories...");
-        DBpediaEndpoint.init();
+        
+        log.info("Initializing templates for training ... ");
+        
+        initializeTempaltesFromSetting(setting);
+        
         
         /*
          * Load the index API.
@@ -420,7 +424,6 @@ public class BIRETrain {
         explorer = new AllScoresExplorer(index, MAX_CANDIDATES);
 
         
-        initializeTempaltesFromSetting(setting);
 
     }
 
@@ -456,8 +459,27 @@ public class BIRETrain {
 
                 if (template.equals(TermFrequencyTemplate.class)) {
                 }
+
+                if (template.equals(NameSurnameTemplate.class)) {
+                    log.info("Initiazling DBpedia files (categories, classes)...");
+                    DBpediaEndpoint.init();
+                }
+                if (template.equals(ClassContextTemplate.class)) {
+                    log.info("Initiazling DBpedia files (categories, classes)...");
+                    DBpediaEndpoint.init();
+                }
+
                 if (template.equals(LocalIDFDocumentSimilarityTemplate.class)) {
                     LocalIDFDocumentSimilarityTemplate.init(urisFile, tfDbBin, tfFile);
+                }
+
+                if (template.equals(WordEntityEmbeddingTemplate.class)) {
+                    log.info("Initiazling WordEntityEmbedding...");
+                    WordEntityEmbeddingTemplate.init(wordEntityFilePath);
+                }
+                if (template.equals(PageLinkEmbeddingTemplate.class)) {
+                    log.info("Initiazling PageLinkEmbedding...");
+                    PageLinkEmbeddingTemplate.init(pageLinkKeyPath, pageLinkFilePath);
                 }
             }
         } catch (Exception e) {
@@ -479,9 +501,8 @@ public class BIRETrain {
             // templates.add(new IndexRankTemplate());
             // log.info("Add tempalte: " + template.getSimpleName());
             // }
-            
             boolean binsForPRTF = true;
-            
+
             if (template.equals(PageRankTemplate.class)) {
                 if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
                     if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
@@ -492,7 +513,7 @@ public class BIRETrain {
                 } else {
                     templates.add(new PageRankTemplate(binsForPRTF));
                 }
-                
+
                 log.info("Add tempalte: " + template.getSimpleName());
             }
             if (template.equals(EditDistanceTemplate.class)) {
@@ -536,7 +557,7 @@ public class BIRETrain {
                 } else {
                     templates.add(new TermFrequencyTemplate(binsForPRTF));
                 }
-                
+
                 log.info("Add tempalte: " + template.getSimpleName());
             }
             if (template.equals(DocumentSimilarityTemplate.class)) {
@@ -572,14 +593,14 @@ public class BIRETrain {
                 } else {
                     templates.add(new CategoryTemplate(true));
                 }
-                
+
                 log.info("Add tempalte: " + template.getSimpleName());
             }
             if (template.equals(PairwiseClassOccurenceTemplate.class)) {
                 templates.add(new PairwiseClassOccurenceTemplate());
                 log.info("Add tempalte: " + template.getSimpleName());
             }
-            
+
             if (template.equals(NameSurnameTemplate.class)) {
                 templates.add(new NameSurnameTemplate());
                 log.info("Add tempalte: " + template.getSimpleName());
@@ -588,7 +609,31 @@ public class BIRETrain {
                 templates.add(new LocalIDFDocumentSimilarityTemplate());
                 log.info("Add tempalte: " + template.getSimpleName());
             }
-            
+            if (template.equals(WordEntityEmbeddingTemplate.class)) {
+                if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+                    if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+                        templates.add(new WordEntityEmbeddingTemplate(false));
+                    } else {
+                        templates.add(new WordEntityEmbeddingTemplate(true));
+                    }
+                } else {
+                    templates.add(new WordEntityEmbeddingTemplate(true));
+                }
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+            if (template.equals(PageLinkEmbeddingTemplate.class)) {
+                if (PARAMETERS.containsKey(PARAM_SETTING_BINS)) {
+                    if (PARAMETERS.get(PARAM_SETTING_BINS).equals("false")) {
+                        templates.add(new PageLinkEmbeddingTemplate(false));
+                    } else {
+                        templates.add(new PageLinkEmbeddingTemplate(true));
+                    }
+                } else {
+                    templates.add(new PageLinkEmbeddingTemplate(true));
+                }
+                log.info("Add tempalte: " + template.getSimpleName());
+            }
+
         }
     }
 

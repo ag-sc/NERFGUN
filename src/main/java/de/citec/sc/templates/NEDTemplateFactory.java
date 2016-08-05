@@ -46,6 +46,10 @@ public class NEDTemplateFactory implements TemplateFactory<Document, State> {
                 return new NameSurnameTemplate();
             case "LocalIDFDocumentSimilarityTemplate":
                 return new LocalIDFDocumentSimilarityTemplate();
+            case "WordEntityEmbeddingTemplate":
+                return new WordEntityEmbeddingTemplate(useBins);
+            case "PageLinkEmbeddingTemplate":
+                return new PageLinkEmbeddingTemplate(useBins);
         }
         throw new UnkownTemplateRequestedException("Cannot instanciate Template for name " + templateName);
     }

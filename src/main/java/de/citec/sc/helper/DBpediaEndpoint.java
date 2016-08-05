@@ -42,12 +42,21 @@ public class DBpediaEndpoint {
     private static ConcurrentHashMap<String, Set<String>> categoryToParentCategories;
     private static HashMap<String, List<String>> queryCache = new HashMap<>();
 
+    private static boolean isInitialized = false;
+
     public static void init() {
-        loadEntityToCategory();
 
-        loadCategoryToCategory();
+        if (!isInitialized) {
+            
+            
+            loadEntityToCategory();
 
-        loadEntityToClass();
+            loadCategoryToCategory();
+
+            loadEntityToClass();
+            
+            isInitialized = true;
+        }
 
     }
 
@@ -256,11 +265,11 @@ public class DBpediaEndpoint {
 
             // Set the DBpedia specific timeout.
             ((QueryEngineHTTP) qexec).addParam("timeout", "10000");
-            
+
             //if ASK Query
-            if(query.contains("ASK")){
+            if (query.contains("ASK")) {
                 boolean b = qexec.execAsk();
-                results.add(b+"");
+                results.add(b + "");
                 queryCache.put(query, results);
                 return results;
             }
@@ -301,8 +310,8 @@ public class DBpediaEndpoint {
         }
 
         if (categoryToParentCategories.containsKey(child)) {
-            
-            if(categoryToParentCategories.get(child).contains(parent)){
+
+            if (categoryToParentCategories.get(child).contains(parent)) {
                 return true;
             }
 
